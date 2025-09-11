@@ -1,0 +1,33 @@
+p {
+    font-size: 20px;
+    padding-left: 30px;
+    margin-top: 0px;
+    margin-bottom: 5px;
+}
+
+a {
+    font-size: 20px;
+}
+
+ul {
+    font-size: 20px;
+    padding-left: 70px;
+}
+
+h1 {
+    font-family: 'sans-serif', Tahoma, Geneva, Verdana;
+    margin-top: 30px;  
+    margin-bottom: 10px;
+}
+
+h2 {
+    font-family: 'sans-serif', Tahoma, Geneva, Verdana;
+    margin-top: 30px;
+    margin-bottom: 10px;
+}
+
+footer {
+    font-family: 'sans-serif', Tahoma, Geneva, Verdana;
+    margin-top: 30px;
+    margin-bottom: 10px;
+}
