@@ -1,13 +1,61 @@
 body {
+    font-family: Menlo, Monaco, "Lucida Console", "Liberation Mono", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Courier New", monospace, serif;
     display: flexbox;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     max-width: 50%;
     margin: auto;
+    line-height: 1.6;
 }
 
 .profile-class {
     display: flex;
+    flex-direction: row;
+    padding: 20px;
+    align-items: center;
+}
+
+#profile img
+{
+    width: 100px;
+    height: 100px;
+    border-radius: 10%;
+    object-fit: cover;
+    margin-right: 20px;
+
+}
+
+#name {
+    display: flex;
     flex-direction: column;
+    gap: 0px;
+    margin-bottom: -5px;
+}
+
+a {
+    color: #DC143C;
+    text-decoration: underline;
+}
+a:hover {
+    color: white;
+    background-color: #DC143C;
+}
+
+h2 {
+    color: rgb(65, 65, 65);
+    position: relative;
+    display: inline-block;              
+    border-bottom: 2px dashed rgb(65,65,65);
+    padding-bottom: 2px;
+    inline-size: fit-content;
+}
+
+h2::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 1.5px;                          
+    border-bottom: 2px dashed rgb(65,65,65); 
 }
