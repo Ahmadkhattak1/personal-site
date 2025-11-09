@@ -134,6 +134,50 @@ footer::before {
     color: #ccc;
 }
 
+/* GitHub Calendar Customization */
+.calendar {
+    margin-top: 16px;
+    font-family: "Courier New", Courier, monospace;
+}
+
+.calendar :is(text, .age) {
+    font-family: "Courier New", Courier, monospace !important;
+    font-size: 11px !important;
+}
+
+.calendar .contrib-column {
+    margin: 0 1px;
+}
+
+.calendar .day {
+    rx: 1;
+}
+
+.calendar rect.day {
+    stroke: #ddd;
+    stroke-width: 1px;
+}
+
+.calendar rect.day[fill="#196127"],
+.calendar rect.day[fill="#239a3b"],
+.calendar rect.day[fill="#7bc96f"] {
+    fill: #DC143C !important;
+}
+
+.calendar rect.day[fill="#c6e48b"] {
+    fill: #ffb3c1 !important;
+}
+
+.calendar rect.day[fill="#ebedf0"] {
+    fill: #f5f5f5 !important;
+}
+
+.calendar .js-calendar-graph-svg {
+    border: 1px dashed #ddd;
+    padding: 10px;
+    background: #fafafa;
+}
+
 @media (max-width: 600px) {
     body {
         margin: 20px auto;
