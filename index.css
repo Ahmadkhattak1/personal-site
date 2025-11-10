@@ -23,8 +23,8 @@ body {
 }
 
 #profile img {
-    width: 85px;
-    height: 85px;
+    width: 102px;
+    height: 102px;
     border-radius: 3px;
     object-fit: cover;
     filter: grayscale(20%);
