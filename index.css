@@ -1,6 +1,10 @@
+html {
+    font-size: 18px;
+}
+
 body {
     font-family: "Courier New", Courier, monospace;
-    font-size: 15px;
+    font-size: 1rem;
     line-height: 1.7;
     color: #222;
     background: #fff;
