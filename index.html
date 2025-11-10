@@ -76,18 +76,32 @@
             </div>
         </section>
 
-
         <section>
-            <h2>Contact</h2>
-            <p>Feel free to reach out if you'd like to collaborate on projects!</p>
-            <p><a href="mailto:Ahdfactz@gmail.com">Email me</a></p>
-            <p><a href="https://github.com/ahmadkhattak1" target="_blank">GitHub</a></p>
-            <p><a href="https://www.linkedin.com/in/AhmadYKhattak/" target="_blank">LinkedIn</a></p>
-            <p><a href="https://x.com/AhmadYKhattak" target="_blank">X</a></p>
+            <div class="contact-toggle">
+                <button id="contactBtn" class="contact-button">> open contact form</button>
+            </div>
+            <div id="contactForm" class="contact-form hidden">
+                <div class="form-header">
+                    <p class="form-greeting">Got something to say? Drop it here ↓</p>
+                    <button type="button" id="closeBtn" class="close-x">x</button>
+                </div>
+                <form name="contact" method="POST" netlify>
+                    <div class="form-group">
+                        <input type="email" name="email" id="email" placeholder="your email" required>
+                    </div>
+                    <div class="form-group">
+                        <textarea name="message" id="message" placeholder="your message..." rows="5" required></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="submit-btn">send ></button>
+                    </div>
+                </form>
+            </div>
         </section>
     </main>
     
     <footer>
     </footer>
+    <script src="index.js"></script>
 </body>
 </html>

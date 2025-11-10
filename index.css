@@ -25,6 +25,11 @@ body {
     object-fit: cover;
     filter: grayscale(20%);
     border: 1px solid #ddd;
+    transition: box-shadow 0.3s ease;
+}
+
+#profile img:hover {
+    box-shadow: -6px 6px 0 rgba(220, 20, 60, 0.6);
 }
 
 #name {
@@ -108,9 +113,10 @@ ul ul li {
 a {
     color: #DC143C;
     text-decoration: none;
-    transition: background-color 0.15s ease, padding 0.15s ease;
+    transition: background-color 0.2s ease, color 0.2s ease, padding 0.2s ease;
     padding: 1px 2px;
     border-radius: 2px;
+    cursor: pointer;
 }
 
 a:hover {
@@ -156,6 +162,112 @@ footer::before {
     box-sizing: border-box;
 }
 
+/* Contact Form Styling */
+.contact-toggle {
+    margin-bottom: 20px;
+}
+
+.contact-button {
+    background: none;
+    border: none;
+    color: #DC143C;
+    padding: 0;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+    text-decoration: none;
+}
+
+.contact-form {
+    border: 1px dashed #DC143C;
+    padding: 20px;
+    margin-top: 20px;
+    background: #fafafa;
+    border-radius: 3px;
+    transition: all 0.3s ease;
+}
+
+.contact-form.hidden {
+    display: none;
+}
+
+.form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+.form-greeting {
+    margin: 0;
+    color: #DC143C;
+    font-size: 1rem;
+}
+
+.close-x {
+    background: none;
+    border: none;
+    color: #999;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease;
+}
+
+.close-x:hover {
+    color: #DC143C;
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 2px;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 0.95rem;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #DC143C;
+}
+
+.form-group textarea {
+    resize: vertical;
+}
+
+.form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.submit-btn,
+.close-btn {
+    padding: 0;
+    border: none;
+    background: none;
+    color: #DC143C;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
 @media (max-width: 600px) {
     body {
         margin: 20px auto;
@@ -166,5 +278,14 @@ footer::before {
         flex-direction: column;
         align-items: center;
         text-align: center;
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .submit-btn,
+    .close-btn {
+        width: 100%;
     }
 }
