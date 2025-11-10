@@ -1,3 +1,27 @@
+// Profile Picture Lightbox
+const profileImg = document.querySelector('#profile img');
+const lightbox = document.createElement('div');
+lightbox.className = 'lightbox';
+lightbox.innerHTML = `
+    <div class="lightbox-content" onclick="event.stopPropagation()">
+        <button class="lightbox-close">×</button>
+        <img src="${profileImg.src}" alt="${profileImg.alt}">
+    </div>
+`;
+document.body.appendChild(lightbox);
+
+profileImg.addEventListener('click', () => {
+    lightbox.classList.add('active');
+});
+
+lightbox.addEventListener('click', () => {
+    lightbox.classList.remove('active');
+});
+
+lightbox.querySelector('.lightbox-close').addEventListener('click', () => {
+    lightbox.classList.remove('active');
+});
+
 // Contact Form Toggle
 const contactBtn = document.getElementById('contactBtn');
 const closeBtn = document.getElementById('closeBtn');
