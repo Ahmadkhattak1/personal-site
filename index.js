@@ -19,18 +19,21 @@ const form = document.querySelector('.contact-form form');
 const submitBtn = document.querySelector('.submit-btn');
 let originalText = 'send >';
 
-form.addEventListener('submit', (e) => {
+form.addEventListener('submit', function(e) {
+    e.preventDefault();
+
     originalText = submitBtn.textContent;
     submitBtn.textContent = 'sending...';
     submitBtn.disabled = true;
-});
 
-// Handle form success
-form.addEventListener('submit', function(e) {
+    // Encode form data
+    const formData = new URLSearchParams(new FormData(form)).toString();
+
+    // Submit to Netlify
     fetch('/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams(new FormData(form)).toString()
+        body: formData
     }).then(() => {
         submitBtn.textContent = 'sent! ✓';
         setTimeout(() => {
@@ -40,8 +43,8 @@ form.addEventListener('submit', function(e) {
             contactForm.classList.add('hidden');
         }, 2000);
     }).catch(error => {
+        console.error('Error:', error);
         submitBtn.textContent = 'error';
         submitBtn.disabled = false;
-        console.error('Error:', error);
     });
 });
