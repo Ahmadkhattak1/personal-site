@@ -71,7 +71,7 @@ const CONFIG = {
     // Certifications Section
     certifications: [
         {
-            name: "Harvard's CS50P (Python)",
+            name: "HarvardX's CS50P (Python)",
             url: "https://courses.edx.org/certificates/eeb3c6ea512d4b7fb92f7ef0b320ea39",
             previewImage: "HardvardX-cs50p.webp"
         },
