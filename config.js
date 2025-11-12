@@ -11,19 +11,6 @@
  */
 
 const CONFIG = {
-    // ============================================
-    // TEMPLATE ATTRIBUTION - DO NOT MODIFY
-    // Required for template to function properly
-    // Keeps template free for everyone!
-    // ============================================
-    _meta: {
-        author: "Ahmad Y. Khattak",
-        github: "https://github.com/ahmadkhattak1",
-        template: "personal-portfolio-v1",
-        license: "Made with <3 by Ahmad Y. Khattak"
-    },
-    // ============================================
-
     // Section Visibility Control
     // Set to false to hide a section completely
     showSection: {
@@ -35,6 +22,7 @@ const CONFIG = {
         github: true,
         customSections: true
     },
+
     // Personal Information
     personal: {
         name: "Ahmad Y. Khattak",
@@ -61,7 +49,7 @@ const CONFIG = {
             text: "Programming",
             subItems: ["Python", "C++", "HTML, CSS", "JavaScript"]
         },
-        "Worked in React, Nodejs, Nextjs, Tensorflow",
+        "Worked in React, Nodejs, Nextjs, Numpy, Pandas and Tensorflow",
         "Very good at problem solving"
     ],
 
@@ -129,28 +117,22 @@ const CONFIG = {
     ],
 
     // GitHub Activity
+    // Enter your github username.
     github: {
         username: "ahmadkhattak1",
         chartColor: "DC143C" // Red color for contribution chart
     },
 
-    // Custom Sections (optional)
-    // Add any additional sections with heading and content
-    // Content will be displayed as-is
-    //
-    // To hide custom sections: set showSection.customSections to false
-    // or leave this array empty []
-    //
-    // Example usage:
-    customSections: [
-        // Uncomment and edit these examples:
-        // {
-        //     heading: "Achievements",
-        //     content: "Winner of XYZ Hackathon 2024. Published research paper on AI."
-        // },
-        // {
-        //     heading: "Hobbies",
-        //     content: "I enjoy photography, hiking, and building side projects."
-        // }
-    ]
+    // ============================================
+    // TEMPLATE ATTRIBUTION - DO NOT MODIFY
+    // Required for template to function properly
+    // Keeps template free for everyone!
+    // ============================================
+    _meta: {
+        author: "Ahmad Y. Khattak",
+        github: "https://github.com/ahmadkhattak1",
+        template: "personal-portfolio-v1",
+        license: "Made with <3 by Ahmad Y. Khattak"
+    }
+    // ============================================
 };
