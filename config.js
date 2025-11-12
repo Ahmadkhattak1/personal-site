@@ -41,7 +41,7 @@ const CONFIG = {
     },
 
     // About Me Section
-    about: "Final-year Computer Science student, passionate about coding and building useful tech. I enjoy creating projects, learning new tools, and solving problems through software.",
+    about: "I'm a final-year Computer Science student who loves building products (tech). I enjoy taking ideas from scratch and building them into something real. Right now I'm building Stumbnail - an AI-powered thumbnail generator for YouTubers/Content Creators, and Pixelar, a toolkit that helps indie game devs design, and animate 2D sprites and use it in game engines. I'm passionate about startups, product design, and AI. I like figuring out how things work, and learning new things.",
 
     // Skills Section
     skills: [
