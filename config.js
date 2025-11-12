@@ -1,0 +1,156 @@
+/*
+ * Personal Site Configuration
+ * Edit this file to customize the website with your own details
+ *
+ * To remove any section from the webpage:
+ * - Set showSection.sectionName to false, OR
+ * - Delete the entire section object from the config
+ *
+ * Required sections: personal, social
+ * Optional sections: about, skills, projects, certifications, experience, github, customSections
+ */
+
+const CONFIG = {
+    // ============================================
+    // TEMPLATE ATTRIBUTION - DO NOT MODIFY
+    // Required for template to function properly
+    // Keeps template free for everyone!
+    // ============================================
+    _meta: {
+        author: "Ahmad Y. Khattak",
+        github: "https://github.com/ahmadkhattak1",
+        template: "personal-portfolio-v1",
+        license: "Made with <3 by Ahmad Y. Khattak"
+    },
+    // ============================================
+
+    // Section Visibility Control
+    // Set to false to hide a section completely
+    showSection: {
+        about: true,
+        skills: true,
+        projects: true,
+        certifications: true,
+        experience: true,
+        github: true,
+        customSections: true
+    },
+    // Personal Information
+    personal: {
+        name: "Ahmad Y. Khattak",
+        title: "Computer Science | AI | Entrepreneurship",
+        profileImage: "public/profile.png",
+        profileImageAlt: "Profile Picture"
+    },
+
+    // Social Links
+    social: {
+        email: "Ahdfactz@gmail.com",
+        github: "https://github.com/ahmadkhattak1",
+        linkedin: "https://www.linkedin.com/in/AhmadYKhattak/",
+        twitter: "https://x.com/AhmadYKhattak"
+    },
+
+    // About Me Section
+    about: "Final-year Computer Science student, passionate about coding and building useful tech. I enjoy creating projects, learning new tools, and solving problems through software.",
+
+    // Skills Section
+    skills: [
+        "Strong foundation in Computer Science",
+        {
+            text: "Programming",
+            subItems: ["Python", "C++", "HTML, CSS", "JavaScript"]
+        },
+        "Worked in React, Nodejs, Nextjs, Tensorflow",
+        "Very good at problem solving"
+    ],
+
+    // Projects Section
+    projects: [
+        {
+            name: "Stumbnail",
+            url: "https://stumbnail.com",
+            description: "AI-powered thumbnail generator"
+        },
+        {
+            name: "View more on github",
+            url: "https://github.com/ahmadkhattak1",
+            description: null
+        }
+    ],
+
+    // Certifications Section
+    certifications: [
+        {
+            name: "Harvard's CS50P (Python)",
+            url: "https://courses.edx.org/certificates/eeb3c6ea512d4b7fb92f7ef0b320ea39",
+            previewImage: "HardvardX-cs50p.webp"
+        },
+        {
+            name: "Scrimba's JavaScript",
+            url: "https://scrimba.com/@Ahmadkhattak1:certs;cert2CsEjr6BTAJVX14Fk3qLQUgjcAeQRirC7E",
+            previewImage: "LearnJavascript-Scrimba.webp"
+        },
+        {
+            name: "Scrimba's HTML & CSS",
+            url: "https://scrimba.com/@Ahmadkhattak1:certs;cert2CsEjr6BTAJVX14Fk3qJvBZT4zue9hco8U",
+            previewImage: "html-css-scrimba.webp"
+        },
+        {
+            name: "Scrimba's Intro to UI Design Fundamentals",
+            url: "https://scrimba.com/@Ahmadkhattak1:certs;cert2CsEjr6BTAJVX14Fk3qKAZkLACCSCNouDG",
+            previewImage: "intro-to-design-fundamentals-scrimba.webp"
+        }
+    ],
+
+    // Experience Section
+    experience: [
+        {
+            role: "Founder & Developer",
+            company: "Stumbnail",
+            companyUrl: "https://stumbnail.com",
+            year: "2024",
+            description: "Built AI-powered thumbnail generator. Led product development from ideation to launch."
+        },
+        {
+            role: "Startup Incubation",
+            company: "NIC Peshawar",
+            companyUrl: null,
+            year: "2025",
+            description: "Selected for National Incubation Center program to develop Stumbnail."
+        },
+        {
+            role: "Developer",
+            company: "Asset generator and animator for indie devs",
+            companyUrl: null,
+            year: "2025",
+            description: "Currently building as FYP"
+        }
+    ],
+
+    // GitHub Activity
+    github: {
+        username: "ahmadkhattak1",
+        chartColor: "DC143C" // Red color for contribution chart
+    },
+
+    // Custom Sections (optional)
+    // Add any additional sections with heading and content
+    // Content will be displayed as-is
+    //
+    // To hide custom sections: set showSection.customSections to false
+    // or leave this array empty []
+    //
+    // Example usage:
+    customSections: [
+        // Uncomment and edit these examples:
+        // {
+        //     heading: "Achievements",
+        //     content: "Winner of XYZ Hackathon 2024. Published research paper on AI."
+        // },
+        // {
+        //     heading: "Hobbies",
+        //     content: "I enjoy photography, hiking, and building side projects."
+        // }
+    ]
+};

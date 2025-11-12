@@ -1,3 +1,10 @@
+/*
+ * Made with <3 by Ahmad Y. Khattak
+ * GitHub: https://github.com/ahmadkhattak1
+ * LinkedIn: https://www.linkedin.com/in/AhmadYKhattak/
+ * X: https://x.com/AhmadYKhattak
+ */
+
 html {
     font-size: 18px;
 }
@@ -250,6 +257,16 @@ footer::before {
     display: block;
     margin-bottom: 10px;
     color: #ccc;
+}
+
+footer .template-attribution {
+    color: #999;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+footer .template-attribution:hover {
+    color: #fff;
 }
 
 /* GitHub Calendar Customization */
