@@ -26,7 +26,7 @@ const CONFIG = {
 
     // Personal Information
     personal: {
-        name: "Ahmad Y. Khattak",
+        name: "Ahmad Yaseen",
         title: "Computer Science | AI | Entrepreneurship",
         profileImage: "public/profile.png",
         profileImageAlt: "Profile Picture"
