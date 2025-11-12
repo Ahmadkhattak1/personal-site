@@ -87,9 +87,22 @@ const populatePage = () => {
         hideSection('section:nth-of-type(4)');
     }
 
+    // Education (Optional)
+    if (shouldShowSection('education') && CONFIG.education) {
+        const eduList = document.querySelector('section:nth-of-type(5) ul');
+        eduList.innerHTML = CONFIG.education.map(edu => {
+            const institutionText = edu.institutionUrl
+                ? `<a href="${edu.institutionUrl}" target="_blank">${edu.institution}</a>`
+                : edu.institution;
+            return `<li>${edu.degree} - ${institutionText} (${edu.year}) - ${edu.description}</li>`;
+        }).join('');
+    } else {
+        hideSection('section:nth-of-type(5)');
+    }
+
     // Experience (Optional)
     if (shouldShowSection('experience') && CONFIG.experience) {
-        const expList = document.querySelector('section:nth-of-type(5) ul');
+        const expList = document.querySelector('section:nth-of-type(6) ul');
         expList.innerHTML = CONFIG.experience.map(exp => {
             const companyText = exp.companyUrl
                 ? `<a href="${exp.companyUrl}" target="_blank">${exp.company}</a>`
@@ -97,7 +110,7 @@ const populatePage = () => {
             return `<li>${exp.role} - ${companyText} (${exp.year}) - ${exp.description}</li>`;
         }).join('');
     } else {
-        hideSection('section:nth-of-type(5)');
+        hideSection('section:nth-of-type(6)');
     }
 
     // Custom Sections (Optional)
@@ -119,7 +132,7 @@ const populatePage = () => {
         githubChart.src = `https://ghchart.rshah.org/${CONFIG.github.chartColor}/${CONFIG.github.username}`;
         githubChart.alt = `${CONFIG.personal.name}'s GitHub Contributions`;
     } else {
-        hideSection('section:nth-of-type(6)');
+        hideSection('section:nth-of-type(7)');
     }
 
     // Add template attribution to footer

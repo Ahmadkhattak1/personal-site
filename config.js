@@ -7,7 +7,7 @@
  * - Delete the entire section object from the config
  *
  * Required sections: personal, social
- * Optional sections: about, skills, projects, certifications, experience, github, customSections
+ * Optional sections: about, skills, projects, certifications, education, experience, github, customSections
  */
 
 const CONFIG = {
@@ -18,6 +18,7 @@ const CONFIG = {
         skills: true,
         projects: true,
         certifications: true,
+        education: true,
         experience: true,
         github: true,
         customSections: true
@@ -88,6 +89,17 @@ const CONFIG = {
             name: "Scrimba's Intro to UI Design Fundamentals",
             url: "https://scrimba.com/@Ahmadkhattak1:certs;cert2CsEjr6BTAJVX14Fk3qKAZkLACCSCNouDG",
             previewImage: "intro-to-design-fundamentals-scrimba.webp"
+        }
+    ],
+
+    // Education Section
+    education: [
+        {
+            degree: "Bachelor's of Computer Science",
+            institution: "IMSciences Peshawar",
+            institutionUrl: null,
+            year: "2022-2026",
+            description: "Specializing in Computer Science and AI"
         }
     ],
 

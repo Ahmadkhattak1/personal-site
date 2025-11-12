@@ -50,6 +50,9 @@ Add your projects with links and descriptions
 **Certifications**
 Add your certificates or courses you've completed
 
+**Education**
+Add your degree(s) and university/college information
+
 **Experience**
 Add your work experience, internships, or any relevant experience
 
@@ -67,7 +70,8 @@ Don't have certifications yet? No problem! You can hide any section:
 ```javascript
 showSection: {
     certifications: false,  // This section won't show up
-    experience: false       // This one too
+    education: false,       // This one too
+    experience: false       // And this one
 }
 ```
 
