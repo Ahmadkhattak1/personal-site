@@ -1,3 +1,52 @@
+// Certification Link Preview
+const createLinkPreview = () => {
+    const preview = document.createElement('div');
+    preview.className = 'link-preview';
+    document.body.appendChild(preview);
+
+    const certLinks = document.querySelectorAll('.cert-link');
+
+    certLinks.forEach(link => {
+        const certImage = link.getAttribute('data-cert');
+
+        link.addEventListener('mouseenter', (e) => {
+            const imagePath = `/public/certs/${certImage}`;
+            preview.innerHTML = `<img src="${imagePath}" alt="Certificate Preview">`;
+            preview.classList.add('visible');
+            updatePreviewPosition(e, preview);
+        });
+
+        link.addEventListener('mousemove', (e) => {
+            updatePreviewPosition(e, preview);
+        });
+
+        link.addEventListener('mouseleave', () => {
+            preview.classList.remove('visible');
+        });
+    });
+};
+
+const updatePreviewPosition = (event, preview) => {
+    const offset = 15;
+    let x = event.clientX + offset;
+    let y = event.clientY + offset;
+
+    // Prevent preview from going off-screen (right)
+    if (x + preview.offsetWidth > window.innerWidth) {
+        x = event.clientX - preview.offsetWidth - offset;
+    }
+
+    // Prevent preview from going off-screen (bottom)
+    if (y + preview.offsetHeight > window.innerHeight) {
+        y = event.clientY - preview.offsetHeight - offset;
+    }
+
+    preview.style.left = x + 'px';
+    preview.style.top = y + 'px';
+};
+
+createLinkPreview();
+
 // Profile Picture Lightbox
 const profileImg = document.querySelector('#profile img');
 const lightbox = document.createElement('div');
