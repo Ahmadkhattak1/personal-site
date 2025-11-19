@@ -41,17 +41,20 @@ const CONFIG = {
     },
 
     // About Me Section
-    about: "I'm a final-year Computer Science student who loves building products (tech). I enjoy taking ideas from scratch and building them into something real. Right now I'm building Stumbnail - an AI-powered thumbnail generator for YouTubers/Content Creators, and Pixelar, a toolkit that helps indie game devs design, and animate 2D sprites and use it in game engines. I'm passionate about startups, product design, and AI. I like figuring out how things work, and learning new things.",
+    about: "Final year CS student building real products. I work across the stack, design systems that scale, and enjoy shipping fast. I’m currently building Stumbnail (AI thumbnail generator) and Pixelar (AI tools for 2D game assets). I like solving problems that sit at the intersection of AI, design, and product.",
 
     // Skills Section
     skills: [
         "Strong foundation in Computer Science",
         {
             text: "Programming",
-            subItems: ["Python", "C++", "HTML, CSS", "JavaScript"]
+            subItems: ["Python, C++, C", "Web: HTML, CSS, Javascript, React, Nextjs", "Data Science: Numpy, Pandas"]
         },
-        "Worked in React, Nodejs, Nextjs, Numpy, Pandas and Tensorflow",
-        "Very good at problem solving"
+        "Strong problem solving",
+        "AI driven image generation workflows",
+        "Frontend and backend development",
+        "UI design fundamentals"
+
     ],
 
     // Projects Section
@@ -62,9 +65,14 @@ const CONFIG = {
             description: "AI-powered thumbnail generator"
         },
         {
+            name: "Pixelar",
+            url: "https://pixelar.dev",
+            description: "Toolkit for indie game developers to generate and animate 2D assets using AI."
+        },
+        {
             name: "View more on github",
             url: "https://github.com/ahmadkhattak1",
-            description: null
+            description: "Small tools and experiments in React, Python, and UI design on GitHub."
         }
     ],
 
