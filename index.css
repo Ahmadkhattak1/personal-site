@@ -126,6 +126,25 @@ body {
     flex-wrap: wrap;
 }
 
+.download-cv-btn {
+    background: none;
+    border: 1px dashed #DC143C;
+    color: #DC143C;
+    padding: 6px 12px;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 12px;
+    border-radius: 2px;
+}
+
+.download-cv-btn:hover {
+    background: #DC143C;
+    color: #fff;
+    box-shadow: -3px 3px 0 rgba(220, 20, 60, 0.3);
+}
+
 section {
     margin-bottom: 40px;
 }
@@ -400,6 +419,10 @@ footer .template-attribution:hover {
         flex-direction: column;
         align-items: center;
         text-align: center;
+    }
+
+    .download-cv-btn {
+        width: 100%;
     }
 
     .form-actions {

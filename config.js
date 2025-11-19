@@ -27,7 +27,7 @@ const CONFIG = {
     // Personal Information
     personal: {
         name: "Ahmad Yaseen",
-        title: "Founder | AI Developer",
+        title: "Founder | AI Engineering and Full Stack Developer",
         profileImage: "public/profile.png",
         profileImageAlt: "Profile Picture"
     },
@@ -48,12 +48,12 @@ const CONFIG = {
         "Strong foundation in Computer Science",
         {
             text: "Programming",
-            subItems: ["Python, C++, C", "Web: HTML, CSS, Javascript, React, Nextjs", "Data Science: Numpy, Pandas"]
+            subItems: ["Python, C++, JavaScript, React, Next.js, Node.js", "HTML, CSS", "Numpy, Pandas, Tensorflow"]
         },
-        "Strong problem solving",
-        "AI driven image generation workflows",
-        "Frontend and backend development",
-        "UI design fundamentals"
+        "AI based image generation pipelines",
+        "Frontend + backend development",
+        "API design, Firebase/Firestore systems",
+        "Strong problem solving and product execution"
 
     ],
 
@@ -114,11 +114,18 @@ const CONFIG = {
     // Experience Section
     experience: [
         {
-            role: "Founder & Developer",
+            role: "AI Engineer & Founder @Stumbnail",
             company: "Stumbnail",
             companyUrl: "https://stumbnail.com",
             year: "2024",
             description: "Built AI-powered thumbnail generator. Led product development from ideation to launch."
+        },
+        {
+            role: "AI Architect & Developer @Pixelar",
+            company: "Pixelar",
+            companyUrl: "https://pixelar.dev",
+            year: "2025",
+            description: "Engineering an AI platform for generating and animating 2D sprites and scenes for game engines"
         },
         {
             role: "Startup Incubation",
@@ -127,13 +134,6 @@ const CONFIG = {
             year: "2025",
             description: "Selected for National Incubation Center program to develop Stumbnail."
         },
-        {
-            role: "Developer",
-            company: "Asset generator and animator for indie devs",
-            companyUrl: null,
-            year: "2025",
-            description: "Currently building as FYP"
-        }
     ],
 
     // GitHub Activity

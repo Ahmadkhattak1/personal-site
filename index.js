@@ -273,6 +273,314 @@ const setupContactForm = () => {
     });
 };
 
+// Generate and Download CV as PDF
+const generateCV = () => {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 15;
+    const themeRed = [220, 20, 60];
+
+    // Two-column layout
+    const leftColX = margin;
+    const leftColWidth = 85;
+    const rightColX = leftColX + leftColWidth + 10;
+    const rightColWidth = pageWidth - rightColX - margin;
+
+    let currentY = margin;
+    let currentX = leftColX;
+    let currentColWidth = leftColWidth;
+    let headerEndY = 0;
+    const startRightCol = () => {
+        currentX = rightColX;
+        currentColWidth = rightColWidth;
+        currentY = headerEndY; // Start at same position as left column
+    };
+
+    // ===== HEADER (Full Width) =====
+    doc.setFontSize(40);
+    doc.setFont(undefined, 'bold');
+    doc.setTextColor(0, 0, 0);
+    doc.text(CONFIG.personal.name.toUpperCase(), margin, currentY);
+    currentY += 12.65;
+
+    doc.setFontSize(14);
+    doc.setFont(undefined, 'normal');
+    doc.setTextColor(80, 80, 80);
+    doc.text(CONFIG.personal.title, margin, currentY);
+    currentY += 10.12;
+
+    // Contact info - properly formatted
+    doc.setFontSize(12);
+    doc.setTextColor(...themeRed);
+    doc.setFont(undefined, 'bold');
+    doc.text('AhmadYaseen.com', margin, currentY);
+    currentY += 6.325;
+
+    // Contact links - horizontal layout with wrapping
+    doc.setFontSize(10);
+    const contactItems = [
+        { label: 'Email:', value: CONFIG.social.email },
+        { label: 'GitHub:', value: 'github.com/ahmadkhattak1' },
+        { label: 'LinkedIn:', value: 'linkedin.com/in/AhmadYKhattak' },
+        { label: 'X:', value: '@AhmadYKhattak' }
+    ];
+
+    const maxLineWidth = pageWidth - (2 * margin);
+    let contactX = margin;
+    const lineHeight = 5;
+
+    contactItems.forEach((item, idx) => {
+        // Calculate width needed for this item
+        doc.setFont(undefined, 'bold');
+        const labelWidth = doc.getTextWidth(item.label);
+        doc.setFont(undefined, 'normal');
+        const valueWidth = doc.getTextWidth(item.value);
+        const separatorWidth = idx < contactItems.length - 1 ? doc.getTextWidth('  |  ') : 0;
+        const itemWidth = labelWidth + 1 + valueWidth + separatorWidth;
+
+        // Check if we need to wrap to next line
+        if (contactX + itemWidth > pageWidth - margin && contactX > margin) {
+            currentY += lineHeight;
+            contactX = margin;
+        }
+
+        // Draw label in theme color
+        doc.setFont(undefined, 'bold');
+        doc.setTextColor(...themeRed);
+        doc.text(item.label, contactX, currentY);
+        contactX += labelWidth + 1;
+
+        // Draw value in gray
+        doc.setFont(undefined, 'normal');
+        doc.setTextColor(60, 60, 60);
+        doc.text(item.value, contactX, currentY);
+        contactX += valueWidth;
+
+        // Add separator if not last item
+        if (idx < contactItems.length - 1) {
+            doc.text('  |  ', contactX, currentY);
+            contactX += separatorWidth;
+        }
+    });
+    currentY += 10.12;
+
+    // Line separator
+    doc.setDrawColor(220, 220, 220);
+    doc.setLineWidth(0.5);
+    doc.line(margin, currentY, pageWidth - margin, currentY);
+    currentY += 10.12;
+
+    // Save header end position for right column alignment
+    headerEndY = currentY;
+
+    // Helper function to add section header
+    const addSectionHeader = (title) => {
+        // Check if we need to move to right column
+        if (currentY > pageHeight - 40 && currentX === leftColX) {
+            startRightCol();
+        }
+
+        doc.setFontSize(14);
+        doc.setFont(undefined, 'bold');
+        doc.setTextColor(...themeRed);
+        doc.text(title, currentX, currentY);
+        currentY += 8.855;
+
+        doc.setFontSize(11);
+        doc.setFont(undefined, 'normal');
+        doc.setTextColor(0, 0, 0);
+    };
+
+    // ABOUT Section
+    if (shouldShowSection('about') && CONFIG.about) {
+        addSectionHeader('ABOUT');
+        const aboutLines = doc.splitTextToSize(CONFIG.about, currentColWidth);
+        const lineHeight = 5.5; // Proper line spacing within text
+        aboutLines.forEach((line, idx) => {
+            doc.text(line, currentX, currentY);
+            currentY += lineHeight;
+        });
+        currentY += 10.12 - lineHeight; // Adjust for section spacing
+    }
+
+    // SKILLS Section
+    if (shouldShowSection('skills') && CONFIG.skills) {
+        if (currentY > pageHeight - 40 && currentX === leftColX) startRightCol();
+
+        addSectionHeader('SKILLS');
+        const lineHeight = 5;
+        CONFIG.skills.forEach((skill, idx) => {
+            if (typeof skill === 'string') {
+                const lines = doc.splitTextToSize(`• ${skill}`, currentColWidth);
+                lines.forEach(line => {
+                    doc.text(line, currentX, currentY);
+                    currentY += lineHeight;
+                });
+                currentY += 1.5;
+            } else {
+                doc.setFont(undefined, 'bold');
+                doc.text(`${skill.text}`, currentX, currentY);
+                currentY += 5.5;
+                doc.setFont(undefined, 'normal');
+                skill.subItems.forEach(item => {
+                    const lines = doc.splitTextToSize(`  • ${item}`, currentColWidth - 4);
+                    lines.forEach(line => {
+                        doc.text(line, currentX + 4, currentY);
+                        currentY += lineHeight;
+                    });
+                });
+                currentY += 2;
+            }
+        });
+        currentY += 5;
+    }
+
+    // EXPERIENCE Section
+    if (shouldShowSection('experience') && CONFIG.experience) {
+        if (currentY > pageHeight - 40 && currentX === leftColX) startRightCol();
+
+        addSectionHeader('EXPERIENCE');
+        const lineHeight = 5.5;
+        CONFIG.experience.forEach((exp, idx) => {
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'bold');
+            doc.setTextColor(0, 0, 0);
+            const roleLines = doc.splitTextToSize(exp.role, currentColWidth);
+            roleLines.forEach(line => {
+                doc.text(line, currentX, currentY);
+                currentY += lineHeight;
+            });
+            currentY += 1;
+
+            doc.setFontSize(11);
+            doc.setFont(undefined, 'normal');
+            doc.setTextColor(80, 80, 80);
+            const companyLines = doc.splitTextToSize(`${exp.company} | ${exp.year}`, currentColWidth);
+            companyLines.forEach(line => {
+                doc.text(line, currentX, currentY);
+                currentY += lineHeight;
+            });
+            currentY += 1;
+
+            doc.setFontSize(11);
+            doc.setTextColor(0, 0, 0);
+            const descLines = doc.splitTextToSize(exp.description, currentColWidth);
+            descLines.forEach(line => {
+                doc.text(line, currentX, currentY);
+                currentY += lineHeight;
+            });
+            currentY += (idx < CONFIG.experience.length - 1 ? 4 : 6);
+        });
+    }
+
+    // PROJECTS Section
+    if (shouldShowSection('projects') && CONFIG.projects) {
+        if (currentY > pageHeight - 40 && currentX === leftColX) startRightCol();
+
+        addSectionHeader('PROJECTS');
+        const lineHeight = 5.5;
+        CONFIG.projects.forEach((project, idx) => {
+            // Project name and URL on same line
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'bold');
+            doc.setTextColor(0, 0, 0);
+            doc.text(project.name, currentX, currentY);
+
+            const nameWidth = doc.getTextWidth(project.name);
+            doc.setFontSize(10);
+            doc.setTextColor(...themeRed);
+            doc.text(' ↗', currentX + nameWidth, currentY);
+            currentY += 5;
+
+            doc.setFontSize(10);
+            doc.text(project.url, currentX, currentY);
+            currentY += 6;
+
+            if (project.description) {
+                doc.setFontSize(11);
+                doc.setFont(undefined, 'normal');
+                doc.setTextColor(0, 0, 0);
+                const descLines = doc.splitTextToSize(project.description, currentColWidth);
+                descLines.forEach(line => {
+                    doc.text(line, currentX, currentY);
+                    currentY += lineHeight;
+                });
+            }
+
+            doc.setTextColor(0, 0, 0);
+            currentY += (idx < CONFIG.projects.length - 1 ? 4 : 6);
+        });
+    }
+
+    // EDUCATION Section
+    if (shouldShowSection('education') && CONFIG.education) {
+        if (currentY > pageHeight - 40 && currentX === leftColX) startRightCol();
+
+        addSectionHeader('EDUCATION');
+        const lineHeight = 5.5;
+        CONFIG.education.forEach((edu, idx) => {
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'bold');
+            doc.setTextColor(0, 0, 0);
+            const degreeLines = doc.splitTextToSize(edu.degree, currentColWidth);
+            degreeLines.forEach(line => {
+                doc.text(line, currentX, currentY);
+                currentY += lineHeight;
+            });
+            currentY += 1;
+
+            doc.setFontSize(11);
+            doc.setFont(undefined, 'normal');
+            doc.setTextColor(80, 80, 80);
+            const instLines = doc.splitTextToSize(`${edu.institution} | ${edu.year}`, currentColWidth);
+            instLines.forEach(line => {
+                doc.text(line, currentX, currentY);
+                currentY += lineHeight;
+            });
+            currentY += 1;
+
+            doc.setFontSize(11);
+            doc.setTextColor(0, 0, 0);
+            const descLines = doc.splitTextToSize(edu.description, currentColWidth);
+            descLines.forEach(line => {
+                doc.text(line, currentX, currentY);
+                currentY += lineHeight;
+            });
+            currentY += (idx < CONFIG.education.length - 1 ? 4 : 6);
+        });
+    }
+
+    // CERTIFICATIONS Section
+    if (shouldShowSection('certifications') && CONFIG.certifications) {
+        if (currentY > pageHeight - 40 && currentX === leftColX) startRightCol();
+
+        addSectionHeader('CERTIFICATIONS');
+        doc.setFontSize(11);
+        const lineHeight = 5.5;
+        CONFIG.certifications.forEach((cert, idx) => {
+            const certLines = doc.splitTextToSize(`• ${cert.name}`, currentColWidth);
+            certLines.forEach(line => {
+                doc.text(line, currentX, currentY);
+                currentY += lineHeight;
+            });
+        });
+    }
+
+    // Save
+    doc.save(`${CONFIG.personal.name.replace(/\s+/g, '_')}_CV.pdf`);
+};
+
+// Setup Download CV Button
+const setupDownloadCV = () => {
+    const downloadBtn = document.getElementById('downloadCVBtn');
+    if (downloadBtn) {
+        downloadBtn.addEventListener('click', generateCV);
+    }
+};
+
 // Initialize everything when page loads
 (function initializeTemplate() {
     // Verify template integrity
@@ -289,4 +597,5 @@ const setupContactForm = () => {
     createLinkPreview();
     setupProfileLightbox();
     setupContactForm();
+    setupDownloadCV();
 })();
