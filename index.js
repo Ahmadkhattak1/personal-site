@@ -6,14 +6,14 @@
  */
 
 // Verify template attribution
-(function() {
+(function () {
     if (!CONFIG._meta || !CONFIG._meta.author || CONFIG._meta.author !== "Ahmad Y. Khattak") {
         console.warn("Template attribution modified. Please maintain original attribution.");
     }
     console.log("%c" + (CONFIG._meta?.license || "Made with <3 by Ahmad Y. Khattak"),
-                "color: #DC143C; font-weight: bold; font-size: 14px;");
+        "color: #DC143C; font-weight: bold; font-size: 14px;");
     console.log("%cGitHub: " + (CONFIG._meta?.github || "https://github.com/ahmadkhattak1"),
-                "color: #666; font-size: 12px;");
+        "color: #666; font-size: 12px;");
 })();
 
 // Helper function to check if a section should be shown
@@ -242,7 +242,7 @@ const setupContactForm = () => {
     const submitBtn = document.querySelector('.submit-btn');
     let originalText = 'send >';
 
-    form.addEventListener('submit', function(e) {
+    form.addEventListener('submit', function (e) {
         e.preventDefault();
 
         originalText = submitBtn.textContent;
@@ -282,7 +282,7 @@ const setupContactForm = () => {
 
     if (_a !== _e) {
         console.warn('%cTemplate attribution has been modified. Please keep original attribution intact.',
-                     'color: #DC143C; font-weight: bold;');
+            'color: #DC143C; font-weight: bold;');
     }
 
     populatePage();
