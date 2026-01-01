@@ -10,31 +10,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ahmad Y. Khattak | Developer, AI Enthusiast & Founder</title>
+    <title>Ahmad Yaseen Khattak | AI Researcher, Founder & Software Engineer</title>
 
     <!-- SEO Meta Tags -->
     <meta name="description"
-        content="Developer and founder building AI-powered solutions. Creator of Stumbnail. Passionate about machine learning, web development, and building innovative tech.">
+        content="AI researcher and founder building Stumbnail. Published author in machine learning and software engineering. Specializing in applied ML, bias detection, and scalable AI systems.">
     <meta name="keywords"
-        content="Ahmad Y Khattak, Computer Science, AI, Machine Learning, Web Developer, Software Developer, Stumbnail, Python, JavaScript, React, Tensorflow, Peshawar">
-    <meta name="author" content="Ahmad Y. Khattak">
+        content="Ahmad Yaseen Khattak, AI Researcher, Machine Learning, Software Defect Prediction, Stumbnail, Founder, Software Engineer, Python, JavaScript, React, Toxicity Classifiers, IMSciences Peshawar">
+    <meta name="author" content="Ahmad Yaseen Khattak">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://ahmadyaseen.com">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://ahmadyaseen.com">
-    <meta property="og:title" content="Ahmad Y. Khattak | Developer, AI Enthusiast & Founder">
+    <meta property="og:title" content="Ahmad Yaseen Khattak | AI Researcher & Founder">
     <meta property="og:description"
-        content="Developer and founder building AI-powered solutions. Creator of Stumbnail. Passionate about machine learning, web development, and building innovative tech.">
+        content="AI researcher and founder. Published in machine learning. Building Stumbnail and researching fairness in AI systems.">
     <meta property="og:image" content="https://ahmadyaseen.com/public/profile.png">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://ahmadyaseen.com">
-    <meta property="twitter:title" content="Ahmad Y. Khattak | Developer, AI Enthusiast & Founder">
+    <meta property="twitter:title" content="Ahmad Yaseen Khattak | AI Researcher & Founder">
     <meta property="twitter:description"
-        content="Developer and founder building AI-powered solutions. Creator of Stumbnail. Passionate about machine learning, web development, and building innovative tech.">
+        content="AI researcher and founder. Published in machine learning. Building Stumbnail and researching fairness in AI systems.">
     <meta property="twitter:image" content="https://ahmadyaseen.com/public/profile.png">
     <meta property="twitter:creator" content="@AhmadYKhattak">
 
@@ -64,6 +64,10 @@
     }
     </script>
 
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="index.css">
 </head>
 
@@ -73,121 +77,93 @@
             <div id="profile">
                 <img src="public\profile.png" alt="Profile Picture">
             </div>
-            <div>
+            <div class="header-content">
                 <h1 id="name">Ahmad Y. Khattak</h1>
                 <p id="title">Computer Science | AI | Entrepreneurship</p>
                 <div class="social-links">
-                    <a href="mailto:Ahdfactz@gmail.com">Email</a>
-                    <a href="https://github.com/ahmadkhattak1" target="_blank">GitHub</a>
-                    <a href="https://www.linkedin.com/in/AhmadYKhattak/" target="_blank">LinkedIn</a>
-                    <a href="https://x.com/AhmadYKhattak" target="_blank">X</a>
+                    <!-- Javascript populates this -->
                 </div>
-                <button id="downloadCVBtn" class="download-cv-btn">Download CV</button>
+                <div class="status-indicator" id="statusIndicator">
+                    <span class="status-dot"></span>
+                    <span class="status-text">exploring...</span>
+                </div>
             </div>
 
         </div>
     </header>
     <main>
-        <section>
+        <section id="about">
             <h2>About Me</h2>
-            <p>Final-year Computer Science student, passionate about coding and building useful tech. I enjoy creating
-                projects, learning new tools, and solving problems through software.
-            </p>
+            <p>Loading...</p>
         </section>
 
-        <section>
+        <section id="skills">
             <h2>Skills</h2>
-            <ul>
-                <li>Strong foundation in Computer Science</li>
-                <li>Programming <ul>
-                        <li>Python</li>
-                        <li>C++</li>
-                        <li>HTML, CSS</li>
-                        <li>JavaScript</li>
-                    </ul>
-                </li>
-                <li>Worked in React, Nodejs, Nextjs, Tensorflow</li>
-                <li>Very good at problem solving</li>
-            </ul>
+            <ul></ul>
         </section>
 
-        <section>
+        <section id="research">
+            <h2>Research</h2>
+            <p class="section-intro" id="researchInterests"></p>
+            <div class="grid-container"></div>
+        </section>
+
+        <section id="projects">
             <h2>Projects</h2>
-            <ul>
-                <li><a href="https://stumbnail.com" target="_blank">Stumbnail</a> - AI-powered thumbnail generator</li>
-                <li><a href="https://github.com/ahmadkhattak1" target="_blank">View more on github</a></li>
-            </ul>
+            <div class="grid-container">
+                <ul></ul>
+            </div>
         </section>
 
-        <section>
-            <h2>Certifications</h2>
-            <ul>
-                <li><a href="https://courses.edx.org/certificates/eeb3c6ea512d4b7fb92f7ef0b320ea39" target="_blank"
-                        class="cert-link" data-cert="HardvardX-cs50p.webp">Harvard's CS50P (Python)</a></li>
-                <li><a href="https://scrimba.com/@Ahmadkhattak1:certs;cert2CsEjr6BTAJVX14Fk3qLQUgjcAeQRirC7E"
-                        target="_blank" class="cert-link" data-cert="LearnJavascript-Scrimba.webp">Scrimba's
-                        JavaScript</a></li>
-                <li><a href="https://scrimba.com/@Ahmadkhattak1:certs;cert2CsEjr6BTAJVX14Fk3qJvBZT4zue9hco8U"
-                        target="_blank" class="cert-link" data-cert="html-css-scrimba.webp">Scrimba's HTML & CSS</a>
-                </li>
-                <li><a href="https://scrimba.com/@Ahmadkhattak1:certs;cert2CsEjr6BTAJVX14Fk3qKAZkLACCSCNouDG"
-                        target="_blank" class="cert-link"
-                        data-cert="intro-to-design-fundamentals-scrimba.webp">Scrimba's Intro to UI Design
-                        Fundamentals</a></li>
-            </ul>
-        </section>
-
-        <section>
-            <h2>Education</h2>
-            <ul>
-                <li>Bachelor's of Computer Science - IMSciences Peshawar (2022-2026) - Specializing in Computer Science
-                    and AI</li>
-            </ul>
-        </section>
-
-        <section>
+        <section id="experience">
             <h2>Experience</h2>
-            <ul>
-                <li>Founder & Developer - <a href="https://stumbnail.com" target="_blank">Stumbnail</a> (2024) - Built
-                    AI-powered thumbnail generator. Led product development from ideation to launch.</li>
-                <li>Startup Incubation - NIC Peshawar (2025) - Selected for National Incubation Center program to
-                    develop Stumbnail.</li>
-                <li>Developer - Asset generator and animator for indie devs (2025) - Currently building as FYP</li>
-            </ul>
+            <ul></ul>
+        </section>
+
+        <section id="education">
+            <h2>Education</h2>
+            <ul></ul>
+        </section>
+
+        <section id="certifications">
+            <h2>Certifications</h2>
+            <ul></ul>
         </section>
 
         <div id="customSections"></div>
 
-        <section>
+        <section id="github">
             <h2>GitHub Activity</h2>
             <div class="calendar">
-                <img src="https://ghchart.rshah.org/DC143C/ahmadkhattak1" alt="Ahmad's GitHub Contributions" />
+                <img src="" alt="GitHub Contributions" />
             </div>
         </section>
 
-        <section>
+        <section id="contact-section">
             <div class="contact-toggle">
-                <button id="contactBtn" class="contact-button">> open contact form</button>
+                <button id="contactBtn" class="contact-button">Start a Conversation</button>
             </div>
             <div id="contactForm" class="contact-form hidden">
                 <div class="form-header">
-                    <p class="form-greeting">Got something to say? Drop it here ↓</p>
-                    <button type="button" id="closeBtn" class="close-x">x</button>
+                    <p class="form-greeting">Send a message</p>
+                    <button type="button" id="closeBtn" class="close-x">✕</button>
                 </div>
                 <form name="contact" method="POST" data-netlify="true">
                     <div class="form-group">
-                        <input type="email" name="email" placeholder="your email" required>
+                        <input type="email" name="email" placeholder="Your Email" required>
                     </div>
                     <div class="form-group">
-                        <textarea name="message" placeholder="your message..." rows="5" required></textarea>
+                        <textarea name="message" placeholder="Message..." rows="5" required></textarea>
                     </div>
                     <div class="form-actions">
-                        <button type="submit" class="submit-btn">send ></button>
+                        <button type="submit" class="submit-btn">Send Message</button>
                     </div>
                 </form>
             </div>
         </section>
     </main>
+
+
 
     <footer>
     </footer>

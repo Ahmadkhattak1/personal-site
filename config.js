@@ -1,25 +1,18 @@
 /*
  * Personal Site Configuration
  * Edit this file to customize the website with your own details
- *
- * To remove any section from the webpage:
- * - Set showSection.sectionName to false, OR
- * - Delete the entire section object from the config
- *
- * Required sections: personal, social
- * Optional sections: about, skills, projects, certifications, education, experience, github, customSections
  */
 
 const CONFIG = {
     // Section Visibility Control
-    // Set to false to hide a section completely
     showSection: {
         about: true,
-        skills: true,
+        research: true, // New Section
         projects: true,
-        certifications: true,
-        education: true,
+        skills: true,
         experience: true,
+        education: true,
+        certifications: true,
         github: true,
         customSections: true
     },
@@ -27,9 +20,10 @@ const CONFIG = {
     // Personal Information
     personal: {
         name: "Ahmad Yaseen",
-        title: "Founder | AI Engineering and Full Stack Developer",
+        title: "Founder | AI Engineer | Researcher",
         profileImage: "public/profile.png",
-        profileImageAlt: "Profile Picture"
+        profileImageAlt: "Profile Picture",
+        currently: "Exploring Machine Learning & building Stumbnail"
     },
 
     // Social Links
@@ -40,21 +34,43 @@ const CONFIG = {
         twitter: "https://x.com/AhmadYKhattak"
     },
 
+    // Research Interests (displayed as a summary above research items)
+    researchInterests: "Applied machine learning, with emphasis on software quality assurance and fairness in AI systems.",
+
     // About Me Section
-    about: "Final year CS student building real products. I work across the stack, design systems that scale, and enjoy shipping fast. I’m currently building Stumbnail (AI thumbnail generator) and Pixelar (AI tools for 2D game assets). I like solving problems that sit at the intersection of AI, design, and product.",
+    about: "Computer Science researcher and founder building at the intersection of AI and creative tools. Currently developing scalable AI systems — from generative models for game assets to automated content pipelines. I turn research into products.",
+
+    // Research Section
+    research: [
+        {
+            title: "A review of Software Defect Prediction Models using Machine Learning",
+            role: "Author",
+            institution: "AM Research Journal",
+            year: "Published",
+            description: "A comprehensive review of ML models used for predicting software defects, analyzing their effectiveness and accuracy.",
+            url: "https://amresearchjournal.com/index.php/Journal/article/view/1416"
+        },
+        {
+            title: "Evaluating Group-Wise Bias and Robustness in Pretrained Toxicity Classifiers",
+            role: "Primary Researcher",
+            institution: "Ongoing Research",
+            year: "In Progress",
+            description: "Investigating performance disparities across demographic groups in commercial toxicity detection models to identify and mitigate algorithmic bias.",
+            url: "#"
+        }
+    ],
 
     // Skills Section
     skills: [
-        "Strong foundation in Computer Science",
+        "Machine Learning & AI Architecture",
         {
-            text: "Programming",
-            subItems: ["Python, C++, JavaScript, React, Next.js, Node.js", "HTML, CSS", "Numpy, Pandas, Tensorflow"]
+            text: "Programming & Frameworks",
+            subItems: ["Python (PyTorch, TensorFlow)", "JavaScript/TypeScript (React, Next.js, Node.js)", "C++ for Performance"]
         },
-        "AI based image generation pipelines",
-        "Frontend + backend development",
-        "API design, Firebase/Firestore systems",
-        "Strong problem solving and product execution"
-
+        "Computer Vision & NLP",
+        "Full Stack Web Development",
+        "Cloud Infrastructure (Firebase, GCP)",
+        "Product Strategy & Execution"
     ],
 
     // Projects Section
@@ -62,17 +78,20 @@ const CONFIG = {
         {
             name: "Stumbnail",
             url: "https://stumbnail.com",
-            description: "AI-powered thumbnail generator"
+            description: "Commercial AI-powered platform for generating high-CTR YouTube thumbnails.",
+            tags: ["AI", "SaaS", "React"]
         },
         {
             name: "Pixelar",
             url: "https://pixelar.dev",
-            description: "Toolkit for indie game developers to generate and animate 2D assets using AI."
+            description: "Developer toolkit for procedurally generating and animating 2D game sprites.",
+            tags: ["GenAI", "GameDev", "Tools"]
         },
         {
-            name: "View more on github",
+            name: "Open Source Contributions",
             url: "https://github.com/ahmadkhattak1",
-            description: "Small tools and experiments in React, Python, and UI design on GitHub."
+            description: "Various experiments in reinforcement learning and UI design.",
+            tags: ["Open Source"]
         }
     ],
 
@@ -103,56 +122,52 @@ const CONFIG = {
     // Education Section
     education: [
         {
-            degree: "Bachelor's of Computer Science",
+            degree: "BS Computer Science",
             institution: "IMSciences Peshawar",
-            institutionUrl: null,
-            year: "2022-2026",
-            description: "Specializing in Computer Science and AI"
+            institutionUrl: "https://imsciences.edu.pk",
+            year: "2022 - 2026",
+            description: "Focus on Artificial Intelligence and Entrepreneurship."
         }
     ],
 
     // Experience Section
     experience: [
         {
-            role: "AI Engineer & Founder @Stumbnail",
+            role: "Founder & Lead Engineer",
             company: "Stumbnail",
             companyUrl: "https://stumbnail.com",
-            year: "2024",
-            description: "Built AI-powered thumbnail generator. Led product development from ideation to launch."
+            year: "2024 - Present",
+            description: "Spearheading the development of AI-driven design tools. Managed full product lifecycle from MVP to market."
         },
         {
-            role: "AI Architect & Developer @Pixelar",
+            role: "AI Architect",
             company: "Pixelar",
             companyUrl: "https://pixelar.dev",
-            year: "2025",
-            description: "Engineering an AI platform for generating and animating 2D sprites and scenes for game engines"
+            year: "2025 - Present",
+            description: "Leading R&D on generative models for 2D animation and sprite synthesis."
         },
         {
-            role: "Startup Incubation",
-            company: "NIC Peshawar",
+            role: "Incubatee",
+            company: "National Incubation Center (NIC)",
             companyUrl: null,
             year: "2025",
-            description: "Selected for National Incubation Center program to develop Stumbnail."
-        },
+            description: "Selected for prestigious startup acceleration program to scale AI ventures."
+        }
     ],
 
     // GitHub Activity
-    // Enter your github username.
     github: {
         username: "ahmadkhattak1",
-        chartColor: "DC143C" // Red color for contribution chart
+        chartColor: "4ade80" // Green for modern feel
     },
 
     // ============================================
-    // TEMPLATE ATTRIBUTION - DO NOT MODIFY
-    // Required for template to function properly
-    // Keeps template free for everyone!
+    // TEMPLATE ATTRIBUTION
     // ============================================
     _meta: {
         author: "Ahmad Y. Khattak",
         github: "https://github.com/ahmadkhattak1",
-        template: "personal-portfolio-v1",
+        template: "personal-portfolio-pro",
         license: "Made with <3 by Ahmad Y. Khattak"
     }
-    // ============================================
 };
