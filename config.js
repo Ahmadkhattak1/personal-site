@@ -82,6 +82,12 @@ const CONFIG = {
             tags: ["AI", "SaaS", "React"]
         },
         {
+            name: "ScreenChat",
+            url: "https://ahmadyaseen.com/extensions/screenchat",
+            description: "AI agent Chrome extension. Chat with your screen, get help with forms, research, and tasks.",
+            tags: ["AI", "Chrome Extension", "Browser Agent"]
+        },
+        {
             name: "Pixelar",
             url: "https://pixelar.dev",
             description: "Developer toolkit for procedurally generating and animating 2D game sprites.",

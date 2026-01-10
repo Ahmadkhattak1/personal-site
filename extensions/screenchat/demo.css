@@ -1,0 +1,524 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+/* Scope everything under a demo class or ID to prevent conflicts, 
+   though shadow DOM or specific naming handles most. 
+   Since we are not using Shadow DOM in the simple demo implementation 
+   (to avoid complexity with html2canvas capturing the shadow root), 
+   we will scope styles carefully. */
+
+#screenchat-demo-root {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    z-index: 9999;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    text-align: left;
+    /* Reset alignment */
+    line-height: normal;
+
+    /* Airtable Design System Variables */
+    --sc-primary: #2D7FF9;
+    --sc-primary-hover: #1461CC;
+    --sc-bg-primary: #FFFFFF;
+    --sc-bg-secondary: #F2F4F8;
+    --sc-text-primary: #1D2129;
+    --sc-text-secondary: #4D5C6F;
+    --sc-border: #DDE1E6;
+    --sc-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+    --sc-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --sc-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --sc-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+#screenchat-demo-root.sc-left {
+    right: auto;
+    left: 20px;
+}
+
+.sc-container {
+    width: 350px;
+    height: 500px;
+    min-width: 280px;
+    min-height: 300px;
+    max-width: 600px;
+    max-height: 80vh;
+    background: var(--sc-bg-primary);
+    border-radius: 12px;
+    box-shadow: var(--sc-shadow-xl);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: box-shadow 0.2s, width 0.2s, height 0.2s;
+    border: 1px solid var(--sc-border);
+    position: relative;
+    color: var(--sc-text-primary);
+}
+
+/* Resize Handle */
+.sc-resize-handle {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    bottom: 0;
+    right: 0;
+    cursor: nwse-resize;
+    z-index: 10;
+}
+
+.sc-resize-handle::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid #BDC3C7;
+    border-bottom: 2px solid #BDC3C7;
+    border-radius: 1px;
+}
+
+#screenchat-demo-root.sc-left .sc-resize-handle {
+    right: auto;
+    left: 0;
+    cursor: nesw-resize;
+}
+
+#screenchat-demo-root.sc-left .sc-resize-handle::after {
+    right: auto;
+    left: 4px;
+    border-right: none;
+    border-left: 2px solid #BDC3C7;
+}
+
+/* Header */
+.sc-header {
+    padding: 12px 16px;
+    background: var(--sc-bg-primary);
+    border-bottom: 1px solid var(--sc-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sc-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sc-logo {
+    width: 20px;
+    height: 20px;
+}
+
+.sc-title {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--sc-text-primary);
+    letter-spacing: -0.01em;
+}
+
+.sc-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.sc-btn-icon {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    color: var(--sc-text-secondary);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.sc-btn-icon:hover {
+    background: var(--sc-bg-secondary);
+    color: var(--sc-text-primary);
+}
+
+/* Settings Dropdown */
+.sc-settings-wrapper {
+    position: relative;
+}
+
+.sc-settings-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: -8px;
+    background: var(--sc-bg-primary);
+    border: 1px solid var(--sc-border);
+    border-radius: 8px;
+    box-shadow: var(--sc-shadow-lg);
+    min-width: 180px;
+    z-index: 200;
+    display: none;
+    padding: 6px;
+    transform-origin: top right;
+    animation: sc-scale-in 0.15s ease-out;
+}
+
+@keyframes sc-scale-in {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.sc-settings-dropdown.visible {
+    display: block;
+}
+
+.sc-settings-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 12px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--sc-text-primary);
+    border-radius: 6px;
+    text-align: left;
+    transition: background 0.15s;
+    box-sizing: border-box;
+}
+
+.sc-settings-item:hover {
+    background: var(--sc-bg-secondary);
+}
+
+.sc-settings-item svg {
+    color: var(--sc-text-secondary);
+    flex-shrink: 0;
+}
+
+.sc-settings-item:hover svg {
+    color: var(--sc-primary);
+}
+
+/* Mode Toggle */
+.sc-mode-toggle {
+    display: inline-flex;
+    background: var(--sc-bg-secondary);
+    padding: 3px;
+    border-radius: 8px;
+    gap: 2px;
+    margin-bottom: 8px;
+    align-self: flex-start;
+}
+
+.sc-mode-btn {
+    padding: 4px 12px;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    font-size: 12px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--sc-text-secondary);
+    font-weight: 500;
+    position: relative;
+}
+
+.sc-mode-btn:hover {
+    color: var(--sc-text-primary);
+}
+
+.sc-mode-btn.active {
+    background: var(--sc-bg-primary);
+    color: var(--sc-primary);
+    font-weight: 600;
+    box-shadow: var(--sc-shadow-sm);
+}
+
+/* Input Row */
+.sc-input-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.sc-input-row .sc-input-wrapper {
+    flex: 1;
+}
+
+/* Messages */
+.sc-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    background: var(--sc-bg-primary);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.sc-message {
+    display: flex;
+    flex-direction: column;
+    max-width: 85%;
+}
+
+.sc-message.user {
+    align-self: flex-end;
+    align-items: flex-end;
+}
+
+.sc-message.ai {
+    align-self: flex-start;
+}
+
+.sc-bubble {
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.5;
+    word-break: break-word;
+    letter-spacing: -0.01em;
+}
+
+.sc-message.user .sc-bubble {
+    background: var(--sc-primary);
+    color: white;
+    border-bottom-right-radius: 4px;
+    box-shadow: var(--sc-shadow-sm);
+}
+
+.sc-message.ai .sc-bubble {
+    background: var(--sc-bg-secondary);
+    color: var(--sc-text-primary);
+    border-bottom-left-radius: 4px;
+}
+
+.sc-timestamp {
+    font-size: 10px;
+    color: var(--sc-text-secondary);
+    margin-top: 4px;
+    padding: 0 4px;
+    opacity: 0.8;
+}
+
+.sc-attachment img {
+    max-width: 100%;
+    border-radius: 8px;
+    margin-top: 8px;
+    border: 1px solid var(--sc-border);
+    box-shadow: var(--sc-shadow-sm);
+}
+
+/* Input Area */
+.sc-input-area {
+    padding: 12px 16px 16px;
+    background: var(--sc-bg-primary);
+    border-top: 1px solid var(--sc-border);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.sc-input-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.sc-textarea,
+.sc-password-input {
+    width: 100%;
+    border: 2px solid transparent;
+    background: var(--sc-bg-secondary);
+    border-radius: 20px;
+    padding: 10px 14px;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    resize: none;
+    color: var(--sc-text-primary);
+    max-height: 120px;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+}
+
+.sc-textarea:focus,
+.sc-password-input:focus {
+    background: #fff;
+    border-color: var(--sc-primary);
+    box-shadow: 0 0 0 2px rgba(45, 127, 249, 0.2);
+}
+
+.sc-send-btn {
+    background: var(--sc-primary);
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 0;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    box-shadow: var(--sc-shadow-sm);
+}
+
+.sc-send-btn:hover {
+    background: var(--sc-primary-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--sc-shadow-md);
+}
+
+.sc-send-btn:active {
+    transform: translateY(0);
+}
+
+.sc-send-btn svg {
+    width: 16px;
+    height: 16px;
+    stroke: white;
+    stroke-width: 2.5;
+}
+
+.sc-send-btn:disabled {
+    background: #e0e0e0;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+/* Minimized State (Launcher) */
+.sc-container.minimized {
+    width: 60px;
+    height: 60px;
+    min-width: 0;
+    min-height: 0;
+    border-radius: 50%;
+    cursor: pointer;
+    background: var(--sc-primary);
+    border: none;
+    box-shadow: 0 4px 14px rgba(45, 127, 249, 0.4);
+    transition: all 0.2s ease;
+    display: flex;
+    /* Changed from default flex to ensure centering */
+    justify-content: center;
+    align-items: center;
+    overflow: visible;
+    /* Allow badge/icon to pop if needed */
+}
+
+.sc-container.minimized:hover {
+    box-shadow: 0 8px 24px rgba(45, 127, 249, 0.5);
+    background: var(--sc-primary-hover);
+}
+
+.sc-container.minimized .sc-header,
+.sc-container.minimized .sc-messages,
+.sc-container.minimized .sc-input-area,
+.sc-container.minimized .sc-resize-handle,
+.sc-container.minimized #sc-upsell-view {
+    display: none !important;
+}
+
+/* Hide the pseudo-element image */
+.sc-container.minimized::after {
+    display: none;
+}
+
+/* Show the launcher icon only when minimized */
+.sc-launcher-icon {
+    display: none;
+    color: white;
+    width: 28px;
+    height: 28px;
+    animation: sc-scale-in 0.3s ease-out;
+}
+
+.sc-container.minimized .sc-launcher-icon {
+    display: block;
+}
+
+/* Upsell / Feature Locked View */
+.sc-upsell-view {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--sc-bg-primary);
+    z-index: 101;
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sc-upsell-view.visible {
+    transform: translateX(0);
+}
+
+.sc-upsell-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+    text-align: center;
+}
+
+.sc-upsell-icon {
+    width: 48px;
+    height: 48px;
+    color: var(--sc-primary);
+    margin-bottom: 20px;
+}
+
+.sc-upsell-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--sc-text-primary);
+    margin: 0 0 10px 0;
+}
+
+.sc-upsell-desc {
+    font-size: 14px;
+    color: var(--sc-text-secondary);
+    line-height: 1.5;
+    margin: 0 0 24px 0;
+}
+
+.sc-upsell-btn {
+    background: var(--sc-primary);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sc-upsell-btn:hover {
+    background: var(--sc-primary-hover);
+    transform: translateY(-1px);
+}
