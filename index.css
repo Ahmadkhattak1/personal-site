@@ -213,6 +213,19 @@ h2::before {
     margin-bottom: 12px;
 }
 
+.card-title-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.card-logo {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    object-fit: contain;
+}
+
 .card-title {
     font-size: 1.1rem;
     font-weight: 600;

@@ -116,7 +116,10 @@ const populatePage = () => {
                 <a href="${project.url}" class="card-link" target="_blank">
                     <div class="card">
                         <div class="card-header">
-                            <h3 class="card-title">${project.name}</h3>
+                            <div class="card-title-group">
+                                ${project.logo ? `<img src="${project.logo}" class="card-logo" alt="${project.name}">` : ''}
+                                <h3 class="card-title">${project.name}</h3>
+                            </div>
                             <span class="card-year">Project</span>
                         </div>
                         <p class="card-desc">${project.description}</p>
