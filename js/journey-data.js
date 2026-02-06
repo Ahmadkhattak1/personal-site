@@ -78,7 +78,7 @@ const JOURNEY_DATA = {
                 "Complete authentication system",
                 "Marketing landing page"
             ],
-            tech: ["React", "Node.js", "Express", "MongoDB", "AI/LLM APIs", "Cloudinary", "Vercel"]
+            tech: ["Next.js", "Node.js", "Express", "Firebase Auth", "Firestore", "Google Storage", "Vercel"]
         },
         {
             id: "clawpilot",
@@ -106,7 +106,7 @@ const JOURNEY_DATA = {
             url: "https://stumbnail.com",
             logo: "public/projects/stumbnail.png",
             description: "Commercial AI-powered platform for generating high-CTR YouTube thumbnails.",
-            tags: ["AI", "SaaS", "React", "Node.js", "MongoDB"]
+            tags: ["AI", "SaaS", "Next.js", "Node.js", "Express", "Firebase", "Vercel"]
         },
         {
             name: "ClawPilot",
@@ -175,9 +175,10 @@ const JOURNEY_DATA = {
     // ============================================
     skills: {
         frontend: ["React", "Next.js", "HTML/CSS", "Tailwind CSS", "JavaScript", "TypeScript"],
-        backend: ["Node.js", "Express", "MongoDB", "PostgreSQL", "REST APIs"],
+        backend: ["Node.js", "Express", "Python", "MongoDB", "PostgreSQL", "REST APIs"],
         ai: ["AI API Integration", "LLM APIs (OpenAI, Claude)", "Image Generation Pipelines", "Prompt Engineering"],
-        tools: ["Git", "GitHub", "Vercel", "AWS", "Docker", "Cloudinary", "Firebase"]
+        data: ["Numpy", "Pandas"],
+        tools: ["Git", "GitHub", "Vercel", "AWS", "Firebase"]
     },
 
     // ============================================
@@ -202,25 +203,25 @@ const JOURNEY_DATA = {
             name: "HarvardX's CS50P (Python)",
             issuer: "Harvard University (via edX)",
             url: "https://courses.edx.org/certificates/eeb3c6ea512d4b7fb92f7ef0b320ea39",
-            date: "2023"
+            date: "2024"
         },
         {
             name: "JavaScript Fundamentals",
             issuer: "Scrimba",
             url: "https://scrimba.com/@Ahmadkhattak1:certs;cert2CsEjr6BTAJVX14Fk3qLQUgjcAeQRirC7E",
-            date: "2023"
+            date: "2025"
         },
         {
             name: "HTML & CSS",
             issuer: "Scrimba",
             url: "https://scrimba.com/@Ahmadkhattak1:certs;cert2CsEjr6BTAJVX14Fk3qJvBZT4zue9hco8U",
-            date: "2023"
+            date: "2025"
         },
         {
             name: "Intro to UI Design Fundamentals",
             issuer: "Scrimba",
             url: "https://scrimba.com/@Ahmadkhattak1:certs;cert2CsEjr6BTAJVX14Fk3qKAZkLACCSCNouDG",
-            date: "2023"
+            date: "2025"
         }
     ],
 
