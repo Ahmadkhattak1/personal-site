@@ -1,22 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
-<!--
-    Made with <3 by Ahmad Y. Khattak
-    GitHub: https://github.com/ahmadkhattak1
-    LinkedIn: https://www.linkedin.com/in/AhmadYKhattak/
-    X: https://x.com/AhmadYKhattak
--->
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ahmad Yaseen Khattak | AI Researcher, Founder & Software Engineer</title>
+    <title>Ahmad Yaseen Khattak | Full-Stack Developer</title>
 
     <!-- SEO Meta Tags -->
-    <meta name="description"
-        content="AI researcher and founder building Stumbnail. Published author in machine learning and software engineering. Specializing in applied ML, bias detection, and scalable AI systems.">
-    <meta name="keywords"
-        content="Ahmad Yaseen Khattak, AI Researcher, Machine Learning, Software Defect Prediction, Stumbnail, Founder, Software Engineer, Python, JavaScript, React, Toxicity Classifiers, IMSciences Peshawar">
+    <meta name="description" content="Full-stack developer building MVPs and web apps for startups. Creator of Stumbnail. React, Next.js, Node.js, AI integrations.">
+    <meta name="keywords" content="Ahmad Yaseen Khattak, Full-Stack Developer, MVP Development, Web Apps, React, Next.js, Node.js, AI, Stumbnail, Pakistan">
     <meta name="author" content="Ahmad Yaseen Khattak">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://ahmadyaseen.com">
@@ -24,152 +15,276 @@
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://ahmadyaseen.com">
-    <meta property="og:title" content="Ahmad Yaseen Khattak | AI Researcher & Founder">
-    <meta property="og:description"
-        content="AI researcher and founder. Published in machine learning. Building Stumbnail and researching fairness in AI systems.">
+    <meta property="og:title" content="Ahmad Yaseen Khattak | Full-Stack Developer">
+    <meta property="og:description" content="Full-stack developer building MVPs and web apps for startups. Creator of Stumbnail.">
     <meta property="og:image" content="https://ahmadyaseen.com/public/profile.png">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://ahmadyaseen.com">
-    <meta property="twitter:title" content="Ahmad Yaseen Khattak | AI Researcher & Founder">
-    <meta property="twitter:description"
-        content="AI researcher and founder. Published in machine learning. Building Stumbnail and researching fairness in AI systems.">
+    <meta property="twitter:title" content="Ahmad Yaseen Khattak | Full-Stack Developer">
+    <meta property="twitter:description" content="Full-stack developer building MVPs and web apps for startups. Creator of Stumbnail.">
     <meta property="twitter:image" content="https://ahmadyaseen.com/public/profile.png">
     <meta property="twitter:creator" content="@AhmadYKhattak">
 
-    <!-- Structured Data / Schema.org -->
+    <!-- Structured Data -->
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
         "@type": "Person",
-        "name": "Ahmad Y. Khattak",
+        "name": "Ahmad Yaseen Khattak",
         "url": "https://ahmadyaseen.com",
         "image": "https://ahmadyaseen.com/public/profile.png",
-        "jobTitle": "Developer & Founder",
-        "worksFor": {
-            "@type": "Organization",
-            "name": "IMSciences Peshawar"
-        },
-        "alumniOf": {
-            "@type": "EducationalOrganization",
-            "name": "IMSciences Peshawar"
-        },
+        "jobTitle": "Full-Stack Developer",
+        "description": "Full-stack developer building MVPs and web apps for startups. Creator of Stumbnail.",
         "sameAs": [
             "https://github.com/ahmadkhattak1",
             "https://www.linkedin.com/in/AhmadYKhattak/",
             "https://x.com/AhmadYKhattak"
-        ],
-        "description": "Developer and founder building AI-powered solutions. Creator of Stumbnail. Passionate about machine learning, web development, and building innovative tech."
+        ]
     }
     </script>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="index.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Syne:wght@600;700;800&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/home.css">
 </head>
-
 <body>
-    <header>
-        <div class="profile-class">
-            <div id="profile">
-                <img src="public\profile.png" alt="Profile Picture">
-            </div>
-            <div class="header-content">
-                <h1 id="name">Ahmad Y. Khattak</h1>
-                <p id="title">Computer Science | AI | Entrepreneurship</p>
-                <div class="social-links">
-                    <!-- Javascript populates this -->
-                </div>
-                <div class="status-indicator" id="statusIndicator">
-                    <span class="status-dot"></span>
-                    <span class="status-text">exploring...</span>
-                </div>
+    <!-- Header Navigation -->
+    <header class="header" id="header">
+        <div class="header-inner">
+            <a href="/" class="header-logo">AYK</a>
+
+            <nav class="header-nav" id="headerNav">
+                <a href="/" class="header-link active">Home</a>
+                <a href="#projects" class="header-link">Work</a>
+                <a href="#contact" class="header-link">Contact</a>
+            </nav>
+
+            <div class="header-actions">
+                <a href="mailto:Ahdfactz@gmail.com" class="header-cta">Let's Talk</a>
             </div>
 
+            <button class="header-toggle" id="navToggle" aria-label="Toggle navigation">
+                <span></span>
+                <span></span>
+            </button>
         </div>
     </header>
+
     <main>
-        <section id="about">
-            <h2>About Me</h2>
-            <p>Loading...</p>
-        </section>
-
-        <section id="skills">
-            <h2>Skills</h2>
-            <ul></ul>
-        </section>
-
-        <section id="research">
-            <h2>Research</h2>
-            <p class="section-intro" id="researchInterests"></p>
-            <div class="grid-container"></div>
-        </section>
-
-        <section id="projects">
-            <h2>Projects</h2>
-            <div class="grid-container">
-                <ul></ul>
-            </div>
-        </section>
-
-        <section id="experience">
-            <h2>Experience</h2>
-            <ul></ul>
-        </section>
-
-        <section id="education">
-            <h2>Education</h2>
-            <ul></ul>
-        </section>
-
-        <section id="certifications">
-            <h2>Certifications</h2>
-            <ul></ul>
-        </section>
-
-        <div id="customSections"></div>
-
-        <section id="github">
-            <h2>GitHub Activity</h2>
-            <div class="calendar">
-                <img src="" alt="GitHub Contributions" />
-            </div>
-        </section>
-
-        <section id="contact-section">
-            <div class="contact-toggle">
-                <button id="contactBtn" class="contact-button">Start a Conversation</button>
-            </div>
-            <div id="contactForm" class="contact-form hidden">
-                <div class="form-header">
-                    <p class="form-greeting">Send a message</p>
-                    <button type="button" id="closeBtn" class="close-x">✕</button>
+        <!-- Hero Section -->
+        <section class="hero" id="hero">
+            <div class="container">
+                <div class="hero-content">
+                    <div class="hero-text">
+                        <div class="hero-label animate-fade-up">
+                            <span class="hero-label-dot"></span>
+                            Available for new projects
+                        </div>
+                        <h1 class="hero-title animate-fade-up delay-1">Ahmad<br>Yaseen<br><span class="headline-fade">Khattak</span></h1>
+                        <p class="hero-tagline animate-fade-up delay-2">I build MVPs for startups.</p>
+                        <p class="hero-description animate-fade-up delay-3">Full-stack developer turning ideas into shipped products. React, Next.js, Node.js, and AI integrations.</p>
+                        <div class="hero-cta animate-fade-up delay-4">
+                            <a href="#contact" class="btn btn-primary">Let's work together</a>
+                            <a href="#projects" class="btn btn-secondary">See my work</a>
+                        </div>
+                    </div>
+                    <div class="hero-visual animate-fade-up delay-2">
+                        <div class="hero-visual-wrapper">
+                            <div class="profile-container">
+                                <div class="profile-frame">
+                                    <img src="public/profile.png" alt="Ahmad Yaseen Khattak" class="profile-photo">
+                                </div>
+                                <div class="profile-accent"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <form name="contact" method="POST" data-netlify="true">
-                    <div class="form-group">
-                        <input type="email" name="email" placeholder="Your Email" required>
+            </div>
+        </section>
+
+        <!-- Projects Section -->
+        <section class="section projects" id="projects">
+            <div class="container">
+                <div class="projects-header reveal">
+                    <span class="projects-eyebrow">Work</span>
+                    <h2 class="projects-title">Products <span class="headline-fade">I've built</span></h2>
+                </div>
+
+                <div class="projects-grid">
+                    <!-- Project 1: Stumbnail -->
+                    <article class="project-item reveal">
+                        <div class="project-number" data-num="01">01</div>
+                        <div class="project-content">
+                            <div class="project-meta">
+                                <img src="public/projects/stumbnail.png" alt="Stumbnail logo" class="project-logo project-logo--light">
+                                <div class="project-meta-text">
+                                    <h3 class="project-name">Stumbnail</h3>
+                                    <span class="project-type">SaaS Product</span>
+                                </div>
+                            </div>
+                            <p class="project-desc">AI-powered YouTube thumbnail generator. Solo-built from idea to deployment.</p>
+                            <ul class="project-highlights">
+                                <li><span class="marker"></span>AI image generation pipeline</li>
+                                <li><span class="marker"></span>Real-time canvas editor</li>
+                                <li><span class="marker"></span>User dashboard & community feed</li>
+                                <li><span class="marker"></span>Complete auth system</li>
+                            </ul>
+                            <div class="project-stack">
+                                <span>React</span>
+                                <span>Next.js</span>
+                                <span>Node.js</span>
+                                <span>Express.js</span>
+                                <span>Firebase</span>
+                            </div>
+                            <a href="https://stumbnail.com" target="_blank" rel="noopener noreferrer" class="project-cta">
+                                stumbnail.com <span class="arrow">→</span>
+                            </a>
+                        </div>
+                        <div class="project-preview">
+                            <img src="public/projects/screenshots/Stumbnail-Hero-Page.png" alt="Stumbnail - AI YouTube Thumbnail Generator">
+                        </div>
+                    </article>
+
+                    <!-- Project 2: ClawPilot -->
+                    <article class="project-item project-item--alt reveal">
+                        <div class="project-number" data-num="02">02</div>
+                        <div class="project-content">
+                            <div class="project-meta">
+                                <img src="public/projects/Clawpilot.svg" alt="ClawPilot logo" class="project-logo project-logo--light">
+                                <div class="project-meta-text">
+                                    <h3 class="project-name">ClawPilot</h3>
+                                    <span class="project-type">Open Source Tool</span>
+                                </div>
+                            </div>
+                            <p class="project-desc">Setup and management tool for OpenClaw, an open-source AI assistant across WhatsApp, Telegram, Slack, and Discord.</p>
+                            <ul class="project-highlights">
+                                <li><span class="marker"></span>Product landing page</li>
+                                <li><span class="marker"></span>Waitlist system for early adopters</li>
+                                <li><span class="marker"></span>Web platform frontend</li>
+                            </ul>
+                            <div class="project-stack">
+                                <span>SwiftUI</span>
+                                <span>React</span>
+                                <span>Next.js</span>
+                                <span>Firebase</span>
+                            </div>
+                            <a href="https://clawpilot.app" target="_blank" rel="noopener noreferrer" class="project-cta">
+                                clawpilot.app <span class="arrow">→</span>
+                            </a>
+                        </div>
+                        <div class="project-preview">
+                            <img src="public/projects/screenshots/clawpilot-hero-page.png" alt="ClawPilot - AI Assistant Management">
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- Services Section -->
+        <section class="section services" id="services">
+            <div class="container">
+                <div class="services-header reveal">
+                    <span class="services-eyebrow">Services</span>
+                    <h2 class="services-title">What <span class="headline-fade">I do</span></h2>
+                </div>
+                <div class="services-list">
+                    <div class="service-row reveal">
+                        <div class="service-info">
+                            <h3 class="service-name">MVP Development</h3>
+                            <p class="service-desc">Got an idea? I build it into a working product with real users in mind.</p>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <textarea name="message" placeholder="Message..." rows="5" required></textarea>
+                    <div class="service-row reveal">
+                        <div class="service-info">
+                            <h3 class="service-name">App Development</h3>
+                            <p class="service-desc">Native mobile apps and web applications built with modern frameworks and best practices.</p>
+                        </div>
                     </div>
-                    <div class="form-actions">
-                        <button type="submit" class="submit-btn">Send Message</button>
+                    <div class="service-row reveal">
+                        <div class="service-info">
+                            <h3 class="service-name">Web App Development</h3>
+                            <p class="service-desc">Full-stack web apps with auth, dashboards, APIs, and clean deployment.</p>
+                        </div>
                     </div>
-                </form>
+                    <div class="service-row reveal">
+                        <div class="service-info">
+                            <h3 class="service-name">AI Integration</h3>
+                            <p class="service-desc">Adding AI to your product. Image generation, LLMs, chatbots, automation.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section class="section contact" id="contact">
+            <div class="container">
+                <div class="contact-content reveal">
+                    <h2 class="contact-title">Let's build <span class="headline-fade">something.</span></h2>
+                    <p class="contact-subtitle">Have an idea? Need a developer? Let's talk.</p>
+
+                    <a href="mailto:Ahdfactz@gmail.com" class="contact-email">
+                        <span class="contact-email-label">Email me at</span>
+                        <span class="contact-email-address">Ahdfactz@gmail.com</span>
+                    </a>
+
+                    <div class="contact-social">
+                        <a href="https://github.com/ahmadkhattak1" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="GitHub">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                            </svg>
+                        </a>
+                        <a href="https://www.linkedin.com/in/AhmadYKhattak/" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="LinkedIn">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                            </svg>
+                        </a>
+                        <a href="https://x.com/AhmadYKhattak" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="X (Twitter)">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                            </svg>
+                        </a>
+                    </div>
+
+                    <div class="contact-form-wrapper">
+                        <div class="contact-divider">or send a message</div>
+                        <form name="contact" method="POST" data-netlify="true" class="contact-form">
+                            <input type="hidden" name="form-name" value="contact">
+                            <div class="form-row">
+                                <input type="text" name="name" placeholder="Your name" required>
+                                <input type="email" name="email" placeholder="Your email" required>
+                            </div>
+                            <textarea name="message" placeholder="Your message..." rows="4" required></textarea>
+                            <button type="submit" class="btn btn-primary">Send Message</button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </section>
     </main>
 
-
-
-    <footer>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <span class="footer-name">Ahmad Yaseen Khattak</span>
+                <div class="footer-right">
+                    <a href="/journey.html" class="footer-link">Journey</a>
+                    <span class="footer-copyright">Available for work</span>
+                </div>
+            </div>
+        </div>
     </footer>
-    <script src="config.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="index.js"></script>
-</body>
 
+    <!-- Scripts -->
+    <script src="js/journey-data.js"></script>
+    <script src="js/home.js"></script>
+</body>
 </html>
