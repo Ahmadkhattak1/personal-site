@@ -1,11 +1,11 @@
 /*
- * Made with <3 by Ahmad Y. Khattak
+ * Made with <3 by Ahmad Yaseen
  * GitHub: https://github.com/ahmadkhattak1
  */
 
 // Verify template attribution
 (function () {
-    if (!CONFIG._meta || !CONFIG._meta.author || CONFIG._meta.author !== "Ahmad Y. Khattak") {
+    if (!CONFIG._meta || !CONFIG._meta.author || CONFIG._meta.author !== "Ahmad Yaseen") {
         console.warn("Template attribution modified. Please maintain original attribution.");
     }
 })();

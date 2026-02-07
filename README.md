@@ -168,7 +168,7 @@ You can also use:
 
 ## Important: Keep the Attribution
 
-This template is **completely free** to use! The only thing I ask is that you keep the small "template by Ahmad Y. Khattak" link in the footer.
+This template is **completely free** to use! The only thing I ask is that you keep the small "template by Ahmad Yaseen" link in the footer.
 
 Why? It helps other people find this template too!
 
@@ -208,7 +208,7 @@ A: Please don't! It's a small link that helps others discover the template. It k
 
 ## Credits
 
-Made with <3 by Ahmad Y. Khattak
+Made with <3 by Ahmad Yaseen
 
 - GitHub: [github.com/ahmadkhattak1](https://github.com/ahmadkhattak1)
 - LinkedIn: [linkedin.com/in/AhmadYKhattak](https://www.linkedin.com/in/AhmadYKhattak/)

@@ -173,9 +173,9 @@ const CONFIG = {
     // TEMPLATE ATTRIBUTION
     // ============================================
     _meta: {
-        author: "Ahmad Y. Khattak",
+        author: "Ahmad Yaseen",
         github: "https://github.com/ahmadkhattak1",
         template: "personal-portfolio-pro",
-        license: "Made with <3 by Ahmad Y. Khattak"
+        license: "Made with <3 by Ahmad Yaseen"
     }
 };

@@ -8,7 +8,7 @@ const JOURNEY_DATA = {
     // PERSONAL INFORMATION
     // ============================================
     personal: {
-        name: "Ahmad Yaseen Khattak",
+        name: "Ahmad Yaseen",
         title: "Full-Stack Developer",
         tagline: "I build MVPs and web apps for startups.",
         description: "Full-stack developer. I turn ideas into shipped products, fast. React, Next.js, Node.js, AI integrations.",
@@ -238,7 +238,7 @@ const JOURNEY_DATA = {
     // ============================================
     meta: {
         siteUrl: "https://ahmadyaseen.com",
-        siteTitle: "Ahmad Yaseen Khattak | Full-Stack Developer",
+        siteTitle: "Ahmad Yaseen | Full-Stack Developer",
         siteDescription: "Full-stack developer building MVPs and web apps for startups. Creator of Stumbnail. React, Next.js, Node.js, AI integrations.",
         ogImage: "https://ahmadyaseen.com/public/profile.png"
     }

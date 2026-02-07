@@ -262,7 +262,7 @@ function generateResumePDF() {
     // ============================================
     // SAVE PDF
     // ============================================
-    doc.save('Ahmad_Yaseen_Khattak_Resume.pdf');
+    doc.save('Ahmad_Yaseen_Resume.pdf');
 }
 
 // Make function globally available
