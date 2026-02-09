@@ -3,8 +3,84 @@
  * Handles navigation, animations, and interactions
  */
 
-(function() {
+(function () {
     'use strict';
+
+    // ============================================
+    // SPLASH SCREEN ANIMATION
+    // ============================================
+    const greetings = ['Hello', 'Salam', 'Ni hao', 'Bonjour', 'Hola'];
+    const splashScreen = document.getElementById('splashScreen');
+    const greetingEl = document.getElementById('splashGreeting');
+    const greetingNextEl = document.getElementById('splashGreetingNext');
+
+    if (splashScreen && greetingEl && greetingNextEl) {
+        document.body.classList.add('splash-active');
+
+        let currentIndex = 0;
+        const holdDuration = 200; // pause before exiting
+        const overlapOffset = 100; // next enters before previous fully exits
+
+        function showGreeting(element, text) {
+            element.textContent = text;
+            element.classList.remove('visible', 'exiting');
+            element.classList.add('entering');
+
+            element.addEventListener('animationend', function handler() {
+                element.classList.remove('entering');
+                element.classList.add('visible');
+                element.removeEventListener('animationend', handler);
+            }, { once: true });
+        }
+
+        function exitGreeting(element) {
+            element.classList.remove('visible', 'entering');
+            element.classList.add('exiting');
+        }
+
+        function runSequence() {
+            // Use alternating elements for overlap
+            const elements = [greetingEl, greetingNextEl];
+            let activeIndex = 0;
+
+            // Show first greeting
+            showGreeting(elements[activeIndex], greetings[currentIndex]);
+            currentIndex++;
+
+            function next() {
+                if (currentIndex < greetings.length) {
+                    // After hold, start exit and simultaneously enter next
+                    setTimeout(() => {
+                        const exitingEl = elements[activeIndex];
+                        activeIndex = 1 - activeIndex; // toggle 0/1
+                        const enteringEl = elements[activeIndex];
+
+                        exitGreeting(exitingEl);
+
+                        // Next greeting enters slightly before exit completes
+                        setTimeout(() => {
+                            showGreeting(enteringEl, greetings[currentIndex]);
+                            currentIndex++;
+                            next();
+                        }, overlapOffset);
+                    }, holdDuration);
+                } else {
+                    // Final greeting - hold then hide splash
+                    setTimeout(() => {
+                        exitGreeting(elements[activeIndex]);
+                        setTimeout(() => {
+                            splashScreen.classList.add('hidden');
+                            document.body.classList.remove('splash-active');
+                        }, 250);
+                    }, holdDuration);
+                }
+            }
+
+            next();
+        }
+
+        runSequence();
+    }
 
     // ============================================
     // HEADER NAVIGATION TOGGLE
@@ -33,7 +109,7 @@
     // SMOOTH SCROLL FOR ANCHOR LINKS
     // ============================================
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function(e) {
+        anchor.addEventListener('click', function (e) {
             e.preventDefault();
             const target = document.querySelector(this.getAttribute('href'));
             if (target) {
@@ -221,8 +297,8 @@ Let's build something together.
 
 P.S. Try the Konami code ↑↑↓↓←→←→BA
 `,
-    'color: #f97316; font-weight: bold; font-family: monospace;',
-    'color: #a1a1a1; font-size: 11px; line-height: 1.6;'
+        'color: #f97316; font-weight: bold; font-family: monospace;',
+        'color: #a1a1a1; font-size: 11px; line-height: 1.6;'
     );
 
     // ============================================

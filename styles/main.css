@@ -6,7 +6,9 @@
 /* ============================================
    CSS RESET & BASE
    ============================================ */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
@@ -74,6 +76,100 @@ html {
 }
 
 /* ============================================
+   SPLASH SCREEN
+   ============================================ */
+.splash-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--bg-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+}
+
+.splash-screen.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.splash-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 80px;
+}
+
+.splash-greeting {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 8vw, 4.5rem);
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.03em;
+    position: absolute;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateY(30px);
+    filter: blur(2px);
+}
+
+/* Enter from below */
+.splash-greeting.entering {
+    animation: greetingEnter 0.2s ease-out forwards;
+}
+
+/* Visible and holding */
+.splash-greeting.visible {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+}
+
+/* Exit upward while fading */
+.splash-greeting.exiting {
+    animation: greetingExit 0.25s ease-in forwards;
+}
+
+@keyframes greetingEnter {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+        filter: blur(2px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+        filter: blur(0);
+    }
+}
+
+@keyframes greetingExit {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+        filter: blur(0);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateY(-30px);
+        filter: blur(2px);
+    }
+}
+
+/* Prevent scroll during splash */
+body.splash-active {
+    overflow: hidden;
+}
+
+/* ============================================
    BASE STYLES
    ============================================ */
 body {
@@ -89,7 +185,12 @@ body {
 /* ============================================
    TYPOGRAPHY
    ============================================ */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
     font-family: var(--font-display);
     font-weight: 700;
     line-height: 1.1;
@@ -270,6 +371,34 @@ a:hover {
     color: var(--text-primary);
     text-decoration: none;
     letter-spacing: -0.03em;
+    display: inline-flex;
+    gap: 0;
+}
+
+.header-logo .logo-word {
+    display: inline-flex;
+}
+
+.header-logo .logo-letter {
+    display: inline-block;
+}
+
+.header-logo .logo-rest {
+    display: inline-block;
+    max-width: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-width 0.35s ease-in-out, opacity 0.25s ease-in-out;
+}
+
+.header-logo:hover .logo-rest {
+    max-width: 100px;
+    opacity: 1;
+}
+
+.header-logo:hover .logo-word:not(:last-child)::after {
+    content: ' ';
+    white-space: pre;
 }
 
 .header-logo:hover {
@@ -290,18 +419,68 @@ a:hover {
     text-decoration: none;
     padding: var(--space-xs) 0;
     position: relative;
-    transition: color var(--transition-fast);
+}
+
+/* Flip link animation */
+.flip-link {
+    position: relative;
+    display: inline-flex;
+}
+
+.flip-text {
+    display: flex;
+}
+
+.flip-text span {
+    display: inline-block;
+    position: relative;
+    overflow: hidden;
+    line-height: 1.2;
+}
+
+.flip-text:first-child span::before,
+.flip-text:first-child span::after {
+    display: block;
+    transition: transform 0.25s ease-in-out;
+    transition-delay: calc(var(--i) * 0.025s);
+}
+
+.flip-text:first-child span::before {
+    content: attr(data-letter);
+}
+
+.flip-text:first-child span::after {
+    content: attr(data-letter);
+    position: absolute;
+    top: 0;
+    left: 0;
+    color: var(--accent);
+    transform: translateY(100%);
+}
+
+.flip-link:hover .flip-text:first-child span::before {
+    transform: translateY(-100%);
+}
+
+.flip-link:hover .flip-text:first-child span::after {
+    transform: translateY(0);
+}
+
+/* Hide the duplicate text row */
+.flip-text-bottom {
+    display: none;
 }
 
 .header-link::after {
     content: '';
     position: absolute;
     bottom: -2px;
-    left: 0;
+    left: 50%;
     width: 0;
-    height: 1px;
+    height: 2px;
     background: var(--accent);
-    transition: width var(--transition-fast);
+    transition: width 0.3s ease-in-out, left 0.3s ease-in-out;
+    border-radius: 1px;
 }
 
 .header-link:hover,
@@ -312,6 +491,7 @@ a:hover {
 .header-link.active::after,
 .header-link:hover::after {
     width: 100%;
+    left: 0;
 }
 
 .header-actions {
@@ -439,6 +619,7 @@ main {
         opacity: 0;
         transform: translateY(20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -446,13 +627,25 @@ main {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
 }
 
 .animate-fade-up {
@@ -460,11 +653,25 @@ main {
     opacity: 0;
 }
 
-.delay-1 { animation-delay: 0.1s; }
-.delay-2 { animation-delay: 0.2s; }
-.delay-3 { animation-delay: 0.3s; }
-.delay-4 { animation-delay: 0.4s; }
-.delay-5 { animation-delay: 0.5s; }
+.delay-1 {
+    animation-delay: 0.1s;
+}
+
+.delay-2 {
+    animation-delay: 0.2s;
+}
+
+.delay-3 {
+    animation-delay: 0.3s;
+}
+
+.delay-4 {
+    animation-delay: 0.4s;
+}
+
+.delay-5 {
+    animation-delay: 0.5s;
+}
 
 /* Scroll reveal */
 .reveal {
@@ -672,6 +879,7 @@ main {
    RESPONSIVE
    ============================================ */
 @media (max-width: 768px) {
+
     .header-nav,
     .header-actions {
         display: none;
@@ -691,7 +899,7 @@ main {
         display: flex;
     }
 
-    .header-nav.open + .header-actions {
+    .header-nav.open+.header-actions {
         display: flex;
         top: auto;
         position: relative;
@@ -722,19 +930,50 @@ main {
 /* ============================================
    UTILITY CLASSES
    ============================================ */
-.text-center { text-align: center; }
-.text-primary { color: var(--text-primary); }
-.text-secondary { color: var(--text-secondary); }
-.text-accent { color: var(--accent); }
+.text-center {
+    text-align: center;
+}
 
-.mt-sm { margin-top: var(--space-sm); }
-.mt-md { margin-top: var(--space-md); }
-.mt-lg { margin-top: var(--space-lg); }
-.mb-sm { margin-bottom: var(--space-sm); }
-.mb-md { margin-bottom: var(--space-md); }
-.mb-lg { margin-bottom: var(--space-lg); }
+.text-primary {
+    color: var(--text-primary);
+}
 
-.hidden { display: none !important; }
+.text-secondary {
+    color: var(--text-secondary);
+}
+
+.text-accent {
+    color: var(--accent);
+}
+
+.mt-sm {
+    margin-top: var(--space-sm);
+}
+
+.mt-md {
+    margin-top: var(--space-md);
+}
+
+.mt-lg {
+    margin-top: var(--space-lg);
+}
+
+.mb-sm {
+    margin-bottom: var(--space-sm);
+}
+
+.mb-md {
+    margin-bottom: var(--space-md);
+}
+
+.mb-lg {
+    margin-bottom: var(--space-lg);
+}
+
+.hidden {
+    display: none !important;
+}
+
 .sr-only {
     position: absolute;
     width: 1px;
@@ -749,6 +988,12 @@ main {
 
 /* Print styles */
 @media print {
-    body::before { display: none; }
-    .nav, .footer { display: none; }
+    body::before {
+        display: none;
+    }
+
+    .nav,
+    .footer {
+        display: none;
+    }
 }
