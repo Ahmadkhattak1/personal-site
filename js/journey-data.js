@@ -28,9 +28,8 @@ const JOURNEY_DATA = {
     about: {
         short: "I build MVPs and web apps for startups. From idea to deployment, I ship products that real users love.",
         full: [
-            "I'm a full-stack developer based in Pakistan, passionate about turning ideas into shipped products. I specialize in building MVPs and web applications for startups, working across the entire stack from frontend to backend to deployment.",
-            "I've built and launched real products like Stumbnail (an AI-powered YouTube thumbnail generator) and contributed to tools like ClawPilot. I believe in learning by building, and every project I take on is an opportunity to solve real problems for real users.",
-            "When I'm not coding, I'm researching machine learning applications, exploring new technologies, or thinking about the next thing to build. I started a startup, learned from its challenges, and came out of it with a clearer vision of what it takes to ship products that matter."
+            "I'm a full-stack developer, focused on turning ideas into shipped products. I build MVPs and web apps for startups, working across the full stack from frontend and backend to deployment.",
+            "I've also built and launched products like Stumbnail, Clawpilot, Screenchat, and more. More on them below.",
         ]
     },
 
@@ -65,8 +64,8 @@ const JOURNEY_DATA = {
         {
             id: "stumbnail",
             name: "Stumbnail",
-            tagline: "AI-powered YouTube thumbnail generator. Solo-built from idea to deployment.",
-            description: "A complete SaaS platform for creating high-converting YouTube thumbnails using AI.",
+            tagline: "AI-powered YouTube thumbnail generator with paid users. Solo-built from idea to deployment.",
+            description: "A complete SaaS platform for creating high-converting YouTube thumbnails using AI, with paid users.",
             url: "https://stumbnail.com",
             screenshot: "public/projects/screenshots/Stumbnail-Hero-Page.png",
             logo: "public/projects/stumbnail.png",
@@ -93,7 +92,7 @@ const JOURNEY_DATA = {
                 "Waitlist system for early adopters",
                 "Web platform frontend"
             ],
-            tech: ["Next.js", "TypeScript", "Tailwind"]
+            tech: ["Next.js", "TypeScript", "Node.js", "Supabase", "DigitalOcean"]
         }
     ],
 
@@ -105,7 +104,7 @@ const JOURNEY_DATA = {
             name: "Stumbnail",
             url: "https://stumbnail.com",
             logo: "public/projects/stumbnail.png",
-            description: "Commercial AI-powered platform for generating high-CTR YouTube thumbnails.",
+            description: "Commercial AI-powered YouTube thumbnail generator with paid users.",
             tags: ["AI", "SaaS", "Next.js", "Node.js", "Express", "Firebase", "Vercel"]
         },
         {
@@ -113,7 +112,14 @@ const JOURNEY_DATA = {
             url: "https://clawpilot.app",
             logo: "public/projects/Clawpilot.svg",
             description: "Setup and management tool for OpenClaw, a multi-platform AI assistant.",
-            tags: ["Next.js", "TypeScript", "Tailwind"]
+            tags: ["Next.js", "TypeScript", "Node.js", "Supabase", "DigitalOcean"]
+        },
+        {
+            name: "LiveBoard",
+            url: "https://liveboard-zeta.vercel.app/",
+            logo: "public/projects/Liveboard.png",
+            description: "Collaborative freeform whiteboard for sketching, planning, and working together in real time.",
+            tags: ["Collaboration", "Whiteboard", "Realtime"]
         },
         {
             name: "ScreenChat",
@@ -121,6 +127,13 @@ const JOURNEY_DATA = {
             logo: "public/projects/screenchat.png",
             description: "AI agent Chrome extension. Chat with your screen, get help with forms, research, and tasks.",
             tags: ["AI", "Chrome Extension", "Browser Agent"]
+        },
+        {
+            name: "Scrapify",
+            url: "https://github.com/Ahmadkhattak1/scrapify-extension",
+            logoEmoji: "\uD83D\uDDC2\uFE0F",
+            description: "Google Business Profile data scraper extension for pulling lead data directly from search results.",
+            tags: ["Chrome Extension", "Scraping", "Lead Gen"]
         },
         {
             name: "Pixelar",
@@ -178,7 +191,7 @@ const JOURNEY_DATA = {
         backend: ["Node.js", "Express", "Python", "MongoDB", "PostgreSQL", "REST APIs"],
         ai: ["AI API Integration", "LLM APIs (OpenAI, Claude)", "Image Generation Pipelines", "Prompt Engineering"],
         data: ["Numpy", "Pandas"],
-        tools: ["Git", "GitHub", "Vercel", "AWS", "Firebase"]
+        tools: ["Git", "GitHub", "Vercel", "AWS", "Firebase", "DigitalOcean", "Supabase"]
     },
 
     // ============================================

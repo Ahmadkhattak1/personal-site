@@ -19,6 +19,18 @@ const hideSection = (selector) => {
     if (section) section.style.display = 'none';
 };
 
+const renderProjectLogo = (project) => {
+    if (project.logoEmoji) {
+        return `<span class="card-logo-emoji" aria-hidden="true">${project.logoEmoji}</span>`;
+    }
+
+    if (project.logo) {
+        return `<img src="${project.logo}" class="card-logo" alt="${project.name}">`;
+    }
+
+    return '';
+};
+
 const populatePage = () => {
     // Personal Information
     document.getElementById('name').textContent = CONFIG.personal.name;
@@ -117,7 +129,7 @@ const populatePage = () => {
                     <div class="card">
                         <div class="card-header">
                             <div class="card-title-group">
-                                ${project.logo ? `<img src="${project.logo}" class="card-logo" alt="${project.name}">` : ''}
+                                ${renderProjectLogo(project)}
                                 <h3 class="card-title">${project.name}</h3>
                             </div>
                             <span class="card-year">Project</span>

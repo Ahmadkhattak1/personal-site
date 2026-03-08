@@ -8,9 +8,9 @@
 
     <!-- SEO Meta Tags -->
     <meta name="description"
-        content="Full-stack developer building MVPs and web apps for startups. Creator of Stumbnail. React, Next.js, Node.js, AI integrations.">
+        content="Full-stack developer focused on turning ideas into shipped products. Built Stumbnail, ClawPilot, LiveBoard, ScreenChat, and practical AI-powered web apps.">
     <meta name="keywords"
-        content="Ahmad Yaseen, Full-Stack Developer, MVP Development, Web Apps, React, Next.js, Node.js, AI, Stumbnail, Pakistan">
+        content="Ahmad Yaseen, Full-Stack Developer, Product Engineer, React, Next.js, Node.js, Supabase, DigitalOcean, AI, Stumbnail, ClawPilot, LiveBoard, ScreenChat, Scrapify">
     <meta name="author" content="Ahmad Yaseen">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://ahmadyaseen.com">
@@ -20,7 +20,7 @@
     <meta property="og:url" content="https://ahmadyaseen.com">
     <meta property="og:title" content="Ahmad Yaseen | Full-Stack Developer">
     <meta property="og:description"
-        content="Full-stack developer building MVPs and web apps for startups. Creator of Stumbnail.">
+        content="Full-stack developer focused on turning ideas into shipped products. Built Stumbnail, ClawPilot, LiveBoard, ScreenChat, and more.">
     <meta property="og:image" content="https://ahmadyaseen.com/public/profile.png">
 
     <!-- Twitter -->
@@ -28,7 +28,7 @@
     <meta property="twitter:url" content="https://ahmadyaseen.com">
     <meta property="twitter:title" content="Ahmad Yaseen | Full-Stack Developer">
     <meta property="twitter:description"
-        content="Full-stack developer building MVPs and web apps for startups. Creator of Stumbnail.">
+        content="Full-stack developer focused on turning ideas into shipped products. Built Stumbnail, ClawPilot, LiveBoard, ScreenChat, and more.">
     <meta property="twitter:image" content="https://ahmadyaseen.com/public/profile.png">
     <meta property="twitter:creator" content="@AhmadYKhattak">
 
@@ -41,7 +41,7 @@
         "url": "https://ahmadyaseen.com",
         "image": "https://ahmadyaseen.com/public/profile.png",
         "jobTitle": "Full-Stack Developer",
-        "description": "Full-stack developer building MVPs and web apps for startups. Creator of Stumbnail.",
+        "description": "Full-stack developer focused on turning ideas into shipped products. Built Stumbnail, ClawPilot, LiveBoard, ScreenChat, and practical AI-powered web apps.",
         "sameAs": [
             "https://github.com/ahmadkhattak1",
             "https://www.linkedin.com/in/AhmadYKhattak/",
@@ -117,6 +117,9 @@
     <main>
         <!-- Hero Section -->
         <section class="hero" id="hero">
+            <div class="hero-grid-pattern" aria-hidden="true">
+                <canvas class="hero-grid-canvas" id="heroGridCanvas"></canvas>
+            </div>
             <div class="container">
                 <div class="hero-content">
                     <div class="hero-text">
@@ -125,9 +128,10 @@
                             Available for new projects
                         </div>
                         <h1 class="hero-title animate-fade-up delay-1">Ahmad<br>Yaseen</h1>
-                        <p class="hero-tagline animate-fade-up delay-2">I build MVPs for startups.</p>
-                        <p class="hero-description animate-fade-up delay-3">Full-stack developer turning ideas into
-                            shipped products. React, Next.js, Node.js, and AI integrations.</p>
+                        <p class="hero-tagline animate-fade-up delay-2">Turning ideas into shipped products.</p>
+                        <p class="hero-description animate-fade-up delay-3">I build fast, practical software across
+                            frontend, backend, and deployment. Recent products include Stumbnail, ClawPilot,
+                            LiveBoard, ScreenChat, and Scrapify.</p>
                         <div class="hero-cta animate-fade-up delay-4">
                             <a href="#contact" class="btn btn-primary">Let's work together</a>
                             <a href="#projects" class="btn btn-secondary">See my work</a>
@@ -150,85 +154,182 @@
         <!-- Projects Section -->
         <section class="section projects" id="projects">
             <div class="container">
-                <div class="projects-header reveal">
-                    <span class="projects-eyebrow">Work</span>
-                    <h2 class="projects-title">Products <span class="headline-fade">I've built</span></h2>
+                <div class="projects-header">
+                    <div class="projects-heading reveal">
+                        <span class="projects-eyebrow">Work</span>
+                        <h2 class="projects-title">Products <span class="headline-fade">I've built</span></h2>
+                        <div class="projects-logo-strip reveal reveal-left" aria-label="Product logos">
+                            <a href="https://stumbnail.com" target="_blank" rel="noopener noreferrer"
+                                class="projects-logo-pill" aria-label="Stumbnail" title="Stumbnail">
+                                <img src="public/projects/stumbnail.png" alt="Stumbnail logo"
+                                    class="projects-logo-pill-image">
+                            </a>
+                            <a href="https://clawpilot.app" target="_blank" rel="noopener noreferrer"
+                                class="projects-logo-pill" aria-label="ClawPilot" title="ClawPilot">
+                                <img src="public/projects/Clawpilot.svg" alt="ClawPilot logo"
+                                    class="projects-logo-pill-image">
+                            </a>
+                            <a href="https://liveboard-zeta.vercel.app/" target="_blank" rel="noopener noreferrer"
+                                class="projects-logo-pill" aria-label="LiveBoard" title="LiveBoard">
+                                <img src="public/projects/Liveboard.png" alt="LiveBoard logo"
+                                    class="projects-logo-pill-image">
+                            </a>
+                            <a href="https://ahmadyaseen.com/extensions/screenchat" target="_blank"
+                                rel="noopener noreferrer" class="projects-logo-pill" aria-label="ScreenChat"
+                                title="ScreenChat">
+                                <img src="public/projects/screenchat.png" alt="ScreenChat logo"
+                                    class="projects-logo-pill-image">
+                            </a>
+                            <a href="https://github.com/Ahmadkhattak1/scrapify-extension" target="_blank"
+                                rel="noopener noreferrer" class="projects-logo-pill" aria-label="Scrapify"
+                                title="Scrapify">
+                                <span class="projects-logo-pill-image projects-logo-pill-image--emoji"
+                                    aria-hidden="true">&#128450;&#65039;</span>
+                            </a>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="projects-grid">
-                    <!-- Project 1: Stumbnail -->
-                    <article class="project-item reveal">
-                        <div class="project-number" data-num="01">01</div>
-                        <div class="project-content">
-                            <div class="project-meta">
-                                <img src="public/projects/stumbnail.png" alt="Stumbnail logo"
-                                    class="project-logo project-logo--light">
-                                <div class="project-meta-text">
-                                    <h3 class="project-name">Stumbnail</h3>
-                                    <span class="project-type">SaaS Product</span>
-                                </div>
-                            </div>
-                            <p class="project-desc">AI-powered YouTube thumbnail generator. Solo-built from idea to
-                                deployment.</p>
-                            <ul class="project-highlights">
-                                <li><span class="marker"></span>AI image generation pipeline</li>
-                                <li><span class="marker"></span>Real-time canvas editor</li>
-                                <li><span class="marker"></span>User dashboard & community feed</li>
-                                <li><span class="marker"></span>Complete auth system</li>
-                            </ul>
-                            <div class="project-stack">
-                                <span>React</span>
-                                <span>Next.js</span>
-                                <span>Node.js</span>
-                                <span>Express.js</span>
-                                <span>Firebase</span>
-                            </div>
-                            <a href="https://stumbnail.com" target="_blank" rel="noopener noreferrer"
-                                class="project-cta">
-                                stumbnail.com <span class="arrow">→</span>
-                            </a>
-                        </div>
-                        <div class="project-preview">
-                            <img src="public/projects/screenshots/Stumbnail-Hero-Page.png"
-                                alt="Stumbnail - AI YouTube Thumbnail Generator">
-                        </div>
-                    </article>
+                <div class="projects-carousel reveal">
+                    <button type="button" class="projects-nav projects-nav--prev" data-projects-nav="prev"
+                        aria-label="Show previous product" aria-controls="projectsTrack">
+                        <span aria-hidden="true">&#8249;</span>
+                    </button>
+                    <button type="button" class="projects-nav projects-nav--next" data-projects-nav="next"
+                        aria-label="Show next product" aria-controls="projectsTrack">
+                        <span aria-hidden="true">&#8250;</span>
+                    </button>
 
-                    <!-- Project 2: ClawPilot -->
-                    <article class="project-item project-item--alt reveal">
-                        <div class="project-number" data-num="02">02</div>
-                        <div class="project-content">
-                            <div class="project-meta">
-                                <img src="public/projects/Clawpilot.svg" alt="ClawPilot logo"
-                                    class="project-logo project-logo--light">
-                                <div class="project-meta-text">
-                                    <h3 class="project-name">ClawPilot</h3>
-                                    <span class="project-type">Open Source Tool</span>
+                    <div class="projects-grid" id="projectsTrack" data-projects-track tabindex="0"
+                        aria-label="Scrollable product cards">
+                        <article class="project-item" data-project-card>
+                            <a href="https://stumbnail.com" target="_blank" rel="noopener noreferrer" class="project-card">
+                                <div class="project-card-surface">
+                                    <div class="project-media project-media--screenshot">
+                                        <img src="public/projects/screenshots/Stumbnail-Hero-Page.png"
+                                            alt="Stumbnail thumbnail generator dashboard preview">
+                                    </div>
+                                    <div class="project-content">
+                                        <div class="project-meta">
+                                            <img src="public/projects/stumbnail.png" alt="Stumbnail logo"
+                                                class="project-logo project-logo--light">
+                                            <div class="project-meta-text">
+                                                <h3 class="project-name">Stumbnail</h3>
+                                            </div>
+                                        </div>
+                                        <p class="project-desc">AI YouTube thumbnail generator with paid users, built and shipped end-to-end as a solo product.</p>
+                                        <div class="project-footer">
+                                            <span class="project-cta">View Project</span>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                            <p class="project-desc">Setup and management tool for OpenClaw, an open-source AI assistant
-                                across WhatsApp, Telegram, Slack, and Discord.</p>
-                            <ul class="project-highlights">
-                                <li><span class="marker"></span>Product landing page</li>
-                                <li><span class="marker"></span>Waitlist system for early adopters</li>
-                                <li><span class="marker"></span>Web platform frontend</li>
-                            </ul>
-                            <div class="project-stack">
-                                <span>SwiftUI</span>
-                                <span>React</span>
-                                <span>Next.js</span>
-                                <span>Firebase</span>
-                            </div>
-                            <a href="https://clawpilot.app" target="_blank" rel="noopener noreferrer"
-                                class="project-cta">
-                                clawpilot.app <span class="arrow">→</span>
                             </a>
-                        </div>
-                        <div class="project-preview">
-                            <img src="public/projects/screenshots/clawpilot-hero-page.png"
-                                alt="ClawPilot - AI Assistant Management">
-                        </div>
-                    </article>
+                        </article>
+
+                        <article class="project-item" data-project-card>
+                            <a href="https://clawpilot.app" target="_blank" rel="noopener noreferrer" class="project-card">
+                                <div class="project-card-surface">
+                                    <div class="project-media project-media--screenshot">
+                                        <img src="public/projects/screenshots/clawpilot-hero-page.png"
+                                            alt="ClawPilot AI assistant platform preview">
+                                    </div>
+                                    <div class="project-content">
+                                        <div class="project-meta">
+                                            <img src="public/projects/Clawpilot.svg" alt="ClawPilot logo"
+                                                class="project-logo project-logo--light">
+                                            <div class="project-meta-text">
+                                                <h3 class="project-name">ClawPilot</h3>
+                                            </div>
+                                        </div>
+                                        <p class="project-desc">Managed OpenClaw hosting platform focused on setup, onboarding, and access for a multi-platform AI assistant.</p>
+                                        <div class="project-footer">
+                                            <span class="project-cta">View Project</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </article>
+
+                        <article class="project-item" data-project-card>
+                            <a href="https://liveboard-zeta.vercel.app/" target="_blank" rel="noopener noreferrer"
+                                class="project-card">
+                                <div class="project-card-surface">
+                                    <div class="project-media project-media--logo">
+                                        <div class="project-media-badge">
+                                            <img src="public/projects/Liveboard.png" alt="LiveBoard logo"
+                                                class="project-logo project-logo--light project-logo--large">
+                                        </div>
+                                    </div>
+                                    <div class="project-content">
+                                        <div class="project-meta">
+                                            <img src="public/projects/Liveboard.png" alt="LiveBoard logo"
+                                                class="project-logo project-logo--light">
+                                            <div class="project-meta-text">
+                                                <h3 class="project-name">LiveBoard</h3>
+                                            </div>
+                                        </div>
+                                        <p class="project-desc">Collaborative freeform whiteboard built for shared planning, sketching, and visual thinking.</p>
+                                        <div class="project-footer">
+                                            <span class="project-cta">View Project</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </article>
+
+                        <article class="project-item" data-project-card>
+                            <a href="https://ahmadyaseen.com/extensions/screenchat" target="_blank"
+                                rel="noopener noreferrer" class="project-card">
+                                <div class="project-card-surface">
+                                    <div class="project-media project-media--logo">
+                                        <div class="project-media-badge">
+                                            <img src="public/projects/screenchat.png" alt="ScreenChat logo"
+                                                class="project-logo project-logo--light project-logo--large">
+                                        </div>
+                                    </div>
+                                    <div class="project-content">
+                                        <div class="project-meta">
+                                            <img src="public/projects/screenchat.png" alt="ScreenChat logo"
+                                                class="project-logo project-logo--light">
+                                            <div class="project-meta-text">
+                                                <h3 class="project-name">ScreenChat</h3>
+                                            </div>
+                                        </div>
+                                        <p class="project-desc">Chat with any page through a browser extension built to assist with forms, research, and repetitive tasks.</p>
+                                        <div class="project-footer">
+                                            <span class="project-cta">View Project</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </article>
+
+                        <article class="project-item" data-project-card>
+                            <a href="https://github.com/Ahmadkhattak1/scrapify-extension" target="_blank"
+                                rel="noopener noreferrer" class="project-card">
+                                <div class="project-card-surface">
+                                    <div class="project-media project-media--logo">
+                                        <div class="project-media-badge">
+                                            <span class="project-logo project-logo--emoji project-logo--large"
+                                                aria-hidden="true">&#128450;&#65039;</span>
+                                        </div>
+                                    </div>
+                                    <div class="project-content">
+                                        <div class="project-meta">
+                                            <span class="project-logo project-logo--emoji" aria-hidden="true">&#128450;&#65039;</span>
+                                            <div class="project-meta-text">
+                                                <h3 class="project-name">Scrapify</h3>
+                                            </div>
+                                        </div>
+                                        <p class="project-desc">Google Business Profile data scraper extension for collecting local business leads faster.</p>
+                                        <div class="project-footer">
+                                            <span class="project-cta">View Project</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </article>
+                    </div>
                 </div>
             </div>
         </section>
@@ -275,6 +376,7 @@
 
         <!-- Contact Section -->
         <section class="section contact" id="contact">
+            <div class="contact-surface" id="contactSurface" aria-hidden="true"></div>
             <div class="container">
                 <div class="contact-content reveal">
                     <h2 class="contact-title">Let's build <span class="headline-fade">something.</span></h2>
@@ -341,33 +443,9 @@
 
     <!-- Scripts -->
     <script src="js/journey-data.js"></script>
-    <script src="js/home.js"></script>
-
-    <!-- Vanta.js Birds Background -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
-    <script>
-        VANTA.BIRDS({
-            el: "#hero",
-            mouseControls: true,
-            touchControls: true,
-            gyroControls: false,
-            minHeight: 200.00,
-            minWidth: 200.00,
-            scale: 1.00,
-            scaleMobile: 1.00,
-            backgroundColor: 0x0f0f0f,
-            color1: 0xf97316,
-            color2: 0x9a9a9a,
-            birdSize: 0.90,
-            wingSpan: 24.00,
-            speedLimit: 1.00,
-            separation: 85.00,
-            alignment: 10.00,
-            cohesion: 1.00,
-            quantity: 3.00
-        });
-    </script>
+    <script src="js/home.js"></script>
 </body>
 
 </html>
+

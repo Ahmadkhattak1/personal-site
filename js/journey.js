@@ -38,6 +38,18 @@
             .join('');
     }
 
+    function renderProjectLogo(project) {
+        if (project.logoEmoji) {
+            return `<span class="project-item-logo-emoji" aria-hidden="true">${project.logoEmoji}</span>`;
+        }
+
+        if (project.logo) {
+            return `<img src="${project.logo}" alt="${project.name} logo" class="project-item-logo">`;
+        }
+
+        return '';
+    }
+
     // ============================================
     // RENDER EXPERIENCE TIMELINE
     // ============================================
@@ -116,10 +128,7 @@
         container.innerHTML = JOURNEY_DATA.allProjects.map(project => `
             <a href="${project.url}" target="_blank" rel="noopener noreferrer" class="project-item">
                 <div class="project-item-header">
-                    ${project.logo
-                        ? `<img src="${project.logo}" alt="${project.name} logo" class="project-item-logo">`
-                        : ''
-                    }
+                    ${renderProjectLogo(project)}
                     <h3 class="project-item-name">${project.name}</h3>
                 </div>
                 <p class="project-item-desc">${project.description}</p>
@@ -298,9 +307,29 @@
         const downloadBtn = document.getElementById('downloadResume');
 
         if (downloadBtn) {
-            downloadBtn.addEventListener('click', () => {
+            downloadBtn.addEventListener('click', async () => {
                 if (typeof generateResumePDF === 'function') {
-                    generateResumePDF();
+                    const textEl = downloadBtn.querySelector('.resume-btn-text');
+                    const originalText = textEl ? textEl.textContent : '';
+
+                    downloadBtn.disabled = true;
+                    downloadBtn.setAttribute('aria-busy', 'true');
+                    if (textEl) {
+                        textEl.textContent = 'Preparing CV';
+                    }
+
+                    try {
+                        await generateResumePDF();
+                    } catch (error) {
+                        console.error('Resume generation failed:', error);
+                        alert('Unable to generate the resume right now. Please try again.');
+                    } finally {
+                        downloadBtn.disabled = false;
+                        downloadBtn.removeAttribute('aria-busy');
+                        if (textEl) {
+                            textEl.textContent = originalText;
+                        }
+                    }
                 } else {
                     console.error('PDF generator not loaded');
                     alert('PDF generator is loading. Please try again.');

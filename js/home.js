@@ -83,6 +83,493 @@
     }
 
     // ============================================
+    // HERO INTERACTIVE GRID PATTERN
+    // ============================================
+    const hero = document.getElementById('hero');
+    const heroGridCanvas = document.getElementById('heroGridCanvas');
+
+    if (hero && heroGridCanvas) {
+        initInteractiveGridPattern(hero, heroGridCanvas);
+    }
+
+    function initInteractiveGridPattern(container, canvas) {
+        const ctx = canvas.getContext('2d');
+
+        if (!ctx) {
+            return;
+        }
+
+        const state = {
+            dpr: Math.min(window.devicePixelRatio || 1, 2),
+            width: 0,
+            height: 0,
+            cellSize: 32,
+            cols: 0,
+            rows: 0,
+            intensities: new Float32Array(0),
+            pointerX: 0,
+            pointerY: 0,
+            prevPointerX: null,
+            prevPointerY: null,
+            pointerInside: false,
+            rafId: 0
+        };
+
+        function resizeGrid() {
+            const rect = container.getBoundingClientRect();
+            state.width = rect.width;
+            state.height = rect.height;
+            state.cellSize = window.innerWidth <= 640 ? 26 : window.innerWidth <= 1024 ? 30 : 34;
+            state.cols = Math.max(1, Math.ceil(state.width / state.cellSize));
+            state.rows = Math.max(1, Math.ceil(state.height / state.cellSize));
+            state.intensities = new Float32Array(state.cols * state.rows);
+            state.dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+            canvas.width = Math.max(1, Math.floor(state.width * state.dpr));
+            canvas.height = Math.max(1, Math.floor(state.height * state.dpr));
+            canvas.style.width = `${state.width}px`;
+            canvas.style.height = `${state.height}px`;
+
+            container.style.setProperty('--hero-grid-size', `${state.cellSize}px`);
+            container.style.setProperty('--pointer-x', `${state.width * 0.56}px`);
+            container.style.setProperty('--pointer-y', `${state.height * 0.3}px`);
+
+            ctx.setTransform(state.dpr, 0, 0, state.dpr, 0, 0);
+        }
+
+        function energizeCell(x, y) {
+            const baseCol = Math.floor(x / state.cellSize);
+            const baseRow = Math.floor(y / state.cellSize);
+            const searchRadius = 2;
+            const influenceRadius = state.cellSize * 2.4;
+
+            for (let row = baseRow - searchRadius; row <= baseRow + searchRadius; row++) {
+                if (row < 0 || row >= state.rows) {
+                    continue;
+                }
+
+                for (let col = baseCol - searchRadius; col <= baseCol + searchRadius; col++) {
+                    if (col < 0 || col >= state.cols) {
+                        continue;
+                    }
+
+                    const centerX = (col * state.cellSize) + (state.cellSize / 2);
+                    const centerY = (row * state.cellSize) + (state.cellSize / 2);
+                    const distance = Math.hypot(x - centerX, y - centerY);
+                    const falloff = Math.max(0, 1 - (distance / influenceRadius));
+
+                    if (falloff <= 0) {
+                        continue;
+                    }
+
+                    const index = (row * state.cols) + col;
+                    const nextIntensity = Math.pow(falloff, 1.65);
+                    state.intensities[index] = Math.max(state.intensities[index], nextIntensity);
+                }
+            }
+        }
+
+        function updatePointer(clientX, clientY) {
+            const rect = container.getBoundingClientRect();
+            const x = clientX - rect.left;
+            const y = clientY - rect.top;
+            const startX = state.prevPointerX == null ? x : state.prevPointerX;
+            const startY = state.prevPointerY == null ? y : state.prevPointerY;
+            const distance = Math.hypot(x - startX, y - startY);
+            const steps = Math.max(1, Math.ceil(distance / Math.max(12, state.cellSize * 0.45)));
+
+            state.pointerInside = true;
+            state.pointerX = x;
+            state.pointerY = y;
+            container.style.setProperty('--pointer-x', `${x}px`);
+            container.style.setProperty('--pointer-y', `${y}px`);
+
+            for (let step = 1; step <= steps; step++) {
+                const progress = step / steps;
+                energizeCell(
+                    startX + ((x - startX) * progress),
+                    startY + ((y - startY) * progress)
+                );
+            }
+
+            state.prevPointerX = x;
+            state.prevPointerY = y;
+        }
+
+        function resetPointer() {
+            state.pointerInside = false;
+            state.prevPointerX = null;
+            state.prevPointerY = null;
+            container.style.setProperty('--pointer-x', `${state.width * 0.56}px`);
+            container.style.setProperty('--pointer-y', `${state.height * 0.3}px`);
+        }
+
+        function renderGrid() {
+            ctx.clearRect(0, 0, state.width, state.height);
+
+            for (let row = 0; row < state.rows; row++) {
+                for (let col = 0; col < state.cols; col++) {
+                    const index = (row * state.cols) + col;
+                    const centerX = (col * state.cellSize) + (state.cellSize / 2);
+                    const centerY = (row * state.cellSize) + (state.cellSize / 2);
+                    const trailIntensity = state.intensities[index];
+                    let proximityIntensity = 0;
+
+                    if (trailIntensity > 0.001) {
+                        state.intensities[index] = trailIntensity * 0.92;
+                    } else if (trailIntensity !== 0) {
+                        state.intensities[index] = 0;
+                    }
+
+                    if (state.pointerInside) {
+                        const distance = Math.hypot(state.pointerX - centerX, state.pointerY - centerY);
+                        proximityIntensity = Math.max(0, 1 - (distance / (state.cellSize * 2.8))) * 0.3;
+                    }
+
+                    const intensity = Math.max(state.intensities[index], proximityIntensity);
+
+                    if (intensity < 0.04) {
+                        continue;
+                    }
+
+                    const inset = Math.max(1.6, state.cellSize * 0.08);
+                    const size = Math.max(3, state.cellSize - (inset * 2));
+                    const x = (col * state.cellSize) + inset;
+                    const y = (row * state.cellSize) + inset;
+
+                    ctx.fillStyle = `rgba(249, 115, 22, ${0.045 + (intensity * 0.18)})`;
+                    ctx.shadowColor = `rgba(251, 146, 60, ${0.1 + (intensity * 0.16)})`;
+                    ctx.shadowBlur = 10 * intensity;
+                    ctx.fillRect(x, y, size, size);
+                }
+            }
+
+            ctx.shadowBlur = 0;
+            ctx.shadowColor = 'transparent';
+            state.rafId = window.requestAnimationFrame(renderGrid);
+        }
+
+        container.addEventListener('pointermove', event => {
+            updatePointer(event.clientX, event.clientY);
+        });
+
+        container.addEventListener('pointerleave', resetPointer);
+        container.addEventListener('touchend', resetPointer, { passive: true });
+
+        container.addEventListener('touchmove', event => {
+            if (!event.touches[0]) {
+                return;
+            }
+
+            updatePointer(event.touches[0].clientX, event.touches[0].clientY);
+        }, { passive: true });
+
+        if (typeof ResizeObserver === 'function') {
+            const resizeObserver = new ResizeObserver(() => resizeGrid());
+            resizeObserver.observe(container);
+        } else {
+            window.addEventListener('resize', resizeGrid);
+        }
+
+        resizeGrid();
+        renderGrid();
+    }
+
+    // ============================================
+    // CONTACT DOTTED SURFACE
+    // ============================================
+    const contactSurface = document.getElementById('contactSurface');
+
+    if (contactSurface && window.THREE) {
+        initContactDottedSurface(contactSurface, window.THREE);
+    }
+
+    function initContactDottedSurface(container, THREE) {
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(58, 1, 1, 10000);
+        const renderer = new THREE.WebGLRenderer({
+            alpha: true,
+            antialias: true
+        });
+
+        const state = {
+            separation: 130,
+            amountX: 28,
+            amountY: 46,
+            count: 0,
+            animationId: 0,
+            geometry: null,
+            material: null
+        };
+
+        scene.fog = new THREE.Fog(0x0a0a0a, 1800, 5200);
+        camera.position.set(0, 320, 1040);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        renderer.setClearColor(0x000000, 0);
+        container.appendChild(renderer.domElement);
+
+        const geometry = new THREE.BufferGeometry();
+        const positions = [];
+        const colors = [];
+
+        for (let ix = 0; ix < state.amountX; ix++) {
+            for (let iy = 0; iy < state.amountY; iy++) {
+                const x = ix * state.separation - ((state.amountX * state.separation) / 2);
+                const y = 0;
+                const z = iy * state.separation - ((state.amountY * state.separation) / 2);
+                positions.push(x, y, z);
+                colors.push(170 / 255, 170 / 255, 170 / 255);
+            }
+        }
+
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+
+        const material = new THREE.PointsMaterial({
+            size: 6.4,
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.62,
+            sizeAttenuation: true
+        });
+
+        const points = new THREE.Points(geometry, material);
+        scene.add(points);
+
+        state.geometry = geometry;
+        state.material = material;
+
+        function resizeSurface() {
+            const rect = container.getBoundingClientRect();
+            const width = Math.max(1, rect.width);
+            const height = Math.max(1, rect.height);
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+        }
+
+        function animateSurface() {
+            state.animationId = window.requestAnimationFrame(animateSurface);
+
+            const positionAttribute = geometry.attributes.position;
+            const positionArray = positionAttribute.array;
+            let i = 0;
+
+            for (let ix = 0; ix < state.amountX; ix++) {
+                for (let iy = 0; iy < state.amountY; iy++) {
+                    const index = i * 3;
+                    positionArray[index + 1] =
+                        (Math.sin((ix + state.count) * 0.28) * 34) +
+                        (Math.sin((iy + state.count) * 0.42) * 34);
+                    i++;
+                }
+            }
+
+            positionAttribute.needsUpdate = true;
+            renderer.render(scene, camera);
+            state.count += 0.055;
+        }
+
+        const handleResize = () => resizeSurface();
+        window.addEventListener('resize', handleResize);
+        resizeSurface();
+        animateSurface();
+
+        window.addEventListener('beforeunload', () => {
+            window.cancelAnimationFrame(state.animationId);
+            window.removeEventListener('resize', handleResize);
+            geometry.dispose();
+            material.dispose();
+            renderer.dispose();
+        }, { once: true });
+    }
+
+    // ============================================
+    // PROJECTS CAROUSEL
+    // ============================================
+    const projectsTrack = document.querySelector('[data-projects-track]');
+    const projectCards = projectsTrack
+        ? Array.from(projectsTrack.querySelectorAll('[data-project-card]'))
+        : [];
+    const prevProjectButton = document.querySelector('[data-projects-nav="prev"]');
+    const nextProjectButton = document.querySelector('[data-projects-nav="next"]');
+
+    if (projectsTrack && projectCards.length > 1) {
+        initProjectsCarousel(projectsTrack, projectCards, prevProjectButton, nextProjectButton);
+    }
+
+    function initProjectsCarousel(track, cards, prevButton, nextButton) {
+        let activeIndex = 0;
+        let scrollFrame = 0;
+        const carousel = track.closest('.projects-carousel');
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const scrollBehavior = prefersReducedMotion ? 'auto' : 'smooth';
+        let lastWheelInteraction = 0;
+
+        const clampIndex = index => Math.max(0, Math.min(cards.length - 1, index));
+
+        const getCardTargetLeft = card => {
+            const trackStyles = window.getComputedStyle(track);
+            const paddingLeft = parseFloat(trackStyles.paddingLeft) || 0;
+            const maxScrollLeft = track.scrollWidth - track.clientWidth;
+            const targetLeft = card.offsetLeft - paddingLeft;
+
+            return Math.max(0, Math.min(targetLeft, maxScrollLeft));
+        };
+
+        const findClosestIndex = () => {
+            let closestIndex = 0;
+            let closestDistance = Number.POSITIVE_INFINITY;
+
+            cards.forEach((card, index) => {
+                const distance = Math.abs(getCardTargetLeft(card) - track.scrollLeft);
+
+                if (distance < closestDistance) {
+                    closestDistance = distance;
+                    closestIndex = index;
+                }
+            });
+
+            return closestIndex;
+        };
+
+        const updateNavState = () => {
+            if (prevButton) {
+                prevButton.disabled = activeIndex === 0;
+            }
+
+            if (nextButton) {
+                nextButton.disabled = activeIndex === cards.length - 1;
+            }
+        };
+
+        const syncActiveIndex = () => {
+            activeIndex = findClosestIndex();
+            updateNavState();
+        };
+
+        const scrollToIndex = index => {
+            const nextIndex = clampIndex(index);
+            activeIndex = nextIndex;
+            updateNavState();
+            track.scrollTo({
+                left: getCardTargetLeft(cards[nextIndex]),
+                behavior: scrollBehavior
+            });
+        };
+
+        const handleDirection = direction => {
+            scrollToIndex(findClosestIndex() + direction);
+        };
+
+        if (prevButton) {
+            prevButton.addEventListener('click', () => handleDirection(-1));
+        }
+
+        if (nextButton) {
+            nextButton.addEventListener('click', () => handleDirection(1));
+        }
+
+        if (carousel) {
+            carousel.addEventListener('click', event => {
+                if (event.target.closest('.project-card, .projects-nav')) {
+                    return;
+                }
+
+                const rect = carousel.getBoundingClientRect();
+                const clickX = event.clientX - rect.left;
+                const edgeThreshold = Math.max(64, Math.min(120, rect.width * 0.16));
+
+                if (clickX <= edgeThreshold) {
+                    handleDirection(-1);
+                    return;
+                }
+
+                if (clickX >= rect.width - edgeThreshold) {
+                    handleDirection(1);
+                }
+            });
+        }
+
+        track.addEventListener('keydown', event => {
+            if (event.key === 'ArrowLeft') {
+                event.preventDefault();
+                handleDirection(-1);
+            }
+
+            if (event.key === 'ArrowRight') {
+                event.preventDefault();
+                handleDirection(1);
+            }
+        });
+
+        track.addEventListener('scroll', () => {
+            if (scrollFrame) {
+                window.cancelAnimationFrame(scrollFrame);
+            }
+
+            scrollFrame = window.requestAnimationFrame(() => {
+                syncActiveIndex();
+                scrollFrame = 0;
+            });
+        }, { passive: true });
+
+        track.addEventListener('wheel', event => {
+            const horizontalIntent = Math.abs(event.deltaX) > Math.abs(event.deltaY) || event.shiftKey;
+
+            if (!horizontalIntent) {
+                return;
+            }
+
+            const dominantDelta = Math.abs(event.deltaX) > Math.abs(event.deltaY)
+                ? event.deltaX
+                : event.deltaY;
+
+            if (Math.abs(dominantDelta) < 10) {
+                return;
+            }
+
+            const direction = dominantDelta > 0 ? 1 : -1;
+            const currentIndex = findClosestIndex();
+            const nextIndex = clampIndex(currentIndex + direction);
+
+            if (nextIndex === currentIndex) {
+                return;
+            }
+
+            event.preventDefault();
+
+            const now = window.performance.now();
+            if (now - lastWheelInteraction < 420) {
+                return;
+            }
+
+            lastWheelInteraction = now;
+            scrollToIndex(nextIndex);
+        }, { passive: false });
+
+        cards.forEach((card, index) => {
+            const link = card.querySelector('.project-card');
+
+            if (!link) {
+                return;
+            }
+
+            link.addEventListener('focus', () => {
+                if (index === activeIndex) {
+                    updateNavState();
+                    return;
+                }
+
+                scrollToIndex(index);
+            });
+        });
+
+        window.addEventListener('resize', syncActiveIndex);
+        syncActiveIndex();
+    }
+
+    // ============================================
     // HEADER NAVIGATION TOGGLE
     // ============================================
     const navToggle = document.getElementById('navToggle');

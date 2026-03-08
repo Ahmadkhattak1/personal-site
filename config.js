@@ -79,8 +79,22 @@ const CONFIG = {
             name: "Stumbnail",
             url: "https://stumbnail.com",
             logo: "public/projects/stumbnail.png",
-            description: "Commercial AI-powered platform for generating high-CTR YouTube thumbnails.",
+            description: "Commercial AI-powered YouTube thumbnail generator with paid users.",
             tags: ["AI", "SaaS", "React"]
+        },
+        {
+            name: "ClawPilot",
+            url: "https://clawpilot.app",
+            logo: "public/projects/Clawpilot.svg",
+            description: "Managed OpenClaw hosting and setup platform for a multi-platform AI assistant.",
+            tags: ["AI", "Next.js", "Node.js", "Supabase", "DigitalOcean"]
+        },
+        {
+            name: "LiveBoard",
+            url: "https://liveboard-zeta.vercel.app/",
+            logo: "public/projects/Liveboard.png",
+            description: "Collaborative freeform whiteboard built for shared planning and visual thinking.",
+            tags: ["Collaboration", "Whiteboard", "Realtime"]
         },
         {
             name: "ScreenChat",
@@ -88,6 +102,13 @@ const CONFIG = {
             logo: "public/projects/screenchat.png",
             description: "AI agent Chrome extension. Chat with your screen, get help with forms, research, and tasks.",
             tags: ["AI", "Chrome Extension", "Browser Agent"]
+        },
+        {
+            name: "Scrapify",
+            url: "https://github.com/Ahmadkhattak1/scrapify-extension",
+            logoEmoji: "\uD83D\uDDC2\uFE0F",
+            description: "Google Business Profile data scraper extension for collecting business leads faster.",
+            tags: ["Chrome Extension", "Scraping", "Lead Gen"]
         },
         {
             name: "Pixelar",

@@ -680,9 +680,18 @@ main {
     transition: opacity 0.5s ease, transform 0.5s ease;
 }
 
+.reveal.reveal-left {
+    transform: translateX(-28px);
+    transition-duration: 0.6s;
+}
+
 .reveal.visible {
     opacity: 1;
     transform: translateY(0);
+}
+
+.reveal.reveal-left.visible {
+    transform: translateX(0);
 }
 
 /* ============================================
@@ -791,6 +800,7 @@ main {
    FOOTER
    ============================================ */
 .footer {
+    position: relative;
     padding: var(--space-xl) 0;
     border-top: 1px solid var(--border);
     background: var(--bg-primary);
@@ -845,6 +855,7 @@ main {
     border-radius: 50%;
     animation: pulse 2s infinite;
 }
+
 
 /* Social icons */
 .social-links {
