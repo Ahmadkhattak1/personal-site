@@ -12,7 +12,7 @@ const JOURNEY_DATA = {
         title: "Full-Stack Developer",
         tagline: "I build MVPs and web apps for startups.",
         description: "Full-stack developer. I turn ideas into shipped products, fast. React, Next.js, Node.js, AI integrations.",
-        email: "Ahdfactz@gmail.com",
+  email: "hi@ahmadyaseen.com",
         location: "Pakistan",
         profileImage: "public/profile.png",
         status: "Currently open for freelance work.",

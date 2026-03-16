@@ -386,7 +386,7 @@
 
 %cExploring my journey? Nice!
 
-→ Ahdfactz@gmail.com
+              → hi@ahmadyaseen.com
 `,
     'color: #f97316; font-weight: bold; font-family: monospace;',
     'color: #a1a1a1; font-size: 11px;'

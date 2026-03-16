@@ -778,7 +778,7 @@
 You're digging through the source - I respect that.
 Let's build something together.
 
-→ Ahdfactz@gmail.com
+            → hi@ahmadyaseen.com
 → github.com/ahmadkhattak1
 → x.com/AhmadYKhattak
 

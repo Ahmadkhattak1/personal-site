@@ -28,7 +28,7 @@ const CONFIG = {
 
     // Social Links
     social: {
-        email: "Ahdfactz@gmail.com",
+  email: "hi@ahmadyaseen.com",
         github: "https://github.com/ahmadkhattak1",
         linkedin: "https://www.linkedin.com/in/AhmadYKhattak/",
         twitter: "https://x.com/AhmadYKhattak"
