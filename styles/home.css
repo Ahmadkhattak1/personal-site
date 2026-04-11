@@ -18,37 +18,6 @@
         radial-gradient(circle at 85% 18%, rgba(249, 115, 22, 0.022), transparent 24%);
 }
 
-.hero-grid-pattern {
-    position: absolute;
-    inset: 0;
-    overflow: hidden;
-    pointer-events: none;
-}
-
-.hero-grid-pattern::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image:
-        linear-gradient(to right, rgba(255, 255, 255, 0.045) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
-    background-size: var(--hero-grid-size, 32px) var(--hero-grid-size, 32px);
-    mask-image: radial-gradient(circle at center, black 34%, transparent 100%);
-    -webkit-mask-image: radial-gradient(circle at center, black 34%, transparent 100%);
-    opacity: 0.92;
-}
-
-.hero-grid-canvas {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0.82;
-    mix-blend-mode: screen;
-    mask-image: radial-gradient(circle at center, black 28%, transparent 100%);
-    -webkit-mask-image: radial-gradient(circle at center, black 28%, transparent 100%);
-}
-
 .hero::after {
     content: '';
     position: absolute;
