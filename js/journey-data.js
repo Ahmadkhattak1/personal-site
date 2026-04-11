@@ -123,7 +123,7 @@ const JOURNEY_DATA = {
         },
         {
             name: "ScreenChat",
-            url: "https://ahmadyaseen.com/extensions/screenchat",
+            url: "https://screenchat.ahmadyaseen.com",
             logo: "public/projects/screenchat.png",
             description: "AI agent Chrome extension. Chat with your screen, get help with forms, research, and tasks.",
             tags: ["AI", "Chrome Extension", "Browser Agent"]
