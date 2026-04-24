@@ -85,10 +85,226 @@
     // ============================================
     // CONTACT DOTTED SURFACE
     // ============================================
+    const heroContourCanvas = document.getElementById('heroContourCanvas');
+    if (heroContourCanvas) {
+        initHeroContour(heroContourCanvas);
+    }
+
     const contactSurface = document.getElementById('contactSurface');
 
     if (contactSurface && window.THREE) {
         initContactDottedSurface(contactSurface, window.THREE);
+    }
+
+    function initHeroContour(canvas) {
+        const ctx = canvas.getContext('2d');
+        const container = canvas.parentElement;
+
+        if (!ctx || !container) {
+            return;
+        }
+
+        let width = 0;
+        let height = 0;
+        let resizeFrame = 0;
+
+        function terrainHeight(normX, normY) {
+            const fx = normX * 7.3;
+            const fy = normY * 5.9;
+            let value = Math.sin(fx * 1.2) * Math.cos(fy * 0.8) * 0.6;
+            value += Math.cos(fx * 2.5 + 1.0) * Math.sin(fy * 1.9) * 0.4;
+            value += Math.sin(fx * 4.8 - fy * 1.6) * 0.3;
+            value += Math.cos(fy * 3.9 + fx * 0.6) * 0.35;
+            value += Math.sin(fx * 2.2 + Math.sin(fy * 2.8)) * 0.3;
+            value += Math.cos(fy * 2.5 + Math.cos(fx * 2.0)) * 0.3;
+            return value;
+        }
+
+        function drawContour() {
+            if (!width || !height) {
+                return;
+            }
+
+            ctx.clearRect(0, 0, width, height);
+
+            const aspect = width / height;
+            const gridCols = Math.max(92, Math.round(118 * aspect));
+            const gridRows = Math.max(74, Math.round(gridCols / Math.max(aspect, 1.1)));
+            const cellWidth = width / gridCols;
+            const cellHeight = height / gridRows;
+            const terrainGrid = new Array(gridRows + 1);
+
+            for (let row = 0; row <= gridRows; row++) {
+                terrainGrid[row] = new Array(gridCols + 1);
+                const normY = row / gridRows;
+
+                for (let col = 0; col <= gridCols; col++) {
+                    const normX = col / gridCols;
+                    terrainGrid[row][col] = terrainHeight(normX, normY);
+                }
+            }
+
+            const contourLevels = [];
+            const minRaw = -0.9;
+            const maxRaw = 1.45;
+            const steps = 8;
+
+            for (let index = 0; index <= steps; index++) {
+                contourLevels.push(minRaw + (index / steps) * (maxRaw - minRaw));
+            }
+
+            for (let levelIndex = 0; levelIndex < contourLevels.length; levelIndex++) {
+                const level = contourLevels[levelIndex];
+                const isMajor = levelIndex % 2 === 0;
+                ctx.strokeStyle = isMajor ? 'rgba(214, 224, 234, 0.2)' : 'rgba(214, 224, 234, 0.1)';
+                ctx.lineWidth = isMajor ? 1.25 : 0.75;
+                ctx.beginPath();
+
+                for (let row = 0; row < gridRows; row++) {
+                    for (let col = 0; col < gridCols; col++) {
+                        const x = col * cellWidth;
+                        const y = row * cellHeight;
+                        const valueTopLeft = terrainGrid[row][col];
+                        const valueTopRight = terrainGrid[row][col + 1];
+                        const valueBottomRight = terrainGrid[row + 1][col + 1];
+                        const valueBottomLeft = terrainGrid[row + 1][col];
+
+                        let configuration = 0;
+                        if (valueTopLeft >= level) configuration |= 1;
+                        if (valueTopRight >= level) configuration |= 2;
+                        if (valueBottomRight >= level) configuration |= 4;
+                        if (valueBottomLeft >= level) configuration |= 8;
+
+                        if (configuration === 0 || configuration === 15) {
+                            continue;
+                        }
+
+                        const topInterpolation = valueTopLeft !== valueTopRight
+                            ? (level - valueTopLeft) / (valueTopRight - valueTopLeft)
+                            : 0.5;
+                        const rightInterpolation = valueTopRight !== valueBottomRight
+                            ? (level - valueTopRight) / (valueBottomRight - valueTopRight)
+                            : 0.5;
+                        const bottomInterpolation = valueBottomLeft !== valueBottomRight
+                            ? (level - valueBottomLeft) / (valueBottomRight - valueBottomLeft)
+                            : 0.5;
+                        const leftInterpolation = valueTopLeft !== valueBottomLeft
+                            ? (level - valueTopLeft) / (valueBottomLeft - valueTopLeft)
+                            : 0.5;
+
+                        const topX = x + topInterpolation * cellWidth;
+                        const topY = y;
+                        const rightX = x + cellWidth;
+                        const rightY = y + rightInterpolation * cellHeight;
+                        const bottomX = x + bottomInterpolation * cellWidth;
+                        const bottomY = y + cellHeight;
+                        const leftX = x;
+                        const leftY = y + leftInterpolation * cellHeight;
+
+                        const segment = (x1, y1, x2, y2) => {
+                            ctx.moveTo(x1, y1);
+                            ctx.lineTo(x2, y2);
+                        };
+
+                        switch (configuration) {
+                            case 1:
+                            case 14:
+                                segment(leftX, leftY, topX, topY);
+                                break;
+                            case 2:
+                            case 13:
+                                segment(topX, topY, rightX, rightY);
+                                break;
+                            case 3:
+                            case 12:
+                                segment(leftX, leftY, rightX, rightY);
+                                break;
+                            case 4:
+                            case 11:
+                                segment(bottomX, bottomY, rightX, rightY);
+                                break;
+                            case 5:
+                                segment(leftX, leftY, topX, topY);
+                                segment(bottomX, bottomY, rightX, rightY);
+                                break;
+                            case 6:
+                            case 9:
+                                segment(topX, topY, bottomX, bottomY);
+                                break;
+                            case 7:
+                            case 8:
+                                segment(leftX, leftY, bottomX, bottomY);
+                                break;
+                            case 10:
+                                segment(topX, topY, rightX, rightY);
+                                segment(leftX, leftY, bottomX, bottomY);
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }
+
+                ctx.stroke();
+            }
+        }
+
+        function resizeContour() {
+            const rect = container.getBoundingClientRect();
+            const nextWidth = Math.max(1, Math.round(rect.width));
+            const nextHeight = Math.max(1, Math.round(rect.height));
+
+            if (nextWidth === width && nextHeight === height) {
+                return;
+            }
+
+            width = nextWidth;
+            height = nextHeight;
+
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            canvas.width = width * dpr;
+            canvas.height = height * dpr;
+            canvas.style.width = `${width}px`;
+            canvas.style.height = `${height}px`;
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.scale(dpr, dpr);
+
+            drawContour();
+        }
+
+        function queueResize() {
+            if (resizeFrame) {
+                window.cancelAnimationFrame(resizeFrame);
+            }
+
+            resizeFrame = window.requestAnimationFrame(() => {
+                resizeFrame = 0;
+                resizeContour();
+            });
+        }
+
+        const resizeObserver = typeof window.ResizeObserver === 'function'
+            ? new window.ResizeObserver(queueResize)
+            : null;
+
+        if (resizeObserver) {
+            resizeObserver.observe(container);
+        }
+
+        window.addEventListener('resize', queueResize);
+        resizeContour();
+
+        window.addEventListener('beforeunload', () => {
+            if (resizeFrame) {
+                window.cancelAnimationFrame(resizeFrame);
+            }
+
+            window.removeEventListener('resize', queueResize);
+
+            if (resizeObserver) {
+                resizeObserver.disconnect();
+            }
+        }, { once: true });
     }
 
     function initContactDottedSurface(container, THREE) {
