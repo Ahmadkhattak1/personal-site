@@ -121,6 +121,20 @@ const CONFIG = {
             url: "https://github.com/ahmadkhattak1",
             description: "Various experiments in reinforcement learning and UI design.",
             tags: ["Open Source"]
+        },
+        {
+            name: "Ezmoji",
+            url: "https://ezmoji.ahmadyaseen.com",
+            logo: "public/projects/ezmoji.png",
+            description: "Browser extension for inserting emojis fast with aliases, shortcuts, and quick search.",
+            tags: ["Browser Extension", "Productivity", "Emoji"]
+        },
+        {
+            name: "Host Hermes Agent",
+            url: "https://hosthermesagent.com",
+            logo: "public/projects/host-hermes-agent.png",
+            description: "Managed Hermes Agent hosting with one-click deploy, dedicated cloud compute, and always-on browser plus terminal access.",
+            tags: ["AI", "Hosting", "Agents"]
         }
     ],
 

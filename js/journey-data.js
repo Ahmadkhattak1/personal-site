@@ -67,7 +67,7 @@ const JOURNEY_DATA = {
             tagline: "AI-powered YouTube thumbnail generator with paid users. Solo-built from idea to deployment.",
             description: "A complete SaaS platform for creating high-converting YouTube thumbnails using AI, with paid users.",
             url: "https://stumbnail.com",
-            screenshot: "public/projects/screenshots/Stumbnail-Hero-Page.png",
+            screenshot: "public/projects/screenshots/stumbnail.webp",
             logo: "public/projects/stumbnail.png",
             features: [
                 "AI image generation pipeline using external AI APIs",
@@ -140,6 +140,20 @@ const JOURNEY_DATA = {
             url: "https://pixelar.dev",
             description: "Developer toolkit for procedurally generating and animating 2D game sprites.",
             tags: ["GenAI", "GameDev", "Tools"]
+        },
+        {
+            name: "Ezmoji",
+            url: "https://ezmoji.ahmadyaseen.com",
+            logo: "public/projects/ezmoji.png",
+            description: "Browser extension for inserting emojis fast with aliases, shortcuts, and quick search.",
+            tags: ["Browser Extension", "Productivity", "Emoji"]
+        },
+        {
+            name: "Host Hermes Agent",
+            url: "https://hosthermesagent.com",
+            logo: "public/projects/host-hermes-agent.png",
+            description: "Managed Hermes Agent hosting with one-click deploy, dedicated cloud compute, and always-on browser plus terminal access.",
+            tags: ["AI", "Hosting", "Agents"]
         }
     ],
 
