@@ -63,7 +63,7 @@
                 <h3 class="timeline-title">${exp.role}</h3>
                 <span class="timeline-subtitle">
                     ${exp.companyUrl
-                        ? `<a href="${exp.companyUrl}" target="_blank" rel="noopener noreferrer">${exp.company}</a>`
+                        ? `<a href="${exp.companyUrl}" target="_blank" rel="noopener noreferrer" class="cursor-generic-button">${exp.company}</a>`
                         : exp.company
                     }
                 </span>
@@ -85,7 +85,7 @@
                 <h3 class="timeline-title">${edu.degree}</h3>
                 <span class="timeline-subtitle">
                     ${edu.institutionUrl
-                        ? `<a href="${edu.institutionUrl}" target="_blank" rel="noopener noreferrer">${edu.institution}</a>`
+                        ? `<a href="${edu.institutionUrl}" target="_blank" rel="noopener noreferrer" class="cursor-generic-button">${edu.institution}</a>`
                         : edu.institution
                     }
                 </span>
@@ -126,7 +126,7 @@
         if (!container || !JOURNEY_DATA.allProjects) return;
 
         container.innerHTML = JOURNEY_DATA.allProjects.map(project => `
-            <a href="${project.url}" target="_blank" rel="noopener noreferrer" class="project-item">
+            <a href="${project.url}" target="_blank" rel="noopener noreferrer" class="project-item cursor-generic-button">
                 <div class="project-item-header">
                     ${renderProjectLogo(project)}
                     <h3 class="project-item-name">${project.name}</h3>
@@ -155,7 +155,7 @@
                 <p class="research-item-meta">${item.role} · ${item.publication}</p>
                 <p class="research-item-desc">${item.description}</p>
                 ${item.url && item.url !== '#'
-                    ? `<a href="${item.url}" target="_blank" rel="noopener noreferrer" class="research-item-link">
+                    ? `<a href="${item.url}" target="_blank" rel="noopener noreferrer" class="research-item-link cursor-generic-button">
                         Read Paper
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M7 17L17 7M17 7H7M17 7V17"/>
@@ -175,7 +175,7 @@
         if (!container || !JOURNEY_DATA.certifications) return;
 
         container.innerHTML = JOURNEY_DATA.certifications.map(cert => `
-            <a href="${cert.url}" target="_blank" rel="noopener noreferrer" class="cert-item">
+            <a href="${cert.url}" target="_blank" rel="noopener noreferrer" class="cert-item cursor-generic-button">
                 <div class="cert-item-info">
                     <div class="cert-item-name">${cert.name}</div>
                     <div class="cert-item-issuer">${cert.issuer}${cert.date ? ` · ${cert.date}` : ''}</div>

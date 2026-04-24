@@ -18,8 +18,8 @@
         document.body.classList.add('splash-active');
 
         let currentIndex = 0;
-        const holdDuration = 200; // pause before exiting
-        const overlapOffset = 100; // next enters before previous fully exits
+        const holdDuration = 120; // pause before exiting
+        const overlapOffset = 60; // next enters before previous fully exits
 
         function showGreeting(element, text) {
             element.textContent = text;
@@ -71,7 +71,7 @@
                         setTimeout(() => {
                             splashScreen.classList.add('hidden');
                             document.body.classList.remove('splash-active');
-                        }, 250);
+                        }, 160);
                     }, holdDuration);
                 }
             }
@@ -205,6 +205,11 @@
         initProjectsCarousel(projectsTrack, projectCards, prevProjectButton, nextProjectButton);
     }
 
+    const copyEmailLink = document.querySelector('[data-copy-email]');
+    if (copyEmailLink) {
+        initCopyEmail(copyEmailLink);
+    }
+
     function initProjectsCarousel(track, cards, prevButton, nextButton) {
         let activeIndex = 0;
         let scrollFrame = 0;
@@ -212,6 +217,16 @@
         const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         const scrollBehavior = prefersReducedMotion ? 'auto' : 'smooth';
         let lastWheelInteraction = 0;
+        let suppressClickUntil = 0;
+        const dragThreshold = 8;
+        const dragState = {
+            pointerId: null,
+            startX: 0,
+            startScrollLeft: 0,
+            active: false,
+            dragging: false,
+            captured: false
+        };
 
         const clampIndex = index => Math.max(0, Math.min(cards.length - 1, index));
 
@@ -269,6 +284,30 @@
             scrollToIndex(findClosestIndex() + direction);
         };
 
+        const stopDragging = pointerId => {
+            if (!dragState.active || (pointerId !== null && dragState.pointerId !== pointerId)) {
+                return;
+            }
+
+            if (dragState.captured && typeof track.releasePointerCapture === 'function' && dragState.pointerId !== null) {
+                try {
+                    track.releasePointerCapture(dragState.pointerId);
+                } catch (error) {
+                    // Ignore release errors when capture has already been dropped.
+                }
+            }
+
+            if (dragState.dragging) {
+                suppressClickUntil = window.performance.now() + 220;
+            }
+
+            dragState.pointerId = null;
+            dragState.active = false;
+            dragState.dragging = false;
+            dragState.captured = false;
+            track.classList.remove('is-dragging');
+        };
+
         if (prevButton) {
             prevButton.addEventListener('click', () => handleDirection(-1));
         }
@@ -309,6 +348,75 @@
                 handleDirection(1);
             }
         });
+
+        track.addEventListener('pointerdown', event => {
+            if (event.pointerType === 'touch' || event.button !== 0 || event.target.closest('.projects-nav')) {
+                return;
+            }
+
+            dragState.pointerId = event.pointerId;
+            dragState.startX = event.clientX;
+            dragState.startScrollLeft = track.scrollLeft;
+            dragState.active = true;
+            dragState.dragging = false;
+            dragState.captured = false;
+        });
+
+        track.addEventListener('pointermove', event => {
+            if (!dragState.active || dragState.pointerId !== event.pointerId) {
+                return;
+            }
+
+            const deltaX = event.clientX - dragState.startX;
+
+            if (!dragState.dragging && Math.abs(deltaX) >= dragThreshold) {
+                dragState.dragging = true;
+                track.classList.add('is-dragging');
+
+                if (!dragState.captured && typeof track.setPointerCapture === 'function') {
+                    track.setPointerCapture(event.pointerId);
+                    dragState.captured = true;
+                }
+            }
+
+            if (!dragState.dragging) {
+                return;
+            }
+
+            event.preventDefault();
+            track.scrollLeft = dragState.startScrollLeft - deltaX;
+        });
+
+        track.addEventListener('pointerup', event => {
+            stopDragging(event.pointerId);
+        });
+
+        track.addEventListener('pointercancel', event => {
+            stopDragging(event.pointerId);
+        });
+
+        window.addEventListener('pointerup', event => {
+            stopDragging(event.pointerId);
+        });
+
+        window.addEventListener('pointercancel', event => {
+            stopDragging(event.pointerId);
+        });
+
+        track.addEventListener('lostpointercapture', () => {
+            stopDragging(null);
+        });
+
+        track.addEventListener('dragstart', event => {
+            event.preventDefault();
+        });
+
+        track.addEventListener('click', event => {
+            if (window.performance.now() < suppressClickUntil) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        }, true);
 
         track.addEventListener('scroll', () => {
             if (scrollFrame) {
@@ -374,6 +482,49 @@
 
         window.addEventListener('resize', syncActiveIndex);
         syncActiveIndex();
+    }
+
+    function initCopyEmail(link) {
+        const email = link.getAttribute('data-copy-email');
+        const label = link.querySelector('.contact-email-label');
+        const defaultLabel = link.getAttribute('data-copy-label-default') || (label ? label.textContent : '');
+        const copiedLabel = link.getAttribute('data-copy-label-copied') || 'Copied';
+        let resetTimer = 0;
+
+        const setCopiedState = copied => {
+            if (label) {
+                label.textContent = copied ? copiedLabel : defaultLabel;
+            }
+
+            link.classList.toggle('is-copied', copied);
+            link.setAttribute('aria-label', copied ? `${email} copied` : `Copy ${email}`);
+        };
+
+        setCopiedState(false);
+
+        link.addEventListener('click', async event => {
+            event.preventDefault();
+
+            if (!email) {
+                return;
+            }
+
+            try {
+                await navigator.clipboard.writeText(email);
+                setCopiedState(true);
+
+                if (resetTimer) {
+                    window.clearTimeout(resetTimer);
+                }
+
+                resetTimer = window.setTimeout(() => {
+                    setCopiedState(false);
+                    resetTimer = 0;
+                }, 1200);
+            } catch (error) {
+                window.location.href = link.href;
+            }
+        });
     }
 
     // ============================================

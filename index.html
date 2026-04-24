@@ -74,26 +74,26 @@
     <!-- Header Navigation -->
     <header class="header" id="header">
         <div class="header-inner">
-            <a href="/" class="header-logo">
+            <a href="/" class="header-logo cursor-ayk">
                 <span class="logo-word"><span class="logo-letter">A</span><span class="logo-rest">hmad</span></span>
                 <span class="logo-word"><span class="logo-letter">Y</span><span class="logo-rest">aseen</span></span>
                 <span class="logo-word"><span class="logo-letter">K</span><span class="logo-rest">hattak</span></span>
             </a>
 
             <nav class="header-nav" id="headerNav">
-                <a href="/" class="header-link flip-link active">
+                <a href="/" class="header-link flip-link active cursor-generic-button">
                     <div class="flip-text">
                         <span style="--i:0" data-letter="H"></span><span style="--i:1" data-letter="o"></span><span
                             style="--i:2" data-letter="m"></span><span style="--i:3" data-letter="e"></span>
                     </div>
                 </a>
-                <a href="#projects" class="header-link flip-link">
+                <a href="#projects" class="header-link flip-link cursor-generic-button">
                     <div class="flip-text">
                         <span style="--i:0" data-letter="W"></span><span style="--i:1" data-letter="o"></span><span
                             style="--i:2" data-letter="r"></span><span style="--i:3" data-letter="k"></span>
                     </div>
                 </a>
-                <a href="#contact" class="header-link flip-link">
+                <a href="#contact" class="header-link flip-link cursor-generic-button">
                     <div class="flip-text">
                         <span style="--i:0" data-letter="C"></span><span style="--i:1" data-letter="o"></span><span
                             style="--i:2" data-letter="n"></span><span style="--i:3" data-letter="t"></span><span
@@ -104,10 +104,10 @@
             </nav>
 
             <div class="header-actions">
-                <a href="#contact" class="header-cta">Let's Talk</a>
+                <a href="#contact" class="header-cta cursor-generic-button">Let's Talk</a>
             </div>
 
-            <button class="header-toggle" id="navToggle" aria-label="Toggle navigation">
+            <button class="header-toggle cursor-generic-button" id="navToggle" aria-label="Toggle navigation">
                 <span></span>
                 <span></span>
             </button>
@@ -120,18 +120,11 @@
             <div class="container">
                 <div class="hero-content">
                     <div class="hero-text">
-                        <h1 class="hero-title animate-fade-up delay-1">Ahmad<br>Yaseen</h1>
-                        <p class="hero-tagline animate-fade-up delay-2">Turning ideas into shipped products.</p>
-                        <div class="hero-highlights animate-fade-up delay-3" aria-label="Key highlights">
-                            <div class="hero-highlight">
-                                <span class="hero-highlight-icon" aria-hidden="true">
-                                    <svg viewBox="0 0 24 24" fill="none" role="presentation">
-                                        <path d="M12 3l7 4v10l-7 4-7-4V7l7-4z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
-                                        <path d="M12 7.5l3.5 2v5L12 16.5l-3.5-2v-5L12 7.5z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
-                                    </svg>
-                                </span>
-                                <span class="hero-highlight-text">Built 7+ live products used by real users.</span>
-                            </div>
+                        <div class="hero-intro-group">
+                            <h1 class="hero-title animate-fade-up delay-1">Ahmad<br>Yaseen</h1>
+                            <p class="hero-tagline animate-fade-up delay-2">Turning ideas into shipped products.</p>
+                        </div>
+                        <div class="hero-proof-group animate-fade-up delay-3" aria-label="Key highlights">
                             <div class="hero-logo-row" aria-label="Product logos">
                                 <img src="public/projects/stumbnail.png" alt="Stumbnail" class="hero-logo">
                                 <img src="public/projects/screenchat.png" alt="ScreenChat" class="hero-logo">
@@ -140,17 +133,20 @@
                                 <img src="public/projects/ezmoji.png" alt="Ezmoji" class="hero-logo">
                                 <img src="public/projects/host-hermes-agent.png" alt="Host Hermes Agent" class="hero-logo">
                             </div>
+                            <div class="hero-highlight">
+                                <span class="hero-highlight-text">Built 7+ live products used by real users.</span>
+                            </div>
                         </div>
-                        <div class="hero-cta animate-fade-up delay-4">
-                            <a href="#contact" class="btn btn-primary">Let's work together</a>
-                            <a href="#projects" class="btn btn-secondary">See my work</a>
+                        <div class="hero-actions-group hero-cta animate-fade-up delay-4">
+                            <a href="#contact" class="btn btn-primary cursor-lets-work">Let's work together</a>
+                            <a href="#projects" class="btn btn-secondary cursor-see-my-work">See my work</a>
                         </div>
                     </div>
                     <div class="hero-visual animate-fade-up delay-2">
                         <div class="hero-visual-wrapper">
-                            <div class="profile-container">
+                            <div class="profile-container cursor-photo">
                                 <div class="profile-frame">
-                                    <img src="public/profile.png" alt="Ahmad Yaseen" class="profile-photo">
+                                    <img src="public/profile-hero.webp" alt="Ahmad Yaseen" class="profile-photo">
                                 </div>
                                 <div class="profile-accent"></div>
                             </div>
@@ -169,40 +165,40 @@
                         <h2 class="projects-title">Products <span class="headline-fade">I've built</span></h2>
                         <div class="projects-logo-strip reveal reveal-left" aria-label="Product logos">
                             <a href="https://stumbnail.com" target="_blank" rel="noopener noreferrer"
-                                class="projects-logo-pill" aria-label="Stumbnail" title="Stumbnail">
+                                class="projects-logo-pill cursor-generic-button" aria-label="Stumbnail" title="Stumbnail">
                                 <img src="public/projects/stumbnail.png" alt="Stumbnail logo"
                                     class="projects-logo-pill-image">
                             </a>
                             <a href="https://screenchat.ahmadyaseen.com" target="_blank"
-                                rel="noopener noreferrer" class="projects-logo-pill" aria-label="ScreenChat"
+                                rel="noopener noreferrer" class="projects-logo-pill cursor-generic-button" aria-label="ScreenChat"
                                 title="ScreenChat">
                                 <img src="public/projects/screenchat.png" alt="ScreenChat logo"
                                     class="projects-logo-pill-image">
                             </a>
                             <a href="https://clawpilot.app" target="_blank" rel="noopener noreferrer"
-                                class="projects-logo-pill" aria-label="ClawPilot" title="ClawPilot">
+                                class="projects-logo-pill cursor-generic-button" aria-label="ClawPilot" title="ClawPilot">
                                 <img src="public/projects/Clawpilot.svg" alt="ClawPilot logo"
                                     class="projects-logo-pill-image">
                             </a>
                             <a href="https://liveboard-zeta.vercel.app/" target="_blank" rel="noopener noreferrer"
-                                class="projects-logo-pill" aria-label="LiveBoard" title="LiveBoard">
+                                class="projects-logo-pill cursor-generic-button" aria-label="LiveBoard" title="LiveBoard">
                                 <img src="public/projects/Liveboard.png" alt="LiveBoard logo"
                                     class="projects-logo-pill-image">
                             </a>
                             <a href="https://github.com/Ahmadkhattak1/scrapify-extension" target="_blank"
-                                rel="noopener noreferrer" class="projects-logo-pill" aria-label="Scrapify"
+                                rel="noopener noreferrer" class="projects-logo-pill cursor-generic-button" aria-label="Scrapify"
                                 title="Scrapify">
                                 <span class="projects-logo-pill-image projects-logo-pill-image--emoji"
                                     aria-hidden="true">&#128450;&#65039;</span>
                             </a>
                             <a href="https://ezmoji.ahmadyaseen.com" target="_blank"
-                                rel="noopener noreferrer" class="projects-logo-pill" aria-label="Ezmoji"
+                                rel="noopener noreferrer" class="projects-logo-pill cursor-generic-button" aria-label="Ezmoji"
                                 title="Ezmoji">
                                 <img src="public/projects/ezmoji.png" alt="Ezmoji logo"
                                     class="projects-logo-pill-image">
                             </a>
                             <a href="https://hosthermesagent.com" target="_blank"
-                                rel="noopener noreferrer" class="projects-logo-pill" aria-label="Host Hermes Agent"
+                                rel="noopener noreferrer" class="projects-logo-pill cursor-generic-button" aria-label="Host Hermes Agent"
                                 title="Host Hermes Agent">
                                 <img src="public/projects/host-hermes-agent.png" alt="Host Hermes Agent logo"
                                     class="projects-logo-pill-image">
@@ -212,19 +208,19 @@
                 </div>
 
                 <div class="projects-carousel reveal">
-                    <button type="button" class="projects-nav projects-nav--prev" data-projects-nav="prev"
+                    <button type="button" class="projects-nav projects-nav--prev cursor-generic-button" data-projects-nav="prev"
                         aria-label="Show previous product" aria-controls="projectsTrack">
                         <span aria-hidden="true">&#8249;</span>
                     </button>
-                    <button type="button" class="projects-nav projects-nav--next" data-projects-nav="next"
+                    <button type="button" class="projects-nav projects-nav--next cursor-generic-button" data-projects-nav="next"
                         aria-label="Show next product" aria-controls="projectsTrack">
                         <span aria-hidden="true">&#8250;</span>
                     </button>
 
-                    <div class="projects-grid" id="projectsTrack" data-projects-track tabindex="0"
+                    <div class="projects-grid cursor-draggable" id="projectsTrack" data-projects-track tabindex="0"
                         aria-label="Scrollable product cards">
                         <article class="project-item" data-project-card>
-                            <a href="https://stumbnail.com" target="_blank" rel="noopener noreferrer" class="project-card">
+                            <a href="https://stumbnail.com" target="_blank" rel="noopener noreferrer" class="project-card cursor-open">
                                 <div class="project-card-surface">
                                     <div class="project-media project-media--screenshot">
                                         <img src="public/projects/screenshots/stumbnail.webp"
@@ -239,9 +235,6 @@
                                             </div>
                                         </div>
                                         <p class="project-desc">AI YouTube thumbnail generator with paid users, built and shipped end-to-end as a solo product.</p>
-                                        <div class="project-footer">
-                                            <span class="project-cta">View Project</span>
-                                        </div>
                                     </div>
                                 </div>
                             </a>
@@ -249,7 +242,7 @@
 
                         <article class="project-item" data-project-card>
                             <a href="https://screenchat.ahmadyaseen.com" target="_blank"
-                                rel="noopener noreferrer" class="project-card">
+                                rel="noopener noreferrer" class="project-card cursor-open">
                                 <div class="project-card-surface">
                                     <div class="project-media project-media--screenshot">
                                         <img src="public/projects/screenshots/Screenchat-hero.png"
@@ -264,16 +257,13 @@
                                             </div>
                                         </div>
                                         <p class="project-desc">Chat with any page through a browser extension built to assist with forms, research, and repetitive tasks.</p>
-                                        <div class="project-footer">
-                                            <span class="project-cta">View Project</span>
-                                        </div>
                                     </div>
                                 </div>
                             </a>
                         </article>
 
                         <article class="project-item" data-project-card>
-                            <a href="https://clawpilot.app" target="_blank" rel="noopener noreferrer" class="project-card">
+                            <a href="https://clawpilot.app" target="_blank" rel="noopener noreferrer" class="project-card cursor-open">
                                 <div class="project-card-surface">
                                     <div class="project-media project-media--screenshot">
                                         <img src="public/projects/screenshots/clawpilot-hero-page.png"
@@ -288,9 +278,6 @@
                                             </div>
                                         </div>
                                         <p class="project-desc">Managed OpenClaw hosting platform focused on setup, onboarding, and access for a multi-platform AI assistant.</p>
-                                        <div class="project-footer">
-                                            <span class="project-cta">View Project</span>
-                                        </div>
                                     </div>
                                 </div>
                             </a>
@@ -298,7 +285,7 @@
 
                         <article class="project-item" data-project-card>
                             <a href="https://liveboard-zeta.vercel.app/" target="_blank" rel="noopener noreferrer"
-                                class="project-card">
+                                class="project-card cursor-open">
                                 <div class="project-card-surface">
                                     <div class="project-media project-media--screenshot">
                                         <img src="public/projects/screenshots/liveboard.png"
@@ -313,9 +300,6 @@
                                             </div>
                                         </div>
                                         <p class="project-desc">Collaborative freeform whiteboard built for shared planning, sketching, and visual thinking.</p>
-                                        <div class="project-footer">
-                                            <span class="project-cta">View Project</span>
-                                        </div>
                                     </div>
                                 </div>
                             </a>
@@ -323,7 +307,7 @@
 
                         <article class="project-item" data-project-card>
                             <a href="https://github.com/Ahmadkhattak1/scrapify-extension" target="_blank"
-                                rel="noopener noreferrer" class="project-card">
+                                rel="noopener noreferrer" class="project-card cursor-open">
                                 <div class="project-card-surface">
                                     <div class="project-media project-media--logo">
                                         <div class="project-media-badge">
@@ -339,9 +323,6 @@
                                             </div>
                                         </div>
                                         <p class="project-desc">Google Business Profile data scraper extension for collecting local business leads faster.</p>
-                                        <div class="project-footer">
-                                            <span class="project-cta">View Project</span>
-                                        </div>
                                     </div>
                                 </div>
                             </a>
@@ -349,7 +330,7 @@
 
                         <article class="project-item" data-project-card>
                             <a href="https://ezmoji.ahmadyaseen.com" target="_blank"
-                                rel="noopener noreferrer" class="project-card">
+                                rel="noopener noreferrer" class="project-card cursor-open">
                                 <div class="project-card-surface">
                                     <div class="project-media project-media--screenshot">
                                         <img src="public/projects/screenshots/ezmoji.webp"
@@ -364,9 +345,6 @@
                                             </div>
                                         </div>
                                         <p class="project-desc">Browser extension for inserting emojis fast with alias shortcuts, quick search, and full Unicode emoji support.</p>
-                                        <div class="project-footer">
-                                            <span class="project-cta">View Project</span>
-                                        </div>
                                     </div>
                                 </div>
                             </a>
@@ -374,7 +352,7 @@
 
                         <article class="project-item" data-project-card>
                             <a href="https://hosthermesagent.com" target="_blank"
-                                rel="noopener noreferrer" class="project-card">
+                                rel="noopener noreferrer" class="project-card cursor-open">
                                 <div class="project-card-surface">
                                     <div class="project-media project-media--screenshot">
                                         <img src="public/projects/screenshots/hermesagent.webp"
@@ -389,9 +367,6 @@
                                             </div>
                                         </div>
                                         <p class="project-desc">Managed Hermes Agent hosting with one-click deploy, dedicated cloud compute, and always-on browser plus terminal access.</p>
-                                        <div class="project-footer">
-                                            <span class="project-cta">View Project</span>
-                                        </div>
                                     </div>
                                 </div>
                             </a>
@@ -449,28 +424,28 @@
                     <h2 class="contact-title">Let's build <span class="headline-fade">something.</span></h2>
                     <p class="contact-subtitle">Have an idea? Need a developer? Let's talk.</p>
 
-              <a href="mailto:hi@ahmadyaseen.com" class="contact-email">
+              <a href="mailto:hi@ahmadyaseen.com" class="contact-email cursor-copy-email" data-copy-email="hi@ahmadyaseen.com" data-copy-label-default="Email me at" data-copy-label-copied="Email copied">
                         <span class="contact-email-label">Email me at</span>
                 <span class="contact-email-address">hi@ahmadyaseen.com</span>
                     </a>
 
                     <div class="contact-social">
                         <a href="https://github.com/ahmadkhattak1" target="_blank" rel="noopener noreferrer"
-                            class="social-link" aria-label="GitHub">
+                            class="social-link cursor-socials" aria-label="GitHub">
                             <svg viewBox="0 0 24 24" fill="currentColor">
                                 <path
                                     d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
                             </svg>
                         </a>
                         <a href="https://www.linkedin.com/in/AhmadYKhattak/" target="_blank" rel="noopener noreferrer"
-                            class="social-link" aria-label="LinkedIn">
+                            class="social-link cursor-socials" aria-label="LinkedIn">
                             <svg viewBox="0 0 24 24" fill="currentColor">
                                 <path
                                     d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
                             </svg>
                         </a>
                         <a href="https://x.com/AhmadYKhattak" target="_blank" rel="noopener noreferrer"
-                            class="social-link" aria-label="X (Twitter)">
+                            class="social-link cursor-socials" aria-label="X (Twitter)">
                             <svg viewBox="0 0 24 24" fill="currentColor">
                                 <path
                                     d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
@@ -487,7 +462,7 @@
                                 <input type="email" name="email" placeholder="Your email" required>
                             </div>
                             <textarea name="message" placeholder="Your message..." rows="4" required></textarea>
-                            <button type="submit" class="btn btn-primary">Send Message</button>
+                            <button type="submit" class="btn btn-primary cursor-sending-message">Send Message</button>
                         </form>
                     </div>
                 </div>
@@ -501,7 +476,7 @@
             <div class="footer-content">
                 <span class="footer-name">Ahmad Yaseen</span>
                 <div class="footer-right">
-                    <a href="/journey.html" class="footer-link">Journey</a>
+                    <a href="/journey.html" class="footer-link cursor-journey">Journey</a>
                     <span class="footer-copyright">Available for work</span>
                 </div>
             </div>
@@ -515,4 +490,6 @@
 </body>
 
 </html>
+
+
 

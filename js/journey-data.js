@@ -163,6 +163,13 @@ const JOURNEY_DATA = {
     experience: [
         {
             role: "Founder & Lead Developer",
+            company: "Host Hermes Agent",
+            companyUrl: "https://hosthermesagent.com",
+            date: "2026",
+            description: "Built and launched managed Hermes Agent hosting with one-click deploy, dedicated cloud compute, and always-on browser plus terminal access."
+        },
+        {
+            role: "Founder & Lead Developer",
             company: "Stumbnail",
             companyUrl: "https://stumbnail.com",
             date: "2024 - Present",
