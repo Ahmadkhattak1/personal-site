@@ -107,6 +107,10 @@
         let width = 0;
         let height = 0;
         let resizeFrame = 0;
+        const terrainWorld = {
+            width: 1440,
+            height: 900
+        };
 
         function terrainHeight(normX, normY) {
             const fx = normX * 7.3;
@@ -118,6 +122,19 @@
             value += Math.sin(fx * 2.2 + Math.sin(fy * 2.8)) * 0.3;
             value += Math.cos(fy * 2.5 + Math.cos(fx * 2.0)) * 0.3;
             return value;
+        }
+
+        function getTerrainSamplePoint(x, y) {
+            const coverScale = Math.max(width / terrainWorld.width, height / terrainWorld.height);
+            const coveredWidth = terrainWorld.width * coverScale;
+            const coveredHeight = terrainWorld.height * coverScale;
+            const offsetX = (coveredWidth - width) / 2;
+            const offsetY = (coveredHeight - height) / 2;
+
+            return {
+                x: (x + offsetX) / coveredWidth,
+                y: (y + offsetY) / coveredHeight
+            };
         }
 
         function drawContour() {
@@ -136,11 +153,12 @@
 
             for (let row = 0; row <= gridRows; row++) {
                 terrainGrid[row] = new Array(gridCols + 1);
-                const normY = row / gridRows;
+                const y = row * cellHeight;
 
                 for (let col = 0; col <= gridCols; col++) {
-                    const normX = col / gridCols;
-                    terrainGrid[row][col] = terrainHeight(normX, normY);
+                    const x = col * cellWidth;
+                    const sample = getTerrainSamplePoint(x, y);
+                    terrainGrid[row][col] = terrainHeight(sample.x, sample.y);
                 }
             }
 
@@ -322,7 +340,11 @@
             count: 0,
             animationId: 0,
             geometry: null,
-            material: null
+            material: null,
+            configKey: '',
+            waveX: 0.28,
+            waveY: 0.42,
+            waveHeight: 34
         };
 
         scene.fog = new THREE.Fog(0x0a0a0a, 1800, 5200);
@@ -332,22 +354,6 @@
         container.appendChild(renderer.domElement);
 
         const geometry = new THREE.BufferGeometry();
-        const positions = [];
-        const colors = [];
-
-        for (let ix = 0; ix < state.amountX; ix++) {
-            for (let iy = 0; iy < state.amountY; iy++) {
-                const x = ix * state.separation - ((state.amountX * state.separation) / 2);
-                const y = 0;
-                const z = iy * state.separation - ((state.amountY * state.separation) / 2);
-                positions.push(x, y, z);
-                colors.push(170 / 255, 170 / 255, 170 / 255);
-            }
-        }
-
-        geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-        geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-
         const material = new THREE.PointsMaterial({
             size: 6.4,
             vertexColors: true,
@@ -362,10 +368,99 @@
         state.geometry = geometry;
         state.material = material;
 
+        function getSurfaceConfig(width, height) {
+            const isMobile = width < 768;
+
+            if (isMobile) {
+                return {
+                    key: `mobile:${Math.round(width)}:${Math.round(height)}`,
+                    separation: 54,
+                    amountX: Math.max(22, Math.ceil(width / 18)),
+                    amountY: Math.max(48, Math.ceil(height / 18) + 12),
+                    cameraY: 520,
+                    cameraZ: 920,
+                    lookAtY: -160,
+                    fov: 64,
+                    fogNear: 520,
+                    fogFar: 3300,
+                    pointSize: 4.4,
+                    opacity: 0.58,
+                    waveX: 0.3,
+                    waveY: 0.38,
+                    waveHeight: 18,
+                    countStep: 0.045
+                };
+            }
+
+            return {
+                key: 'desktop',
+                separation: 130,
+                amountX: 28,
+                amountY: 46,
+                cameraY: 320,
+                cameraZ: 1040,
+                lookAtY: 0,
+                fov: 58,
+                fogNear: 1800,
+                fogFar: 5200,
+                pointSize: 6.4,
+                opacity: 0.62,
+                waveX: 0.28,
+                waveY: 0.42,
+                waveHeight: 34,
+                countStep: 0.055
+            };
+        }
+
+        function rebuildSurface(config) {
+            if (state.configKey === config.key) {
+                return;
+            }
+
+            state.configKey = config.key;
+            state.separation = config.separation;
+            state.amountX = config.amountX;
+            state.amountY = config.amountY;
+            state.waveX = config.waveX;
+            state.waveY = config.waveY;
+            state.waveHeight = config.waveHeight;
+            state.countStep = config.countStep;
+
+            const positions = [];
+            const colors = [];
+            const offsetX = ((state.amountX - 1) * state.separation) / 2;
+            const offsetZ = ((state.amountY - 1) * state.separation) / 2;
+
+            for (let ix = 0; ix < state.amountX; ix++) {
+                for (let iy = 0; iy < state.amountY; iy++) {
+                    positions.push(
+                        (ix * state.separation) - offsetX,
+                        0,
+                        (iy * state.separation) - offsetZ
+                    );
+                    colors.push(170 / 255, 170 / 255, 170 / 255);
+                }
+            }
+
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+            geometry.computeBoundingSphere();
+
+            camera.fov = config.fov;
+            camera.position.set(0, config.cameraY, config.cameraZ);
+            camera.lookAt(0, config.lookAtY, 0);
+            scene.fog.near = config.fogNear;
+            scene.fog.far = config.fogFar;
+            material.size = config.pointSize;
+            material.opacity = config.opacity;
+            material.needsUpdate = true;
+        }
+
         function resizeSurface() {
             const rect = container.getBoundingClientRect();
             const width = Math.max(1, rect.width);
             const height = Math.max(1, rect.height);
+            rebuildSurface(getSurfaceConfig(width, height));
             camera.aspect = width / height;
             camera.updateProjectionMatrix();
             renderer.setSize(width, height);
@@ -382,15 +477,15 @@
                 for (let iy = 0; iy < state.amountY; iy++) {
                     const index = i * 3;
                     positionArray[index + 1] =
-                        (Math.sin((ix + state.count) * 0.28) * 34) +
-                        (Math.sin((iy + state.count) * 0.42) * 34);
+                        (Math.sin((ix + state.count) * state.waveX) * state.waveHeight) +
+                        (Math.sin((iy + state.count) * state.waveY) * state.waveHeight);
                     i++;
                 }
             }
 
             positionAttribute.needsUpdate = true;
             renderer.render(scene, camera);
-            state.count += 0.055;
+            state.count += state.countStep;
         }
 
         const handleResize = () => resizeSurface();
