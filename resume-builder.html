@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Builder | Ahmad Yaseen</title>
+    <meta name="description" content="Build, edit, and export an ATS-friendly resume using Ahmad Yaseen's CV source content.">
+    <meta name="robots" content="noindex, nofollow">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Geist:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&family=Syne:wght@600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/resume-builder.css">
+</head>
+
+<body class="resume-builder-page" data-workflow-step="build">
+    <header class="resume-app-header">
+        <div class="resume-app-brand">
+            <a href="/" class="header-logo" aria-label="Go to home">
+                <span class="logo-word"><span class="logo-letter">A</span><span class="logo-rest">hmad</span></span>
+                <span class="logo-word"><span class="logo-letter">Y</span><span class="logo-rest">aseen</span></span>
+                <span class="logo-word"><span class="logo-letter">K</span><span class="logo-rest">hattak</span></span>
+            </a>
+            <span class="resume-app-title">Resume Builder</span>
+        </div>
+
+        <div class="resume-app-actions">
+            <button type="button" class="tool-button tool-button-secondary icon-tool-button" id="undoResume" aria-label="Undo" title="Undo">
+                <i data-lucide="undo-2" aria-hidden="true"></i>
+            </button>
+            <button type="button" class="tool-button tool-button-secondary icon-tool-button" id="redoResume" aria-label="Redo" title="Redo">
+                <i data-lucide="redo-2" aria-hidden="true"></i>
+            </button>
+            <button type="button" class="tool-button tool-button-secondary" id="resetResume">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M3 12a9 9 0 1 0 3-6.7" />
+                    <path d="M3 4v6h6" />
+                </svg>
+                Reset
+            </button>
+            <a href="/" class="tool-button tool-button-secondary compact-header-link">Home</a>
+            <button type="button" class="tool-button tool-button-primary header-export-button" id="exportPdfHeader" data-export-pdf>
+                <i data-lucide="download" aria-hidden="true"></i>
+                Export PDF
+            </button>
+        </div>
+    </header>
+
+    <nav class="resume-tool-rail workflow-stepper" role="tablist" aria-label="Resume tools">
+        <button type="button" class="workflow-step" data-workflow-step="build" role="tab" aria-selected="true">
+            <i data-lucide="wand-sparkles" aria-hidden="true"></i>
+            Improve text
+        </button>
+        <button type="button" class="workflow-step" data-workflow-step="templates" role="tab" aria-selected="false">
+            <i data-lucide="layout-template" aria-hidden="true"></i>
+            Templates
+        </button>
+        <button type="button" class="workflow-step" data-workflow-step="profile" role="tab" aria-selected="false">
+            <i data-lucide="user-round" aria-hidden="true"></i>
+            Profile
+        </button>
+        <button type="button" class="workflow-step" data-workflow-step="design" role="tab" aria-selected="false">
+            <i data-lucide="droplets" aria-hidden="true"></i>
+            Design & Font
+        </button>
+    </nav>
+
+    <main class="resume-builder-shell">
+        <section class="editor-panel" aria-label="Resume editor">
+            <div class="panel-heading">
+                <span class="panel-kicker">Toolbox</span>
+                <h2 id="activeToolTitle">Improve text</h2>
+            </div>
+
+            <details class="control-disclosure syntax-disclosure" data-panel-step="build" open>
+                <summary>Content & Structure JSON</summary>
+                <div class="syntax-panel">
+                    <div class="syntax-intro">
+                        <strong>Content and structure only.</strong>
+                        <span>Edit identity, sections, order, columns, placement, and entries here. Visual templates, colors, spacing, and sizes are applied from the builder.</span>
+                    </div>
+                    <div class="syntax-actions" aria-label="JSON resume actions">
+                        <button type="button" class="tool-button tool-button-secondary" id="copyJsonResumePrompt">
+                            <i data-lucide="clipboard-list" aria-hidden="true"></i>
+                            Copy LLM Prompt
+                        </button>
+                        <button type="button" class="tool-button tool-button-secondary" id="saveResumeJson">
+                            <i data-lucide="save" aria-hidden="true"></i>
+                            Save JSON
+                        </button>
+                        <button type="button" class="tool-button tool-button-secondary" id="loadResumeJson">
+                            <i data-lucide="upload" aria-hidden="true"></i>
+                            Load Saved JSON
+                        </button>
+                    </div>
+                    <label class="field-wide" for="resumeSyntaxText">
+                        <span class="field-label">Editable Resume Content and Structure</span>
+                        <textarea class="field-textarea syntax-textarea" id="resumeSyntaxText" spellcheck="false" autocomplete="off"></textarea>
+                    </label>
+                    <textarea class="field-textarea llm-prompt-textarea" id="jsonResumePromptText" readonly hidden></textarea>
+                    <div class="syntax-status" id="resumeSyntaxStatus" role="status" aria-live="polite"></div>
+                </div>
+            </details>
+
+            <details class="control-disclosure ats-template-disclosure" data-panel-step="templates" open>
+                <summary>Resume Templates</summary>
+                <div class="ats-template-panel">
+                    <div class="syntax-intro">
+                        <strong>Apply the whole look in one click.</strong>
+                        <span>Templates control spacing, colors, type size, header treatment, and ATS visual safety while the JSON controls content and structure.</span>
+                    </div>
+                    <div class="ats-template-list" id="atsTemplateList" aria-label="ATS resume templates"></div>
+                </div>
+            </details>
+
+            <section class="constants-panel" id="constantsPanel" data-panel-step="profile" aria-label="Resume constants"></section>
+
+            <div id="editorSections" hidden></div>
+
+            <div class="tool-grid">
+                <details class="control-disclosure" data-panel-step="design">
+                    <summary>Quick design controls</summary>
+                    <fieldset class="tool-group">
+                        <legend>Builder design settings</legend>
+                        <label class="field-label" for="fontFamily">Base font</label>
+                        <select id="fontFamily" class="select-input font-select" data-setting="fontFamily"></select>
+                        <label class="field-label" for="headerAlign">Header align</label>
+                        <select id="headerAlign" class="select-input" data-setting="headerAlign">
+                            <option value="left">Left</option>
+                            <option value="center">Center</option>
+                            <option value="right">Right</option>
+                        </select>
+                        <span class="field-label" id="bulletStyleLabel">Bullets</span>
+                        <div class="bullet-style-picker" id="bulletStylePicker" role="radiogroup" aria-labelledby="bulletStyleLabel">
+                            <button type="button" class="bullet-style-button" data-bullet-style-option="hyphen" role="radio" aria-label="Hyphen bullets" title="Hyphen bullets">
+                                <span class="bullet-style-swatch bullet-style-hyphen" aria-hidden="true"></span>
+                            </button>
+                            <button type="button" class="bullet-style-button" data-bullet-style-option="disc" role="radio" aria-label="Disc bullets" title="Disc bullets">
+                                <span class="bullet-style-swatch bullet-style-disc" aria-hidden="true"></span>
+                            </button>
+                            <button type="button" class="bullet-style-button" data-bullet-style-option="square" role="radio" aria-label="Square bullets" title="Square bullets">
+                                <span class="bullet-style-swatch bullet-style-square" aria-hidden="true"></span>
+                            </button>
+                            <button type="button" class="bullet-style-button" data-bullet-style-option="none" role="radio" aria-label="No bullets" title="No bullets">
+                                <span class="bullet-style-swatch bullet-style-none" aria-hidden="true"></span>
+                            </button>
+                        </div>
+                        <label class="field-label" for="themeColor">Theme color</label>
+                        <input id="themeColor" class="color-input" type="color" data-setting="accent">
+                    </fieldset>
+                </details>
+
+                <details class="control-disclosure" data-panel-step="design">
+                    <summary>Header design</summary>
+                    <fieldset class="tool-group">
+                        <legend>Patterns</legend>
+                        <label class="field-label" for="headerDesign">Design</label>
+                        <select id="headerDesign" class="select-input" data-setting="headerDesign">
+                            <option value="minimal">Minimal</option>
+                            <option value="band">Color band</option>
+                            <option value="full-bleed">Full-width fill</option>
+                            <option value="boxed">Boxed</option>
+                            <option value="accent-left">Accent left</option>
+                            <option value="split">Split contact</option>
+                        </select>
+                        <label class="field-label" for="headerPattern">Pattern</label>
+                        <select id="headerPattern" class="select-input" data-setting="headerPattern">
+                            <option value="none">None</option>
+                            <option value="dots">Dot grid</option>
+                            <option value="lines">Fine lines</option>
+                            <option value="diagonal">Diagonal</option>
+                            <option value="custom">Custom image</option>
+                        </select>
+                        <label class="field-label" for="headerBackground">Header background</label>
+                        <input id="headerBackground" class="color-input" type="color" data-setting="headerBackground">
+                        <label class="field-label" for="headerPatternUpload">Custom pattern</label>
+                        <input id="headerPatternUpload" class="file-input" type="file" accept="image/*" data-header-pattern-upload>
+                        <label class="field-label" for="headerTextColor">Header text</label>
+                        <input id="headerTextColor" class="color-input" type="color" data-setting="headerTextColor">
+                        <label class="field-label range-label" for="headerLineHeight">
+                            Header line
+                            <output data-output-for="headerLineHeight"></output>
+                        </label>
+                        <input id="headerLineHeight" class="range-input" type="range" min="0.8" max="2.4" step="0.05" data-setting="headerLineHeight">
+                        <label class="field-label range-label" for="headerPadding">
+                            Header pad
+                            <output data-output-for="headerPadding"></output>
+                        </label>
+                        <input id="headerPadding" class="range-input" type="range" min="0" max="48" step="1" data-setting="headerPadding">
+                        <label class="field-label" for="headerSeparatorColor">Separator</label>
+                        <input id="headerSeparatorColor" class="color-input" type="color" data-setting="headerSeparatorColor">
+                        <label class="field-label range-label" for="headerSeparatorWeight">
+                            Rule
+                            <output data-output-for="headerSeparatorWeight"></output>
+                        </label>
+                        <input id="headerSeparatorWeight" class="range-input" type="range" min="0" max="8" step="0.5" data-setting="headerSeparatorWeight">
+                        <label class="field-label" for="contactLayout">Contact layout</label>
+                        <select id="contactLayout" class="select-input" data-setting="contactLayout">
+                            <option value="stacked">Stacked side column</option>
+                            <option value="horizontal">Balanced horizontal</option>
+                        </select>
+                        <label class="field-label range-label" for="headerContactGap">
+                            Contact gap
+                            <output data-output-for="headerContactGap"></output>
+                        </label>
+                        <input id="headerContactGap" class="range-input" type="range" min="0" max="32" step="1" data-setting="headerContactGap">
+                        <label class="field-label" for="sectionHeadingAccent">Section header color</label>
+                        <select id="sectionHeadingAccent" class="select-input" data-setting="sectionHeadingAccent">
+                            <option value="first-letter">First letter</option>
+                            <option value="full">Full header</option>
+                            <option value="none">No accent</option>
+                        </select>
+                        <label class="field-label range-label" for="sectionHeadingLineHeight">
+                            Section line
+                            <output data-output-for="sectionHeadingLineHeight"></output>
+                        </label>
+                        <input id="sectionHeadingLineHeight" class="range-input" type="range" min="0.8" max="2.4" step="0.05" data-setting="sectionHeadingLineHeight">
+                        <label class="field-label" for="sectionSeparatorColor">Section rule</label>
+                        <input id="sectionSeparatorColor" class="color-input" type="color" data-setting="sectionSeparatorColor">
+                        <label class="field-label range-label" for="sectionSeparatorWeight">
+                            Rule size
+                            <output data-output-for="sectionSeparatorWeight"></output>
+                        </label>
+                        <input id="sectionSeparatorWeight" class="range-input" type="range" min="0" max="8" step="0.5" data-setting="sectionSeparatorWeight">
+                        <label class="inline-toggle">
+                            <input type="checkbox" data-setting="showHeaderIcons">
+                            Use Lucide header icons
+                        </label>
+                    </fieldset>
+                </details>
+
+            </div>
+        </section>
+
+        <section class="preview-panel" aria-label="Resume preview">
+            <div class="preview-toolbar">
+                <div class="preview-formatbar" aria-label="Resume view and text controls">
+                    <div class="selected-text-controls" id="selectedTextControls" hidden></div>
+                    <div class="doc-control-group" aria-label="Text size">
+                        <span><i data-lucide="type" aria-hidden="true"></i> Text</span>
+                        <button type="button" data-setting-preset="fontSize" data-value="9">S</button>
+                        <button type="button" data-setting-preset="fontSize" data-value="10.25">M</button>
+                        <button type="button" data-setting-preset="fontSize" data-value="12">L</button>
+                    </div>
+                    <div class="doc-control-group" aria-label="Line spacing">
+                        <span><i data-lucide="align-justify" aria-hidden="true"></i> Lines</span>
+                        <button type="button" data-setting-preset="lineHeight" data-value="1.15">Tight</button>
+                        <button type="button" data-setting-preset="lineHeight" data-value="1.35">Normal</button>
+                        <button type="button" data-setting-preset="lineHeight" data-value="1.55">Open</button>
+                        <button type="button" data-line-height-custom-toggle>Custom</button>
+                        <input class="doc-control-range" type="range" min="1" max="1.8" step="0.01" data-line-height-custom aria-label="Custom line spacing" hidden>
+                        <output class="doc-control-output" data-output-for="lineHeight"></output>
+                    </div>
+                    <div class="doc-control-group" aria-label="Page margins">
+                        <span><i data-lucide="panel-top" aria-hidden="true"></i> Margins</span>
+                        <button type="button" data-margin-preset="compact">Compact</button>
+                        <button type="button" data-margin-preset="normal">Normal</button>
+                        <button type="button" data-margin-preset="wide">Wide</button>
+                    </div>
+                    <div class="doc-control-group" aria-label="Preview zoom">
+                        <span><i data-lucide="zoom-in" aria-hidden="true"></i> View</span>
+                        <button type="button" data-zoom-preset="0.65">65%</button>
+                        <button type="button" data-zoom-preset="0.85">85%</button>
+                        <button type="button" data-zoom-preset="1">100%</button>
+                    </div>
+                    <span class="page-count-pill" id="pageCount">1 page</span>
+                </div>
+            </div>
+
+            <div class="paper-stage" id="paperStage">
+                <div id="resumePreview" class="resume-preview"></div>
+            </div>
+        </section>
+    </main>
+
+    <div class="identity-gate" id="identityGate" role="dialog" aria-modal="true" aria-labelledby="identityGateTitle" hidden>
+        <section class="identity-card">
+            <div class="identity-card-icon" aria-hidden="true">
+                <i data-lucide="user-round-check"></i>
+            </div>
+            <h2 id="identityGateTitle">Who is building?</h2>
+            <p class="identity-card-subtitle">Start with Ahmad's saved resume or open a blank resume workspace.</p>
+            <div class="identity-choice-grid">
+                <button type="button" class="identity-choice" data-identity-choice="ahmad">
+                    <i data-lucide="user-round-check" aria-hidden="true"></i>
+                    <span>Ahmad's Resume</span>
+                </button>
+                <button type="button" class="identity-choice" data-identity-choice="guest">
+                    <i data-lucide="user-round-plus" aria-hidden="true"></i>
+                    <span>Make my own</span>
+                </button>
+            </div>
+        </section>
+    </div>
+
+    <div class="color-modal" id="colorModal" role="dialog" aria-modal="true" aria-labelledby="colorModalTitle" hidden>
+        <section class="color-modal-panel">
+            <header class="color-modal-header">
+                <div>
+                    <span class="panel-kicker">Palette</span>
+                    <h2 id="colorModalTitle">Choose color</h2>
+                </div>
+                <button type="button" class="icon-button" data-color-modal-close aria-label="Close color palette" title="Close">
+                    <i data-lucide="x" aria-hidden="true"></i>
+                </button>
+            </header>
+            <div class="color-modal-swatches" id="colorModalSwatches" aria-label="Color presets"></div>
+            <div class="color-modal-custom">
+                <label>
+                    <span class="field-label">Custom</span>
+                    <input type="color" id="colorModalPicker" class="color-input" aria-label="Custom color picker">
+                </label>
+                <label>
+                    <span class="field-label">Hex</span>
+                    <input type="text" id="colorModalHex" class="field-input color-modal-hex" maxlength="7" autocomplete="off" aria-label="Custom hex color">
+                </label>
+            </div>
+            <footer class="color-modal-footer">
+                <button type="button" class="tool-button tool-button-secondary" data-color-modal-close>Cancel</button>
+                <button type="button" class="tool-button tool-button-primary" data-color-modal-apply>Apply</button>
+            </footer>
+        </section>
+    </div>
+
+    <div class="toast" id="resumeToast" role="status" aria-live="polite"></div>
+
+    <script src="js/journey-data.js"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script src="js/resume-builder.js"></script>
+</body>
+
+</html>
