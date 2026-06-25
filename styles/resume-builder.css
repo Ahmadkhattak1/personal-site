@@ -4903,8 +4903,10 @@
 
     .resume-app-header {
         grid-template-columns: 1fr;
+        grid-template-areas: "actions";
         gap: 0;
         padding: 6px 8px;
+        backdrop-filter: none;
     }
 
     .resume-app-brand {
@@ -4912,6 +4914,9 @@
     }
 
     .resume-app-actions {
+        grid-area: actions;
+        position: relative;
+        z-index: 90;
         justify-content: flex-end;
         gap: 5px;
     }
@@ -4969,7 +4974,7 @@
         right: 10px;
         bottom: calc(8px + env(safe-area-inset-bottom, 0px));
         left: 10px;
-        z-index: 70;
+        z-index: 60;
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 4px;
