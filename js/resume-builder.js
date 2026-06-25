@@ -805,6 +805,10 @@
             });
         });
 
+        window.addEventListener('resize', () => {
+            window.requestAnimationFrame(applyPreviewZoom);
+        });
+
         document.addEventListener('click', event => {
             if (!pageAddMenuOpen || event.target.closest('.resume-insert-control')) return;
             pageAddMenuOpen = false;
@@ -5802,9 +5806,9 @@
     }
 
     function applyPreviewZoom() {
-        const effectiveZoom = getEffectivePreviewZoom();
-        elements.resumePreview.style.transform = `scale(${effectiveZoom})`;
         const paper = elements.resumePreview.querySelector('.resume-paper');
+        const effectiveZoom = getEffectivePreviewZoom(paper);
+        elements.resumePreview.style.transform = `scale(${effectiveZoom})`;
         if (paper) {
             updatePreviewPageGuides();
             elements.resumePreview.style.width = `${paper.offsetWidth * effectiveZoom}px`;
@@ -5812,8 +5816,13 @@
         }
     }
 
-    function getEffectivePreviewZoom() {
-        return previewZoom;
+    function getEffectivePreviewZoom(paper = null) {
+        if (!window.matchMedia('(max-width: 720px)').matches) return previewZoom;
+
+        const stageWidth = elements.paperStage?.clientWidth || window.innerWidth;
+        const paperWidth = paper?.offsetWidth || 794;
+        const fitZoom = Math.max(0.36, Math.min(1, (stageWidth - 16) / paperWidth));
+        return Math.min(previewZoom, fitZoom);
     }
 
     function nextFrame() {
