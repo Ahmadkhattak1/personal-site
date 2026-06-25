@@ -34,33 +34,6 @@
         ['certifications', 'Certs', 'badge-check']
     ];
     const SIDE_SECTIONS = new Set(['skills', 'education', 'certifications']);
-    const ACTION_VERBS = [
-        'built', 'launched', 'led', 'developed', 'managed', 'created', 'designed',
-        'implemented', 'improved', 'shipped', 'scaled', 'integrated', 'optimized',
-        'deployed', 'operated', 'operate', 'provisioned', 'provision', 'maintained',
-        'maintain', 'owned', 'own', 'merged', 'merge', 'manage', 'develop'
-    ];
-    const ATS_TARGET_KEYWORDS = [
-        'cloud engineer', 'cloud engineering', 'aws', 'infrastructure', 'deployment',
-        'compute provisioning', 'virtual machine', 'application hosting', 'monitoring',
-        'uptime', 'runtime operations', 'security', 'network access', 'identity and access',
-        'node.js', 'next.js', 'typescript', 'python', 'supabase', 'digitalocean'
-    ];
-    const ATS_CORE_KEYWORDS = [
-        'cloud engineering', 'aws', 'infrastructure', 'deployment', 'compute provisioning',
-        'monitoring', 'security', 'runtime operations'
-    ];
-    const ATS_STANDARD_HEADINGS = new Set([
-        'summary', 'professional summary', 'profile', 'experience', 'work experience',
-        'professional experience', 'projects', 'selected projects', 'skills',
-        'technical skills', 'education', 'research', 'certifications',
-        'leadership and projects', 'selected engagements', 'academic projects',
-        'relevant projects'
-    ]);
-    const ATS_SAFE_FONT_NAMES = [
-        'arial', 'helvetica', 'calibri', 'times new roman', 'georgia', 'tahoma',
-        'trebuchet ms', 'verdana', 'segoe ui'
-    ];
     const DEFAULT_RESUME_FONT = '"IBM Plex Sans", "Segoe UI", Arial, sans-serif';
     const SECTION_PLACEMENTS = new Set(['auto', 'main', 'side', 'left', 'right', 'full']);
     const DEFAULT_LAYOUT = {
@@ -171,12 +144,12 @@
         skillHeadingSize: 9.3,
         skillBodySize: 9.1
     };
-    const RESUME_TEMPLATE_PRESETS = [
+    const TEMPLATE_PRESETS = [
         {
             id: 'experienced',
             name: 'Default',
-            badge: 'High ATS',
             template: 'ats',
+            suppressProfilePhoto: true,
             description: 'Default ATS-friendly resume layout. Prioritizes Experience before Projects and Skills.',
             sectionOrder: ['summary', 'experience', 'projects', 'skills', 'education', 'research', 'certifications'],
             titles: { summary: 'Summary', experience: 'Experience', projects: 'Projects', skills: 'Skills', education: 'Education', research: 'Research', certifications: 'Certifications' },
@@ -189,7 +162,6 @@
             }
         }
     ];
-    const ATS_TEMPLATE_PRESETS = RESUME_TEMPLATE_PRESETS;
     const FONT_OPTIONS = [
         ['Geist', '"Geist", "Inter", Arial, sans-serif'],
         ['Inter', '"Inter", Arial, sans-serif'],
@@ -346,10 +318,8 @@
     }
 
     function cacheElements() {
-        elements.atsTemplateList = document.getElementById('atsTemplateList');
+        elements.templateList = document.getElementById('templateList');
         elements.constantsPanel = document.getElementById('constantsPanel');
-        elements.sectionLayers = document.getElementById('sectionLayers');
-        elements.templateControl = document.getElementById('templateControl');
         elements.workflowStepper = document.querySelector('.workflow-stepper');
         elements.activeToolTitle = document.getElementById('activeToolTitle');
         elements.editorSections = document.getElementById('editorSections');
@@ -359,7 +329,6 @@
         elements.viewOptionsMenu = document.getElementById('viewOptionsMenu');
         elements.viewOptionsToggle = document.getElementById('viewOptionsToggle');
         elements.viewOptionsPanel = document.getElementById('viewOptionsPanel');
-        elements.previewZoom = document.getElementById('previewZoom');
         elements.pageCount = document.getElementById('pageCount');
         elements.selectedTextControls = document.getElementById('selectedTextControls');
         elements.colorModal = document.getElementById('colorModal');
@@ -369,7 +338,6 @@
         elements.colorModalHex = document.getElementById('colorModalHex');
         elements.undoResume = document.getElementById('undoResume');
         elements.redoResume = document.getElementById('redoResume');
-        elements.exportPdf = document.getElementById('exportPdf');
         elements.exportPdfButtons = Array.from(document.querySelectorAll('[data-export-pdf]'));
         elements.resetResume = document.getElementById('resetResume');
         elements.resumeSyntaxText = document.getElementById('resumeSyntaxText');
@@ -413,32 +381,22 @@
             addSkillsFromDraft(event.target);
         });
 
-        if (elements.atsTemplateList) {
-            elements.atsTemplateList.addEventListener('click', event => {
-                const button = event.target.closest('[data-ats-template]');
+        if (elements.templateList) {
+            elements.templateList.addEventListener('click', event => {
+                const button = event.target.closest('[data-template-preset]');
                 if (!button) return;
-                applyAtsTemplatePreset(button.dataset.atsTemplate);
+                applyTemplatePreset(button.dataset.templatePreset);
             });
 
-            elements.atsTemplateList.addEventListener('mouseover', event => {
-                const button = event.target.closest('[data-ats-template]');
+            elements.templateList.addEventListener('mouseover', event => {
+                const button = event.target.closest('[data-template-preset]');
                 if (!button) return;
-                spotlightResumeForTemplate(button.dataset.atsTemplate);
+                spotlightResumeForTemplate(button.dataset.templatePreset);
             });
 
-            elements.atsTemplateList.addEventListener('mouseout', event => {
-                if (event.relatedTarget && elements.atsTemplateList.contains(event.relatedTarget)) return;
+            elements.templateList.addEventListener('mouseout', event => {
+                if (event.relatedTarget && elements.templateList.contains(event.relatedTarget)) return;
                 clearTemplateSpotlight();
-            });
-        }
-
-        if (elements.templateControl) {
-            elements.templateControl.addEventListener('click', event => {
-                const button = event.target.closest('[data-template]');
-                if (!button) return;
-                state.template = button.dataset.template;
-                saveState();
-                renderAll();
             });
         }
 
@@ -597,69 +555,6 @@
             }
         });
 
-        if (elements.sectionLayers) {
-            elements.sectionLayers.addEventListener('change', event => {
-                const input = event.target.closest('[data-layer-enabled]');
-                if (input) {
-                    const section = state.sections[input.dataset.layerEnabled];
-                    if (!section) return;
-                    section.enabled = input.checked;
-                    saveState();
-                    renderAll();
-                    showToast(section.enabled ? `${section.title} shown` : `${section.title} hidden`);
-                    return;
-                }
-
-            });
-
-            elements.sectionLayers.addEventListener('click', event => {
-                const button = event.target.closest('[data-layer-action]');
-                if (!button) return;
-                handleLayerAction(button);
-            });
-
-            elements.sectionLayers.addEventListener('dragstart', event => {
-                const row = event.target.closest('[data-layer-section]');
-                if (!row || !event.dataTransfer) return;
-                event.dataTransfer.setData('text/resume-layer', row.dataset.layerSection);
-                event.dataTransfer.effectAllowed = 'move';
-                row.classList.add('is-layer-dragging');
-            });
-
-            elements.sectionLayers.addEventListener('dragend', event => {
-                const row = event.target.closest('[data-layer-section]');
-                if (row) row.classList.remove('is-layer-dragging');
-                elements.sectionLayers.querySelectorAll('.is-layer-drop-target').forEach(element => {
-                    element.classList.remove('is-layer-drop-target');
-                });
-            });
-
-            elements.sectionLayers.addEventListener('dragover', event => {
-                const row = event.target.closest('[data-layer-section]');
-                if (!row || !hasResumeLayer(event.dataTransfer)) return;
-                event.preventDefault();
-                row.classList.add('is-layer-drop-target');
-            });
-
-            elements.sectionLayers.addEventListener('dragleave', event => {
-                const row = event.target.closest('[data-layer-section]');
-                if (row && !row.contains(event.relatedTarget)) {
-                    row.classList.remove('is-layer-drop-target');
-                }
-            });
-
-            elements.sectionLayers.addEventListener('drop', event => {
-                const row = event.target.closest('[data-layer-section]');
-                if (!row || !hasResumeLayer(event.dataTransfer)) return;
-                event.preventDefault();
-                row.classList.remove('is-layer-drop-target');
-                reorderSectionBefore(event.dataTransfer.getData('text/resume-layer'), row.dataset.layerSection);
-                saveState();
-                renderAll();
-                showToast('Section moved');
-            });
-        }
-
         elements.editorSections.addEventListener('input', event => {
             handleEditorInput(event.target);
         });
@@ -706,7 +601,6 @@
             localStorage.setItem(getStorageKey(builderMode), serializeState());
             updateSyntaxTextarea();
             updateJsonResumePrompt();
-            renderAtsScore();
         });
 
         elements.resumePreview.addEventListener('keydown', event => {
@@ -885,18 +779,6 @@
             }
 
         });
-
-        if (elements.previewZoom) {
-            elements.previewZoom.addEventListener('input', event => {
-                previewZoom = Number(event.target.value);
-                applyPreviewZoom();
-            });
-
-            elements.previewZoom.addEventListener('change', event => {
-                previewZoom = Number(event.target.value);
-                applyPreviewZoom();
-            });
-        }
 
         document.querySelectorAll('[data-setting-preset]').forEach(button => {
             button.addEventListener('click', () => applySettingPreset(button.dataset.settingPreset, Number(button.dataset.value)));
@@ -1289,11 +1171,9 @@
         syncWorkflow();
         syncControls();
         renderConstantsPanel();
-        renderAtsTemplatePresets();
-        if (elements.sectionLayers) renderSectionLayers();
+        renderTemplatePresets();
         renderEditor();
         renderPreview();
-        renderAtsScore();
         updateSyntaxTextarea();
         updateJsonResumePrompt();
         refreshLucideIcons();
@@ -1417,8 +1297,8 @@
             button.classList.toggle('active', button.dataset.template === state.template);
         });
 
-        document.querySelectorAll('[data-ats-template]').forEach(button => {
-            const active = button.dataset.atsTemplate === (state.templatePreset || 'experienced');
+        document.querySelectorAll('[data-template-preset]').forEach(button => {
+            const active = button.dataset.templatePreset === (state.templatePreset || 'experienced');
             button.classList.toggle('active', active);
             button.setAttribute('aria-pressed', active ? 'true' : 'false');
         });
@@ -1465,10 +1345,6 @@
             button.classList.toggle('active', active);
             button.setAttribute('aria-pressed', active ? 'true' : 'false');
         });
-
-        if (elements.previewZoom && elements.previewZoom.value !== String(previewZoom)) {
-            elements.previewZoom.value = String(previewZoom);
-        }
 
         document.querySelectorAll('[data-color-hex]').forEach(input => {
             const key = input.dataset.colorSetting || input.dataset.setting;
@@ -1523,7 +1399,6 @@
         saveState();
         syncControls();
         renderPreview();
-        renderAtsScore();
         showToast(`Line spacing set to ${value}`);
     }
 
@@ -1534,7 +1409,6 @@
         saveState();
         syncControls();
         renderPreview();
-        renderAtsScore();
     }
 
     function setCustomLineHeightActive(showToastMessage = false) {
@@ -1570,7 +1444,6 @@
         saveState();
         syncControls();
         renderPreview();
-        renderAtsScore();
         const label = value === 9 ? 'Small' : value === 12 ? 'Large' : 'Medium';
         showToast(`${label} resume text scale applied`);
     }
@@ -1601,7 +1474,6 @@
         saveState();
         syncControls();
         renderPreview();
-        renderAtsScore();
         showToast(`${titleCase(preset)} margins applied`);
     }
 
@@ -1622,7 +1494,6 @@
         saveState();
         syncControls();
         renderPreview();
-        renderAtsScore();
     }
 
     function handleTextStyleControl(control) {
@@ -1735,7 +1606,6 @@
         saveState();
         syncControls();
         renderPreview();
-        renderAtsScore();
     }
 
     function openColorModal(target) {
@@ -1790,7 +1660,6 @@
             saveState();
             syncControls();
             renderPreview();
-            renderAtsScore();
         }
 
         closeColorModal();
@@ -1834,14 +1703,14 @@
         return labels[role] || 'Text';
     }
 
-    function renderAtsTemplatePresets() {
-        if (!elements.atsTemplateList) return;
+    function renderTemplatePresets() {
+        if (!elements.templateList) return;
         const activePreset = state.templatePreset || 'experienced';
 
-        elements.atsTemplateList.innerHTML = ATS_TEMPLATE_PRESETS.map(preset => {
+        elements.templateList.innerHTML = TEMPLATE_PRESETS.map(preset => {
             const active = preset.id === activePreset;
             return `
-                <button type="button" class="ats-template-card ${active ? 'active' : ''}" data-ats-template="${escapeAttr(preset.id)}" aria-pressed="${active ? 'true' : 'false'}">
+                <button type="button" class="template-card ${active ? 'active' : ''}" data-template-preset="${escapeAttr(preset.id)}" aria-pressed="${active ? 'true' : 'false'}">
                     <span class="template-placeholder" aria-hidden="true">
                         <img src="public/resume/default-cv-thumbnail.png" alt="">
                     </span>
@@ -1851,8 +1720,8 @@
         }).join('');
     }
 
-    function applyAtsTemplatePreset(presetId) {
-        const preset = ATS_TEMPLATE_PRESETS.find(item => item.id === presetId);
+    function applyTemplatePreset(presetId) {
+        const preset = TEMPLATE_PRESETS.find(item => item.id === presetId);
         if (!preset) return;
 
         state.template = preset.template || 'ats';
@@ -1864,7 +1733,7 @@
             ...ATS_BASE_SETTINGS,
             ...(preset.settings || {})
         };
-        if (preset.template === 'ats' || preset.badge === 'High ATS') {
+        if (preset.suppressProfilePhoto) {
             state.settings.showProfilePhoto = false;
         }
         state.textStyles = {};
@@ -1905,7 +1774,7 @@
     }
 
     function spotlightResumeForTemplate(presetId) {
-        const preset = ATS_TEMPLATE_PRESETS.find(item => item.id === presetId);
+        const preset = TEMPLATE_PRESETS.find(item => item.id === presetId);
         if (!preset || !elements.resumePreview) return;
         clearTemplateSpotlight();
         const paper = elements.resumePreview.querySelector('.resume-paper');
@@ -1936,42 +1805,13 @@
                 targets.push(`[data-resume-section="${escapeCssIdentifier(sectionId)}"]`);
             });
         }
-        if (preset.badge === 'Visual') {
-            targets.push('.resume-section-title-row', '.resume-item-heading');
-        }
+        if (Array.isArray(preset.spotlightTargets)) targets.push(...preset.spotlightTargets);
         return targets;
     }
 
     function escapeCssIdentifier(value) {
         if (window.CSS && typeof window.CSS.escape === 'function') return window.CSS.escape(String(value));
         return String(value).replace(/"/g, '\\"');
-    }
-
-    function renderSectionLayers() {
-        elements.sectionLayers.innerHTML = state.sectionOrder.map(sectionId => {
-            const section = state.sections[sectionId];
-            if (!section) return '';
-            const columns = getSectionColumns(section);
-            const count = getSectionItemCount(section);
-            if (!section.enabled && count === 0) return '';
-            return `
-                <article class="section-layer-row ${section.enabled ? '' : 'is-hidden'}" data-layer-section="${escapeAttr(sectionId)}" draggable="true">
-                    <span class="section-layer-grip" aria-hidden="true">
-                        <i data-lucide="grip-vertical"></i>
-                    </span>
-                    <label class="section-layer-toggle">
-                        <input type="checkbox" ${section.enabled ? 'checked' : ''} data-layer-enabled="${escapeAttr(sectionId)}">
-                        <span>
-                            <strong>${escapeHtml(section.title)}</strong>
-                            <small>${count} ${count === 1 ? 'entry' : 'entries'} / ${columns} ${columns === 1 ? 'column' : 'columns'}</small>
-                        </span>
-                    </label>
-                    <div class="section-layer-actions" aria-label="${escapeAttr(section.title)} section controls">
-                        ${renderColumnStepper(section, 'layer')}
-                    </div>
-                </article>
-            `;
-        }).join('');
     }
 
     function getSectionItemCount(section) {
@@ -1984,8 +1824,8 @@
         if (templateControlsSectionColumns()) return '';
         const columns = getSectionColumns(section);
         const disabledUp = columns >= 4 ? 'disabled' : '';
-        const actionAttribute = scope === 'preview' ? 'data-preview-action' : (scope === 'layer' ? 'data-layer-action' : 'data-action');
-        const sectionAttribute = scope === 'layer' ? 'data-section' : 'data-section';
+        const actionAttribute = scope === 'preview' ? 'data-preview-action' : 'data-action';
+        const sectionAttribute = 'data-section';
         const choices = [1, 2, 3, 4].map(count => `
             <button type="button" class="column-choice ${count === columns ? 'is-active' : ''}" ${actionAttribute}="columns-set" ${sectionAttribute}="${escapeAttr(section.id)}" data-columns="${count}" aria-pressed="${count === columns ? 'true' : 'false'}" aria-label="Use ${count} ${count === 1 ? 'column' : 'columns'}" title="${count} ${count === 1 ? 'column' : 'columns'}">
                 ${count}
@@ -4015,53 +3855,6 @@
         document.getElementById('resumePrintPageStyle')?.remove();
     }
 
-    function getPageBreakAvoidRanges(paper, scale, maxSliceHeight, totalHeight, guard) {
-        const paperRect = paper.getBoundingClientRect();
-        return Array.from(paper.querySelectorAll([
-            '.resume-header',
-            '.resume-section-title-row',
-            '.resume-item-heading',
-            '.skill-group-title'
-        ].join(',')))
-            .map(element => {
-                const rect = element.getBoundingClientRect();
-                return {
-                    start: Math.max(0, Math.floor((rect.top - paperRect.top) * scale) - guard),
-                    end: Math.min(totalHeight, Math.ceil((rect.bottom - paperRect.top) * scale) + guard)
-                };
-            })
-            .filter(range => range.end > range.start && range.end - range.start < maxSliceHeight * 0.86)
-            .sort((a, b) => a.start - b.start);
-    }
-
-    function findExportPageBreak(start, desiredEnd, avoidRanges, minProgress, guard) {
-        const nearbyCandidates = avoidRanges
-            .filter(range => {
-                if (range.start <= start + minProgress || range.start >= desiredEnd) return false;
-                const cutsThroughRange = desiredEnd > range.start && desiredEnd < range.end;
-                const leavesHeaderAtEdge = range.start > desiredEnd - (guard * 3);
-                return cutsThroughRange || leavesHeaderAtEdge;
-            })
-            .filter(range => !isNestedPageBreakCandidate(range, avoidRanges, guard))
-            .map(range => range.start)
-            .filter(candidate => candidate > start + minProgress && candidate < desiredEnd);
-
-        if (!nearbyCandidates.length) {
-            return desiredEnd;
-        }
-
-        return Math.max(...nearbyCandidates);
-    }
-
-    function isNestedPageBreakCandidate(candidateRange, ranges, guard) {
-        return ranges.some(range => {
-            if (range === candidateRange) return false;
-            const insideRange = candidateRange.start > range.start + guard && candidateRange.start < range.end - guard;
-            const parentRange = range.start <= candidateRange.start && range.end >= candidateRange.end;
-            return insideRange && parentRange;
-        });
-    }
-
     function renderConstantInput(label, field, value) {
         return `
             <label class="constant-field ${field === 'profileImage' || field === 'website' ? 'field-wide' : ''}">
@@ -4568,21 +4361,6 @@
         if (cutLine.start > lowerBound) return cutLine.start;
         if (cutLine.end <= desiredEnd) return cutLine.end;
         return desiredEnd;
-    }
-
-    function mergeRanges(ranges) {
-        return ranges
-            .filter(range => range && range.end > range.start)
-            .sort((a, b) => a.start - b.start)
-            .reduce((merged, range) => {
-                const previous = merged[merged.length - 1];
-                if (previous && range.start <= previous.end) {
-                    previous.end = Math.max(previous.end, range.end);
-                } else {
-                    merged.push({ ...range });
-                }
-                return merged;
-            }, []);
     }
 
     function getA4PagePixelHeight(paper) {
@@ -5136,304 +4914,12 @@
         `;
     }
 
-    function renderAtsScore() {
-        const scoreElement = document.getElementById('atsScore');
-        const barElement = document.getElementById('atsBar');
-        const listElement = document.getElementById('atsList');
-        if (!scoreElement || !barElement || !listElement) return;
-
-        const result = calculateAtsScore();
-        const panel = document.querySelector('.ats-panel');
-        if (panel) {
-            panel.dataset.scoreLevel = result.score >= 80 ? 'strong' : (result.score >= 60 ? 'fair' : 'needs-work');
-        }
-        scoreElement.textContent = result.score;
-        barElement.style.width = `${result.score}%`;
-        if (elements.atsJobInsights) {
-            elements.atsJobInsights.innerHTML = renderAtsJobInsights(result.jobInsights);
-        }
-        listElement.innerHTML = result.notes.map(note => `<li>${escapeHtml(note)}</li>`).join('');
-    }
-
-    function calculateAtsScore() {
-        let score = 0;
-        const notes = [];
-        const enabledSections = getEnabledResumeSections();
-        const atsPlainText = buildAtsPlainTextSnapshot(enabledSections);
-        const normalizedText = normalizeForAts(atsPlainText);
-        const contactFields = ['email', 'linkedin', 'github', 'website'].filter(key => normalizeInlineText(state.personal[key]));
-        const summaryText = richHtmlToPlainText(getSummaryBody(state.sections.summary)).trim();
-        const experienceItems = state.sections.experience.items || [];
-        const experienceTextBlocks = experienceItems.map(item => richHtmlToPlainText(getItemBodyHtml('experience', item))).filter(Boolean);
-        const experienceBullets = experienceItems.flatMap(item => {
-            const fromBody = richTextBulletLines(getItemBodyHtml('experience', item));
-            return fromBody.length ? fromBody : (item.bullets || []);
-        });
-        const skillCount = (state.sections.skills.groups || []).flatMap(group => group.skills || []).length;
-        const projectCount = (state.sections.projects.items || []).length;
-        const actionVerbMatches = experienceTextBlocks.concat(experienceBullets).filter(text => {
-            const normalized = text.toLowerCase();
-            return ACTION_VERBS.some(verb => normalized.includes(verb));
-        }).length;
-        const keywordMatches = countAtsKeywordMatches(normalizedText, ATS_TARGET_KEYWORDS);
-        const coreKeywordMatches = countAtsKeywordMatches(normalizedText, ATS_CORE_KEYWORDS);
-        const jobInsights = getAtsJobInsights(normalizedText);
-
-        if (normalizedText.length >= 1800 && state.personal.name && state.personal.title && normalizedText.includes(normalizeForAts(state.personal.email))) score += 12;
-        else notes.push('Make sure the exported text includes name, title, email, and complete resume content.');
-
-        if (contactFields.length >= 3) score += 10;
-        else notes.push('Keep at least three contact fields as readable labeled text.');
-
-        if (state.template === 'ats') score += 5;
-        else notes.push('Use the ATS template for job applications.');
-
-        if (allResumeSectionsSingleColumn(enabledSections)) score += 8;
-        else notes.push('Keep every enabled section, including Skills, in one column.');
-
-        if (hasNoAtsRiskyVisuals()) score += 5;
-        else notes.push('Remove icons, profile photos, image patterns, split headers, and decorative header designs for ATS exports.');
-
-        if (usesAtsSafeFont()) score += 4;
-        else notes.push('Use a standard ATS-safe font such as Arial, Helvetica, Calibri, Georgia, or Times New Roman.');
-
-        if (hasStandardSectionHeadings(enabledSections)) score += 8;
-        else notes.push('Use standard section headings like Summary, Experience, Projects, Skills, Education, Research, and Certifications.');
-
-        if (hasPrioritySectionOrder(enabledSections)) score += 4;
-        else notes.push('Keep Summary, Experience, Projects, Skills, and Education in a predictable order.');
-
-        if (enabledSectionsHaveContent(enabledSections)) score += 4;
-        else notes.push('Disable empty sections or fill them with real content.');
-
-        if (summaryText.length >= 80 && summaryText.length <= 650) score += 8;
-        else notes.push('Use a focused summary between 80 and 650 characters.');
-
-        if (experienceItems.length >= 2 && experienceBullets.length >= 8) score += 6;
-        else notes.push('Keep at least two experience entries with eight or more concise bullets.');
-
-        if (actionVerbMatches >= 8) score += 4;
-        else notes.push('Start more bullets with strong action verbs tied to engineering work.');
-
-        if (projectCount >= 2 && skillCount >= 12) score += 4;
-        else notes.push('Include at least two projects and twelve role-matching skills.');
-
-        if (keywordMatches >= 12) score += 14;
-        else notes.push('Add repeated hard-skill keywords from the target job description.');
-
-        if (coreKeywordMatches >= 5) score += 6;
-        else notes.push('For cloud roles, keep core terms visible: AWS, infrastructure, deployment, compute, monitoring, security, and runtime operations.');
-
-        if (hasConsistentExperienceDates(experienceItems)) score += 4;
-        else notes.push('Use consistent four-digit year date ranges on experience entries.');
-
-        if (state.settings.bulletStyle === 'hyphen' || state.settings.bulletStyle === 'disc') score += 3;
-        else notes.push('Use simple hyphen or round bullet markers.');
-
-        if (!hasPlaceholderContent(normalizedText)) score += 3;
-        else notes.push('Remove placeholder content before applying.');
-
-        if (!notes.length) {
-            notes.push('100% ATS scannability target met: plain text, single column, standard headings, and role keywords are present.');
-        }
-
-        return { score: Math.min(100, score), notes: notes.slice(0, 5), jobInsights };
-    }
-
-    function renderAtsJobInsights(insights) {
-        if (!insights || !insights.keywords.length) {
-            return `
-                <div class="ats-empty-insight">
-                    <strong>How it works</strong>
-                    <span>Paste a job description to compare visible resume keywords against the role.</span>
-                </div>
-            `;
-        }
-
-        return `
-            <div class="ats-insight-summary">
-                <strong>${insights.matched.length}/${insights.keywords.length}</strong>
-                <span>job keywords visible in the resume</span>
-            </div>
-            <div class="ats-keyword-groups">
-                <div>
-                    <span class="ats-chip-label">Matched</span>
-                    <div class="ats-chip-list">${insights.matched.map(keyword => `<span class="ats-chip is-match">${escapeHtml(keyword)}</span>`).join('') || '<span class="ats-chip is-muted">None yet</span>'}</div>
-                </div>
-                <div>
-                    <span class="ats-chip-label">Check</span>
-                    <div class="ats-chip-list">${insights.missing.map(keyword => `<span class="ats-chip is-missing">${escapeHtml(keyword)}</span>`).join('') || '<span class="ats-chip is-muted">No obvious gaps</span>'}</div>
-                </div>
-            </div>
-        `;
-    }
-
-    function getAtsJobInsights(normalizedResumeText) {
-        const keywords = [];
-        const matched = keywords.filter(keyword => normalizedResumeText.includes(normalizeForAts(keyword)));
-        const missing = keywords.filter(keyword => !matched.includes(keyword)).slice(0, 8);
-        return { keywords, matched, missing };
-    }
-
-    function extractJobKeywords(text) {
-        const stopWords = new Set([
-            'about', 'across', 'after', 'also', 'apply', 'based', 'build', 'candidate', 'company',
-            'could', 'daily', 'description', 'equal', 'every', 'great', 'have', 'hours', 'include',
-            'looking', 'must', 'need', 'other', 'people', 'please', 'posting', 'requirements',
-            'responsibilities', 'role', 'should', 'team', 'that', 'this', 'with', 'work', 'working',
-            'years', 'your'
-        ]);
-        const normalized = String(text || '').toLowerCase();
-        const phrases = Array.from(normalized.matchAll(/\b(?:aws|azure|gcp|kubernetes|docker|terraform|linux|python|typescript|javascript|node\.?js|react|next\.?js|postgresql|mongodb|supabase|firebase|ci\/cd|devops|security|monitoring|infrastructure|deployment|networking|cloud|api|apis|sql)\b/g))
-            .map(match => match[0].replace('nodejs', 'node.js').replace('nextjs', 'next.js'));
-        const words = normalized
-            .replace(/[^a-z0-9+#./-]+/g, ' ')
-            .split(/\s+/)
-            .filter(word => word.length >= 4 && !stopWords.has(word));
-        const counts = new Map();
-        phrases.concat(words).forEach(word => counts.set(word, (counts.get(word) || 0) + 1));
-        return Array.from(counts.entries())
-            .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-            .map(([word]) => word)
-            .slice(0, 18);
-    }
-
-    function getEnabledResumeSections() {
-        return state.sectionOrder
-            .map(sectionId => state.sections[sectionId])
-            .filter(section => section && section.enabled);
-    }
-
-    function buildAtsPlainTextSnapshot(sections) {
-        const lines = [
-            state.personal.name,
-            state.personal.title,
-            state.personal.email ? `Email: ${state.personal.email}` : '',
-            state.personal.location ? `Location: ${state.personal.location}` : '',
-            state.personal.linkedin ? `LinkedIn: ${formatVisibleUrl(state.personal.linkedin)}` : '',
-            state.personal.github ? `GitHub: ${formatVisibleUrl(state.personal.github)}` : '',
-            state.personal.website ? `Website: ${formatVisibleUrl(state.personal.website)}` : ''
-        ];
-
-        sections.forEach(section => {
-            lines.push(section.title);
-
-            if (section.type === 'summary') {
-                lines.push(richHtmlToPlainText(getSummaryBody(section)));
-                return;
-            }
-
-            if (section.type === 'skills') {
-                (section.groups || []).forEach(group => {
-                    lines.push(`${group.name}: ${(group.skills || []).join(', ')}`);
-                });
-                return;
-            }
-
-            (section.items || []).forEach(item => {
-                const title = getItemTitle(section.type, item);
-                const organization = item.organization || item.issuer || item.publication || '';
-                lines.push([title, organization, item.date || item.year || item.status || ''].filter(Boolean).join(' | '));
-                lines.push(richHtmlToPlainText(getItemBodyHtml(section.type, item)));
-            });
-        });
-
-        return lines.filter(Boolean).join('\n');
-    }
-
-    function normalizeForAts(value) {
-        return normalizeInlineText(value).toLowerCase();
-    }
-
-    function countAtsKeywordMatches(text, keywords) {
-        return keywords.filter(keyword => text.includes(normalizeForAts(keyword))).length;
-    }
-
-    function allResumeSectionsSingleColumn(sections) {
-        if (templateControlsSectionColumns()) return true;
-        const sectionColumnsAreSafe = sections.every(section => getSectionColumns(section) <= 1);
-        return sectionColumnsAreSafe && Number(state.settings.skillsColumns || 1) <= 1;
-    }
-
-    function hasNoAtsRiskyVisuals() {
-        const riskyHeaderDesigns = new Set(['band', 'boxed', 'full-bleed', 'accent-left', 'split']);
-        return !state.settings.showHeaderIcons
-            && !state.settings.showProfilePhoto
-            && !state.settings.headerPatternImage
-            && String(state.settings.headerPattern || 'none') === 'none'
-            && !riskyHeaderDesigns.has(String(state.settings.headerDesign || 'minimal'));
-    }
-
-    function usesAtsSafeFont() {
-        const fontValue = [
-            state.settings.fontFamily,
-            state.settings.fontBody,
-            state.settings.fontSectionHeading,
-            state.settings.fontContact
-        ].map(value => String(value || '').toLowerCase()).join(' ');
-
-        return ATS_SAFE_FONT_NAMES.some(font => fontValue.includes(font));
-    }
-
-    function hasStandardSectionHeadings(sections) {
-        return sections.every(section => ATS_STANDARD_HEADINGS.has(normalizeSectionHeading(section.title)));
-    }
-
-    function normalizeSectionHeading(value) {
-        return normalizeForAts(value).replace(/[^a-z0-9\s]/g, '').trim();
-    }
-
-    function hasPrioritySectionOrder(sections) {
-        const order = sections.map(section => section.type);
-        const expected = ['summary', 'experience', 'projects', 'skills', 'education'];
-        let lastIndex = -1;
-
-        return expected.every(type => {
-            const index = order.indexOf(type);
-            if (index < 0) return type === 'projects';
-            const valid = index > lastIndex;
-            lastIndex = index;
-            return valid;
-        });
-    }
-
-    function enabledSectionsHaveContent(sections) {
-        return sections.every(section => countSectionContentItems(section) > 0);
-    }
-
-    function countSectionContentItems(section) {
-        if (section.type === 'summary') {
-            return richHtmlToPlainText(getSummaryBody(section)).trim() ? 1 : 0;
-        }
-
-        if (section.type === 'skills') {
-            return (section.groups || []).reduce((count, group) => count + ((group.skills || []).length ? 1 : 0), 0);
-        }
-
-        return (section.items || []).filter(item => getItemTitle(section.type, item) || richHtmlToPlainText(getItemBodyHtml(section.type, item))).length;
-    }
-
-    function hasConsistentExperienceDates(items) {
-        return items.every(item => /^\d{4}(?:\s*-\s*(?:\d{4}|Present))?$/.test(String(item.date || '').trim()));
-    }
-
-    function hasPlaceholderContent(text) {
-        return [
-            'add skills here',
-            'skill one',
-            'new entry',
-            'type summary',
-            'add a focused professional summary paragraph'
-        ].some(placeholder => text.includes(placeholder));
-    }
-
     function handleEditorInput(target) {
         if (target.matches('[data-setting]')) {
             state.settings[target.dataset.setting] = readInputValue(target);
             saveState();
             syncControls();
             renderPreview();
-            renderAtsScore();
             return;
         }
 
@@ -5495,7 +4981,6 @@
 
         saveState();
         renderPreview();
-        renderAtsScore();
     }
 
     function readInputValue(input) {
@@ -5594,27 +5079,6 @@
         renderAll();
     }
 
-    function handleLayerAction(button) {
-        const action = button.dataset.layerAction;
-        const sectionId = button.dataset.section;
-
-        if (action === 'move-up' || action === 'move-down') {
-            moveSection(sectionId, action === 'move-up' ? -1 : 1);
-            showToast('Section moved');
-        }
-
-        if (action === 'columns-set') {
-            setSectionColumns(sectionId, button.dataset.columns);
-        }
-
-        if (action === 'columns-up' || action === 'columns-down') {
-            changeSectionColumns(sectionId, action === 'columns-up' ? 1 : -1);
-        }
-
-        saveState();
-        renderAll();
-    }
-
     function handlePreviewAction(button) {
         const action = button.dataset.previewAction;
         const sectionId = button.dataset.section;
@@ -5664,7 +5128,6 @@
 
         updateStateFromPreviewElement(editable);
         saveState();
-        renderAtsScore();
     }
 
     function moveSection(sectionId, offset) {
@@ -5742,7 +5205,7 @@
 
     function getActiveTemplatePreset(targetState = state) {
         const presetId = targetState && targetState.templatePreset;
-        return ATS_TEMPLATE_PRESETS.find(preset => preset.id === presetId) || ATS_TEMPLATE_PRESETS[0] || null;
+        return TEMPLATE_PRESETS.find(preset => preset.id === presetId) || TEMPLATE_PRESETS[0] || null;
     }
 
     function templateControlsSectionColumns(targetState = state) {
@@ -5820,7 +5283,7 @@
         if (shouldRender) {
             renderAll();
         } else {
-            renderAtsScore();
+            renderPreview();
         }
     }
 
@@ -6338,10 +5801,6 @@
         return Boolean(dataTransfer && Array.from(dataTransfer.types || []).includes('text/resume-entry'));
     }
 
-    function hasResumeLayer(dataTransfer) {
-        return Boolean(dataTransfer && Array.from(dataTransfer.types || []).includes('text/resume-layer'));
-    }
-
     function applyPreviewZoom() {
         const effectiveZoom = getEffectivePreviewZoom();
         elements.resumePreview.style.transform = `scale(${effectiveZoom})`;
@@ -6354,8 +5813,7 @@
     }
 
     function getEffectivePreviewZoom() {
-        if (workflowStep !== 'data') return previewZoom;
-        return Math.min(previewZoom, 0.76);
+        return previewZoom;
     }
 
     function nextFrame() {
@@ -6438,10 +5896,10 @@
             sectionOrder: sectionOrder.length ? sectionOrder : fresh.sectionOrder,
             textStyles: normalizeTextStyleOverrides(safeValue.textStyles)
         };
-        normalized.templatePreset = ATS_TEMPLATE_PRESETS.some(preset => preset.id === normalized.templatePreset)
+        normalized.templatePreset = TEMPLATE_PRESETS.some(preset => preset.id === normalized.templatePreset)
             ? normalized.templatePreset
             : fresh.templatePreset;
-        const activePreset = ATS_TEMPLATE_PRESETS.find(preset => preset.id === normalized.templatePreset) || ATS_TEMPLATE_PRESETS[0];
+        const activePreset = TEMPLATE_PRESETS.find(preset => preset.id === normalized.templatePreset) || TEMPLATE_PRESETS[0];
         if (activePreset) {
             normalized.template = activePreset.template || fresh.template;
             if (safeValue.templatePreset !== activePreset.id) {
@@ -6452,6 +5910,9 @@
                     ...ATS_BASE_SETTINGS,
                     ...(activePreset.settings || {})
                 };
+            }
+            if (activePreset.suppressProfilePhoto) {
+                normalized.settings.showProfilePhoto = false;
             }
         }
         normalized.personal.profileImage = String(normalized.personal.profileImage || '').trim();
