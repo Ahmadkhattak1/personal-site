@@ -3850,7 +3850,7 @@
     font-size: var(--resume-size);
 }
 
-.template-ats .resume-item .resume-rich-text.text-style-target {
+.template-ats .resume-item .resume-rich-text.text-style-target[data-style-role="itemBody"] {
     --text-color: #1f2937 !important;
     --text-size: 9.25pt !important;
     color: #1f2937 !important;
@@ -3858,14 +3858,25 @@
     line-height: 1.34 !important;
 }
 
-.template-ats .resume-item .resume-rich-text p,
-.template-ats .resume-item .resume-rich-text ul,
-.template-ats .resume-item .resume-rich-text ol,
-.template-ats .resume-item .resume-rich-text li {
+.template-ats .resume-item .resume-rich-text.text-style-target[data-style-role="itemBody"] p,
+.template-ats .resume-item .resume-rich-text.text-style-target[data-style-role="itemBody"] ul,
+.template-ats .resume-item .resume-rich-text.text-style-target[data-style-role="itemBody"] ol,
+.template-ats .resume-item .resume-rich-text.text-style-target[data-style-role="itemBody"] li {
     color: #1f2937 !important;
     font-size: 9.25pt !important;
     line-height: 1.34 !important;
     margin-bottom: 4px;
+}
+
+.template-ats .resume-item .resume-rich-text.text-style-target[data-style-role="academicBody"],
+.template-ats .resume-item .resume-rich-text.text-style-target[data-style-role="academicBody"] p,
+.template-ats .resume-item .resume-rich-text.text-style-target[data-style-role="academicBody"] ul,
+.template-ats .resume-item .resume-rich-text.text-style-target[data-style-role="academicBody"] ol,
+.template-ats .resume-item .resume-rich-text.text-style-target[data-style-role="academicBody"] li {
+    color: var(--text-color, var(--resume-body-color)) !important;
+    font-family: var(--text-font, var(--resume-body-font)) !important;
+    font-size: var(--text-size, var(--resume-size)) !important;
+    line-height: max(1.32, var(--text-line-height, var(--resume-line-height))) !important;
 }
 
 .template-ats .resume-item-meta,
@@ -4323,9 +4334,7 @@
 }
 
 .resume-item-url-row {
-    display: inline-flex;
-    align-items: center;
-    gap: 0;
+    display: block;
     max-width: 100%;
     margin-top: 3px;
     color: var(--resume-meta-color);
@@ -4335,6 +4344,8 @@
 }
 
 .resume-item-url {
+    display: inline-block;
+    max-width: 100%;
     color: var(--text-color, #475569);
     min-width: 0;
     font-family: var(--text-font, var(--resume-meta-font));
@@ -4345,6 +4356,9 @@
     text-decoration-thickness: 0.6px;
     text-underline-offset: 2px;
     overflow-wrap: anywhere;
+    word-break: break-word;
+    vertical-align: bottom;
+    white-space: normal;
 }
 
 .resume-entry-drag {
@@ -5397,7 +5411,6 @@
         page-break-before: avoid;
     }
 
-    .resume-item,
     .skill-group {
         break-inside: avoid;
         page-break-inside: avoid;

@@ -241,6 +241,7 @@
         date: { font: 'fontMeta', color: 'colorDate', size: 'dateSize' },
         meta: { font: 'fontMeta', color: 'colorMeta', size: 'metaSize' },
         body: { font: 'fontBody', color: 'colorBody', size: 'fontSize' },
+        academicBody: { font: 'fontBody', color: 'colorBody', size: 'fontSize' },
         itemBody: { font: 'fontBody', color: 'colorBody', size: 'fontSize' },
         skillHeading: { font: 'fontItemHeading', color: 'colorSkillHeading', size: 'skillHeadingSize' },
         skillBody: { font: 'fontBody', color: 'colorSkillBody', size: 'skillBodySize' }
@@ -1825,6 +1826,7 @@
             date: 'Date',
             meta: 'Details',
             body: 'Text',
+            academicBody: 'Text',
             itemBody: 'Entry text',
             skillHeading: 'Skill label',
             skillBody: 'Skill text'
@@ -3547,6 +3549,7 @@
         drawPdfBorders(context);
         await drawPdfImages(context);
         drawPdfText(context);
+        drawPdfWrappedUrls(context);
         drawPdfListMarkersForAllLists(context);
         pdf.setProperties({
             title: state.personal.name ? `${state.personal.name} Resume` : 'Resume',
@@ -3729,6 +3732,7 @@
             acceptNode(node) {
                 if (!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
                 if (!node.parentElement || shouldSkipPdfElement(node.parentElement)) return NodeFilter.FILTER_REJECT;
+                if (node.parentElement.closest('.resume-item-url')) return NodeFilter.FILTER_REJECT;
                 return NodeFilter.FILTER_ACCEPT;
             }
         });
@@ -3782,6 +3786,62 @@
             const lineText = line.segments.map(segment => segment.text).join(' ');
             context.pdf.text(applyPdfTextTransform(lineText, styles.textTransform), point.x, point.y);
         });
+    }
+
+    function drawPdfWrappedUrls(context) {
+        context.paper.querySelectorAll('.resume-item-url').forEach(element => {
+            if (shouldSkipPdfElement(element)) return;
+            const text = normalizeInlineText(element.textContent || '');
+            if (!text) return;
+
+            const styles = getComputedStyle(element);
+            if (styles.visibility === 'hidden' || styles.display === 'none' || Number(styles.opacity) === 0) return;
+
+            const rowRect = (element.closest('.resume-item-url-row') || element).getBoundingClientRect();
+            const fontSizePx = Number.parseFloat(styles.fontSize) || 12;
+            const sourceX = rowRect.left - context.paperRect.left;
+            const sourceY = rowRect.top - context.paperRect.top + (fontSizePx * 0.78);
+            const firstPoint = mapPdfPoint(context, sourceX, sourceY);
+            if (!firstPoint) return;
+
+            context.pdf.setPage(firstPoint.pageIndex + 1);
+            setPdfTextStyle(context.pdf, styles);
+
+            const maxWidth = Math.max(18, rowRect.width * context.scale);
+            const lines = splitPdfTextToWidth(context.pdf, text, maxWidth);
+            const lineHeight = getPdfLineHeightMm(styles, context.scale);
+            lines.forEach((line, index) => {
+                const point = mapPdfPoint(context, sourceX, sourceY + ((lineHeight / context.scale) * index));
+                if (!point) return;
+                context.pdf.setPage(point.pageIndex + 1);
+                setPdfTextStyle(context.pdf, styles);
+                context.pdf.text(line, point.x, point.y);
+            });
+        });
+    }
+
+    function splitPdfTextToWidth(pdf, text, maxWidth) {
+        const lines = [];
+        let current = '';
+
+        Array.from(String(text || '')).forEach(character => {
+            const next = `${current}${character}`;
+            if (current && pdf.getTextWidth(next) > maxWidth) {
+                lines.push(current);
+                current = character.trimStart();
+                return;
+            }
+            current = next;
+        });
+
+        if (current) lines.push(current);
+        return lines.length ? lines : [''];
+    }
+
+    function getPdfLineHeightMm(styles, scale) {
+        const fontSizePx = Number.parseFloat(styles.fontSize) || 12;
+        const lineHeightPx = Number.parseFloat(styles.lineHeight);
+        return (Number.isFinite(lineHeightPx) ? lineHeightPx : fontSizePx * 1.25) * scale;
     }
 
     function drawPdfSourceRect(context, rect, color) {
@@ -3961,9 +4021,7 @@
             '.resume-header',
             '.resume-section-title-row',
             '.resume-item-heading',
-            '.resume-item',
-            '.skill-group',
-            '.text-style-target'
+            '.skill-group-title'
         ].join(',')))
             .map(element => {
                 const rect = element.getBoundingClientRect();
@@ -4208,6 +4266,9 @@
     function resolveTextStyle(role, styleKey) {
         const config = getTextStyleRole(role);
         const override = getTextStyleOverride(styleKey);
+        if (role === 'academicBody' && (state.templatePreset || 'experienced') === 'experienced') {
+            return resolveTextStyle('body', 'section.summary.body');
+        }
         if (role === 'itemBody' && (state.templatePreset || 'experienced') === 'experienced') {
             return {
                 fontFamily: state.settings.fontBody || state.settings.fontFamily || DEFAULT_RESUME_FONT,
@@ -4373,21 +4434,23 @@
     function buildPreviewPageBreaks(paper) {
         const pageHeight = getA4PagePixelHeight(paper);
         const continuationTopPadding = getContinuationPageTopPaddingPx(paper);
-        const continuationPageHeight = Math.max(120, pageHeight - continuationTopPadding);
+        const bottomPadding = getPageBottomPaddingPx(paper);
+        const firstPageContentHeight = Math.max(120, pageHeight - bottomPadding);
+        const continuationPageHeight = Math.max(120, pageHeight - continuationTopPadding - bottomPadding);
         const totalHeight = Math.max(paper.scrollHeight, paper.offsetHeight);
         const minProgress = 120;
-        const guard = 18;
-        const avoidRanges = getPageBreakAvoidRanges(paper, 1, continuationPageHeight, totalHeight, guard);
-        const headingKeepRanges = getHeadingKeepWithNextRanges(paper, 1, totalHeight, guard);
+        const guard = 12;
+        const textLineRanges = getTextLinePageBreakRanges(paper, 1, totalHeight, guard);
+        const headingKeepRanges = getHeadingKeepWithNextRanges(paper, 1, totalHeight, 18);
         const breaks = [];
         let start = 0;
 
         while (start < totalHeight) {
-            const maxPageContentHeight = breaks.length === 0 ? pageHeight : continuationPageHeight;
+            const maxPageContentHeight = breaks.length === 0 ? firstPageContentHeight : continuationPageHeight;
             if (start + maxPageContentHeight >= totalHeight) break;
 
             let end = Math.min(start + maxPageContentHeight, totalHeight);
-            const smarterEnd = findExportPageBreak(start, end, avoidRanges, minProgress, guard);
+            const smarterEnd = findTextSafePageBreak(start, end, textLineRanges, minProgress);
             if (smarterEnd > start + minProgress) {
                 end = smarterEnd;
             }
@@ -4412,15 +4475,21 @@
         return Array.from(paper.querySelectorAll('.resume-section'))
             .map(section => {
                 const heading = section.querySelector('.resume-section-title-row');
-                const firstContent = section.querySelector('.resume-section-content > *, .skills-grid > *');
+                const firstContent = section.querySelector([
+                    '.resume-section-content .resume-item-heading',
+                    '.skills-grid .skill-group-title',
+                    '.resume-section-content > .resume-rich-block',
+                    '.resume-section-content > *'
+                ].join(','));
                 if (!heading || !firstContent) return null;
 
                 const headingRect = heading.getBoundingClientRect();
                 const firstContentRect = firstContent.getBoundingClientRect();
+                const firstContentStart = Math.max(0, Math.floor((firstContentRect.top - paperRect.top) * scale) - guard);
                 return {
                     start: Math.max(0, Math.floor((headingRect.top - paperRect.top) * scale) - guard),
                     headingEnd: Math.min(totalHeight, Math.ceil((headingRect.bottom - paperRect.top) * scale) + guard),
-                    end: Math.min(totalHeight, Math.ceil((firstContentRect.bottom - paperRect.top) * scale) + guard)
+                    end: Math.min(totalHeight, firstContentStart + guard)
                 };
             })
             .filter(Boolean)
@@ -4431,11 +4500,89 @@
     function keepHeadingWithNextContent(start, desiredEnd, headingKeepRanges, minProgress) {
         const orphanedHeading = headingKeepRanges.find(range => (
             range.start > start + minProgress
-            && desiredEnd > range.start
+            && desiredEnd > range.headingEnd
             && desiredEnd < range.end
         ));
 
         return orphanedHeading ? orphanedHeading.start : desiredEnd;
+    }
+
+    function getTextLinePageBreakRanges(paper, scale, totalHeight, guard) {
+        const paperRect = paper.getBoundingClientRect();
+        const ranges = [];
+        const walker = document.createTreeWalker(paper, NodeFilter.SHOW_TEXT, {
+            acceptNode(node) {
+                if (!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+                if (!node.parentElement || shouldSkipPdfElement(node.parentElement)) return NodeFilter.FILTER_REJECT;
+                const styles = getComputedStyle(node.parentElement);
+                if (styles.visibility === 'hidden' || styles.display === 'none' || Number(styles.opacity) === 0) {
+                    return NodeFilter.FILTER_REJECT;
+                }
+                return NodeFilter.FILTER_ACCEPT;
+            }
+        });
+
+        while (walker.nextNode()) {
+            const node = walker.currentNode;
+            const styles = getComputedStyle(node.parentElement);
+            const fontSizePx = Number.parseFloat(styles.fontSize) || 12;
+            const lineHeightPx = Number.parseFloat(styles.lineHeight);
+            const safeLineHeight = Math.max(8, Number.isFinite(lineHeightPx) ? lineHeightPx : fontSizePx * 1.35);
+            const range = document.createRange();
+            range.selectNodeContents(node);
+            Array.from(range.getClientRects()).forEach(rect => {
+                if (rect.width <= 0 || rect.height <= 0) return;
+                const rectTop = rect.top - paperRect.top;
+                const rectBottom = rect.bottom - paperRect.top;
+                if (rect.height > safeLineHeight * 1.7) {
+                    const lineCount = Math.max(1, Math.ceil(rect.height / safeLineHeight));
+                    Array.from({ length: lineCount }).forEach((_, index) => {
+                        const lineTop = rectTop + (index * safeLineHeight);
+                        const lineBottom = Math.min(rectBottom, lineTop + safeLineHeight);
+                        ranges.push({
+                            start: Math.max(0, Math.floor(lineTop * scale) - guard),
+                            end: Math.min(totalHeight, Math.ceil(lineBottom * scale) + guard)
+                        });
+                    });
+                    return;
+                }
+
+                ranges.push({
+                    start: Math.max(0, Math.floor(rectTop * scale) - guard),
+                    end: Math.min(totalHeight, Math.ceil(rectBottom * scale) + guard)
+                });
+            });
+            range.detach();
+        }
+
+        return ranges
+            .filter(range => range.end > range.start)
+            .sort((a, b) => a.start - b.start);
+    }
+
+    function findTextSafePageBreak(start, desiredEnd, textLineRanges, minProgress) {
+        const lowerBound = start + minProgress;
+        const cutLine = textLineRanges.find(range => desiredEnd > range.start && desiredEnd < range.end);
+        if (!cutLine) return desiredEnd;
+
+        if (cutLine.start > lowerBound) return cutLine.start;
+        if (cutLine.end <= desiredEnd) return cutLine.end;
+        return desiredEnd;
+    }
+
+    function mergeRanges(ranges) {
+        return ranges
+            .filter(range => range && range.end > range.start)
+            .sort((a, b) => a.start - b.start)
+            .reduce((merged, range) => {
+                const previous = merged[merged.length - 1];
+                if (previous && range.start <= previous.end) {
+                    previous.end = Math.max(previous.end, range.end);
+                } else {
+                    merged.push({ ...range });
+                }
+                return merged;
+            }, []);
     }
 
     function getA4PagePixelHeight(paper) {
@@ -4446,6 +4593,17 @@
         const cssValue = Number.parseFloat(getComputedStyle(paper).getPropertyValue('--resume-page-padding-y'));
         const stateValue = Number(state.settings.pagePaddingY);
         const padding = Number.isFinite(cssValue) ? cssValue : stateValue;
+        return Math.max(24, Math.min(96, Number.isFinite(padding) ? padding : 48));
+    }
+
+    function getPageBottomPaddingPx(paper) {
+        const styles = getComputedStyle(paper);
+        const cssValue = Number.parseFloat(styles.getPropertyValue('--resume-page-padding-y'));
+        const actualPadding = Number.parseFloat(styles.paddingBottom);
+        const stateValue = Number(state.settings.pagePaddingY);
+        const padding = Number.isFinite(cssValue)
+            ? cssValue
+            : (Number.isFinite(actualPadding) ? actualPadding : stateValue);
         return Math.max(24, Math.min(96, Number.isFinite(padding) ? padding : 48));
     }
 
@@ -4881,6 +5039,8 @@
         const title = getItemTitle(type, item);
         const body = getItemBodyHtmlForPreview(type, item);
         const hasBody = Boolean(richHtmlToPlainText(body));
+        const bodyStyleRole = getItemBodyStyleRole(type);
+        const bodyStyleLabel = bodyStyleRole === 'body' ? 'Text' : 'Entry text';
         const url = cleanUrl(item.url || '');
         const metaField = getItemMetaField(type, item);
         const metaValue = getItemMetaValue(type, item);
@@ -4920,17 +5080,21 @@
                 ` : ''}
                 ${url ? `
                     <div class="resume-item-url-row inline-format-target" contenteditable="false">
-                        <span class="resume-item-url text-style-target" contenteditable="true" data-placeholder="URL" data-edit-kind="item" data-section="${escapeAttr(type)}" data-item="${escapeAttr(item.id)}" data-field="url" ${renderTextStyleAttributes('meta', `item.${type}.${item.id}.url`)}>${escapeHtml(formatVisibleUrl(url))}</span>
+                        <span class="resume-item-url text-style-target" contenteditable="true" data-placeholder="URL" data-edit-kind="item" data-section="${escapeAttr(type)}" data-item="${escapeAttr(item.id)}" data-field="url" ${renderTextStyleAttributes('meta', `item.${type}.${item.id}.url`)}>${escapeHtml(formatVisibleUrl(url, { section: type }))}</span>
                         ${renderTextStyleControl('meta', `item.${type}.${item.id}.url`, 'URL', 'link')}
                     </div>
                 ` : ''}
                 ${hasBody ? `<div class="resume-rich-block inline-format-target">
-                    <div class="resume-rich-text text-style-target" contenteditable="true" data-placeholder="Text object" data-edit-kind="rich" data-section="${escapeAttr(type)}" data-item="${escapeAttr(item.id)}" data-field="body" ${renderTextStyleAttributes('itemBody', `item.${type}.${item.id}.body`)}>${sanitizeRichHtml(body)}</div>
+                    <div class="resume-rich-text text-style-target" contenteditable="true" data-placeholder="Text object" data-edit-kind="rich" data-section="${escapeAttr(type)}" data-item="${escapeAttr(item.id)}" data-field="body" ${renderTextStyleAttributes(bodyStyleRole, `item.${type}.${item.id}.body`)}>${sanitizeRichHtml(body)}</div>
                     ${renderRichTextToolbar(`item.${type}.${item.id}.body`)}
-                    ${renderTextStyleControl('itemBody', `item.${type}.${item.id}.body`, 'Entry text', 'pilcrow')}
+                    ${renderTextStyleControl(bodyStyleRole, `item.${type}.${item.id}.body`, bodyStyleLabel, 'pilcrow')}
                 </div>` : ''}
             </article>
         `;
+    }
+
+    function getItemBodyStyleRole(type) {
+        return ['education', 'research'].includes(type) ? 'academicBody' : 'itemBody';
     }
 
     function renderResumeBulletItem(options) {
@@ -4956,7 +5120,7 @@
                 ` : ''}
                 ${url ? `
                     <div class="resume-item-url-row inline-format-target" contenteditable="false">
-                        <span class="resume-item-url text-style-target" contenteditable="true" data-placeholder="URL" data-edit-kind="item" data-section="${escapeAttr(section)}" data-item="${escapeAttr(item.id)}" data-field="url" ${renderTextStyleAttributes('meta', `item.${section}.${item.id}.url`)}>${escapeHtml(formatVisibleUrl(url))}</span>
+                        <span class="resume-item-url text-style-target" contenteditable="true" data-placeholder="URL" data-edit-kind="item" data-section="${escapeAttr(section)}" data-item="${escapeAttr(item.id)}" data-field="url" ${renderTextStyleAttributes('meta', `item.${section}.${item.id}.url`)}>${escapeHtml(formatVisibleUrl(url, { section }))}</span>
                         ${renderTextStyleControl('meta', `item.${section}.${item.id}.url`, 'URL', 'link')}
                     </div>
                 ` : ''}
@@ -6637,10 +6801,15 @@
         return String(url || '').trim();
     }
 
-    function formatVisibleUrl(url) {
+    function formatVisibleUrl(url, options = {}) {
         const value = cleanUrl(url);
-        if (!value || /^(https?:|mailto:)/i.test(value)) return value;
-        return `https://${value.replace(/^\/+/, '')}`;
+        if (!value) return '';
+        if (/^mailto:/i.test(value)) return value.replace(/^mailto:/i, '');
+
+        const normalizedUrl = /^(https?:)/i.test(value)
+            ? value
+            : `https://${value.replace(/^\/+/, '')}`;
+        return compactDisplayUrl(normalizedUrl, options);
     }
 
     function getResumeData() {
@@ -6653,6 +6822,13 @@
             .replace(/^https?:\/\//, '')
             .replace(/^www\./, '')
             .replace(/\/$/, '');
+    }
+
+    function compactDisplayUrl(url, options = {}) {
+        const compact = compactUrl(url);
+        return options.maxLength && compact.length > options.maxLength
+            ? `${compact.slice(0, Math.max(8, options.maxLength - 3))}...`
+            : compact;
     }
 
     function normalizeInlineText(value) {
