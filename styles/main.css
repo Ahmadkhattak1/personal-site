@@ -189,10 +189,6 @@ body {
 /* ============================================
    CURSOR UTILITIES
    ============================================ */
-.cursor-ayk {
-    cursor: url('../public/cursors/ayk.svg') 3 3, pointer !important;
-}
-
 .cursor-journey {
     cursor: url('../public/cursors/journey.svg') 3 3, pointer !important;
 }
