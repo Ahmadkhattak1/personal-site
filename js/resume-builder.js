@@ -12,12 +12,13 @@
     const RESUME_SYNTAX_VERSION = 1;
     const MODE_KEY = 'ayk.resumeBuilder.mode';
     const WORKFLOW_KEY = 'ayk.resumeBuilder.workflow';
-    const WORKFLOW_STEPS = new Set(['build', 'templates', 'profile', 'design']);
+    const GUEST_WORKSPACE_KEY = 'ayk.resumeBuilder.guestWorkspaceStarted.v1';
+    const PROFILE_GUIDE_KEY = 'ayk.resumeBuilder.profileGuideComplete.v1';
+    const WORKFLOW_STEPS = new Set(['data', 'entries', 'templates']);
     const WORKFLOW_TITLES = {
-        build: 'Improve text',
-        templates: 'Templates',
-        profile: 'Profile',
-        design: 'Design & Font'
+        data: 'Data (JSON)',
+        entries: 'Non-JSON',
+        templates: 'Templates'
     };
     const MODE_OVERRIDE = new URLSearchParams(window.location.search).get('mode');
     if (MODE_OVERRIDE === 'ahmad' || MODE_OVERRIDE === 'guest') {
@@ -60,6 +61,7 @@
         'arial', 'helvetica', 'calibri', 'times new roman', 'georgia', 'tahoma',
         'trebuchet ms', 'verdana', 'segoe ui'
     ];
+    const DEFAULT_RESUME_FONT = '"IBM Plex Sans", "Segoe UI", Arial, sans-serif';
     const SECTION_PLACEMENTS = new Set(['auto', 'main', 'side', 'left', 'right', 'full']);
     const DEFAULT_LAYOUT = {
         mode: 'single',
@@ -115,7 +117,7 @@
         },
         text: {
             body: {
-                fontFamily: 'Arial, Helvetica, sans-serif',
+                fontFamily: DEFAULT_RESUME_FONT,
                 color: '#1f2937',
                 fontSize: 10.25,
                 lineHeight: 1.35
@@ -129,15 +131,15 @@
     };
     const ATS_BASE_SETTINGS = {
         accent: '#1f4f93',
-        fontFamily: 'Arial, Helvetica, sans-serif',
-        fontName: 'Arial, Helvetica, sans-serif',
-        fontTitle: 'Arial, Helvetica, sans-serif',
-        fontHeading: 'Arial, Helvetica, sans-serif',
-        fontSectionHeading: 'Arial, Helvetica, sans-serif',
-        fontItemHeading: 'Arial, Helvetica, sans-serif',
-        fontBody: 'Arial, Helvetica, sans-serif',
-        fontContact: 'Arial, Helvetica, sans-serif',
-        fontMeta: 'Arial, Helvetica, sans-serif',
+        fontFamily: DEFAULT_RESUME_FONT,
+        fontName: DEFAULT_RESUME_FONT,
+        fontTitle: DEFAULT_RESUME_FONT,
+        fontHeading: DEFAULT_RESUME_FONT,
+        fontSectionHeading: DEFAULT_RESUME_FONT,
+        fontItemHeading: DEFAULT_RESUME_FONT,
+        fontBody: DEFAULT_RESUME_FONT,
+        fontContact: DEFAULT_RESUME_FONT,
+        fontMeta: DEFAULT_RESUME_FONT,
         fontSize: 10.25,
         lineHeight: 1.34,
         pagePaddingX: 54,
@@ -157,10 +159,12 @@
         sectionSeparatorWeight: 1,
         showHeaderIcons: false,
         showProfilePhoto: false,
+        profilePhotoShape: 'rounded-square',
+        profilePhotoPlacement: 'left',
         titleSize: 11,
         nameSize: 23,
-        sectionHeadingSize: 10.4,
-        itemHeadingSize: 10,
+        sectionHeadingSize: 11.05,
+        itemHeadingSize: 9.75,
         dateSize: 9,
         metaSize: 9,
         contactSize: 9,
@@ -169,426 +173,19 @@
     };
     const RESUME_TEMPLATE_PRESETS = [
         {
-            id: 'entry-level',
-            name: 'Entry Level',
-            badge: 'High ATS',
-            template: 'ats',
-            description: 'One-column ATS layout for first full-time roles. Brings education, projects, and skills forward.',
-            sectionOrder: ['summary', 'education', 'projects', 'skills', 'experience', 'research', 'certifications'],
-            titles: { summary: 'Summary', education: 'Education', projects: 'Projects', skills: 'Skills', experience: 'Experience', research: 'Research', certifications: 'Certifications' },
-            settings: { fontSize: 10.1, lineHeight: 1.33, pagePaddingX: 52, pagePaddingY: 42 }
-        },
-        {
-            id: 'internship',
-            name: 'Internship',
-            badge: 'High ATS',
-            template: 'ats',
-            description: 'Compact student layout for internships. Prioritizes education, technical projects, skills, then work history.',
-            sectionOrder: ['summary', 'education', 'projects', 'skills', 'experience', 'certifications', 'research'],
-            titles: { summary: 'Summary', education: 'Education', projects: 'Academic Projects', skills: 'Technical Skills', experience: 'Experience', certifications: 'Certifications', research: 'Research' },
-            settings: { fontSize: 10.2, lineHeight: 1.34, pagePaddingX: 54, pagePaddingY: 44 }
-        },
-        {
-            id: 'recent-graduate',
-            name: 'Recent Graduate',
-            badge: 'High ATS',
-            template: 'ats',
-            description: 'Balanced ATS layout for new graduates with projects and early experience competing for attention.',
-            sectionOrder: ['summary', 'education', 'projects', 'experience', 'skills', 'research', 'certifications'],
-            titles: { summary: 'Summary', education: 'Education', projects: 'Relevant Projects', experience: 'Experience', skills: 'Skills', research: 'Research', certifications: 'Certifications' },
-            settings: { fontSize: 10.15, lineHeight: 1.34 }
-        },
-        {
             id: 'experienced',
-            name: 'Experienced Hire',
+            name: 'Default',
             badge: 'High ATS',
             template: 'ats',
-            description: 'Best default for experienced applicants. Prioritizes Experience before Projects and Skills.',
+            description: 'Default ATS-friendly resume layout. Prioritizes Experience before Projects and Skills.',
             sectionOrder: ['summary', 'experience', 'projects', 'skills', 'education', 'research', 'certifications'],
-            titles: { summary: 'Summary', experience: 'Experience', projects: 'Projects', skills: 'Skills', education: 'Education', research: 'Research', certifications: 'Certifications' }
-        },
-        {
-            id: 'ats-compact',
-            name: 'ATS Compact',
-            badge: 'High ATS',
-            template: 'ats',
-            description: 'Dense one-page setting with tight margins, smaller text, and standard headings for parser-heavy applications.',
-            sectionOrder: ['summary', 'experience', 'projects', 'skills', 'education', 'certifications', 'research'],
-            titles: { summary: 'Summary', experience: 'Experience', projects: 'Projects', skills: 'Technical Skills', education: 'Education', certifications: 'Certifications', research: 'Research' },
-            settings: { fontSize: 9.75, lineHeight: 1.3, pagePaddingX: 46, pagePaddingY: 36, sectionSeparatorWeight: 0.75 }
-        },
-        {
-            id: 'ats-executive',
-            name: 'ATS Executive',
-            badge: 'High ATS',
-            template: 'ats',
-            description: 'Roomier ATS-safe layout for senior roles with larger name, open spacing, and work history first.',
-            sectionOrder: ['summary', 'experience', 'skills', 'projects', 'education', 'certifications', 'research'],
-            titles: { summary: 'Executive Summary', experience: 'Professional Experience', skills: 'Core Skills', projects: 'Selected Projects', education: 'Education', certifications: 'Certifications', research: 'Research' },
-            settings: { fontSize: 10.6, lineHeight: 1.4, nameSize: 26, titleSize: 11.6, pagePaddingX: 58, pagePaddingY: 50 }
-        },
-        {
-            id: 'ats-classic',
-            name: 'ATS Classic',
-            badge: 'High ATS',
-            template: 'ats',
-            description: 'Traditional black-and-white resume styling using Times New Roman, simple rules, and conservative spacing.',
-            sectionOrder: ['summary', 'experience', 'education', 'skills', 'projects', 'certifications', 'research'],
-            titles: { summary: 'Professional Summary', experience: 'Experience', education: 'Education', skills: 'Skills', projects: 'Projects', certifications: 'Certifications', research: 'Research' },
-            settings: {
-                fontFamily: '"Times New Roman", Times, serif',
-                fontSize: 10.5,
-                lineHeight: 1.34,
-                accent: '#111827',
-                colorTitle: '#111827',
-                colorMeta: '#4b5563',
-                sectionHeadingAccent: 'none',
-                pagePaddingX: 54,
-                pagePaddingY: 46
-            }
-        },
-        {
-            id: 'leadership-projects',
-            name: 'Leadership + Projects',
-            badge: 'High ATS',
-            template: 'ats',
-            description: 'For founders, builders, and operators who need work history plus project/leadership evidence.',
-            sectionOrder: ['summary', 'experience', 'projects', 'skills', 'research', 'education', 'certifications'],
-            titles: { summary: 'Summary', experience: 'Experience', projects: 'Leadership and Projects', skills: 'Skills', research: 'Research', education: 'Education', certifications: 'Certifications' }
-        },
-        {
-            id: 'career-changer',
-            name: 'Career Changer',
-            badge: 'High ATS',
-            template: 'ats',
-            description: 'Moves Skills above Experience so ATS keywords and transferable strengths appear immediately.',
-            sectionOrder: ['summary', 'skills', 'experience', 'projects', 'education', 'research', 'certifications'],
-            titles: { summary: 'Summary', skills: 'Skills', experience: 'Experience', projects: 'Projects', education: 'Education', research: 'Research', certifications: 'Certifications' },
-            settings: { fontSize: 10.1, lineHeight: 1.33 }
-        },
-        {
-            id: 'multiple-projects',
-            name: 'Multiple Projects',
-            badge: 'High ATS',
-            template: 'ats',
-            description: 'For project-heavy applications where shipped work is the strongest ATS evidence.',
-            sectionOrder: ['summary', 'experience', 'projects', 'skills', 'education', 'research', 'certifications'],
-            titles: { summary: 'Summary', experience: 'Experience', projects: 'Selected Projects', skills: 'Technical Skills', education: 'Education', research: 'Research', certifications: 'Certifications' },
-            settings: { fontSize: 10, lineHeight: 1.32 }
-        },
-        {
-            id: 'intro-paragraphs',
-            name: 'Intro Paragraphs',
-            badge: 'ATS',
-            template: 'ats',
-            description: 'For unfamiliar companies or roles; keeps short context paragraphs before achievement bullets.',
-            sectionOrder: ['summary', 'experience', 'projects', 'skills', 'education', 'research', 'certifications'],
-            titles: { summary: 'Professional Summary', experience: 'Professional Experience', projects: 'Projects', skills: 'Skills', education: 'Education', research: 'Research', certifications: 'Certifications' },
-            settings: { fontSize: 10.15, lineHeight: 1.36 }
-        },
-        {
-            id: 'entrepreneur-freelancer',
-            name: 'Entrepreneur / Freelancer',
-            badge: 'ATS',
-            template: 'ats',
-            description: 'For founders or freelance profiles that need product engagements and client-style projects to scan cleanly.',
-            sectionOrder: ['summary', 'projects', 'experience', 'skills', 'education', 'research', 'certifications'],
-            titles: { summary: 'Summary', projects: 'Selected Engagements', experience: 'Experience', skills: 'Skills', education: 'Education', research: 'Research', certifications: 'Certifications' },
-            settings: { fontSize: 10, lineHeight: 1.32 }
-        },
-        {
-            id: 'modern-sidebar',
-            name: 'Modern Sidebar',
-            badge: 'Modern',
-            template: 'modern',
-            description: 'Two-column layout with skills, education, and certifications in a right rail for human review.',
-            sectionOrder: ['summary', 'experience', 'projects', 'skills', 'education', 'certifications', 'research'],
-            titles: { summary: 'Profile', experience: 'Experience', projects: 'Selected Work', skills: 'Skills', education: 'Education', certifications: 'Certifications', research: 'Research' },
-            layout: { mode: 'two-column', columns: 2, columnRatio: '1.72fr 0.82fr', gap: 26, side: 'right', sidebarSections: ['skills', 'education', 'certifications'] },
-            sectionUpdates: {
-                skills: { placement: 'side', headerClassName: 'accent' },
-                education: { placement: 'side', headerClassName: 'accent' },
-                certifications: { placement: 'side', headerClassName: 'accent' },
-                research: { placement: 'main' }
-            },
-            settings: {
-                accent: '#0f766e',
-                fontFamily: '"Source Sans 3", Arial, sans-serif',
-                fontSize: 10.2,
-                lineHeight: 1.38,
-                pagePaddingX: 50,
-                pagePaddingY: 42,
-                headerDesign: 'accent-left',
-                headerBackground: '#ecfdf5',
-                headerTextColor: '#0f172a',
-                sectionHeadingAccent: 'full',
-                skillsColumns: 1
-            }
-        },
-        {
-            id: 'modern-left-rail',
-            name: 'Left Rail',
-            badge: 'Modern',
-            template: 'modern',
-            description: 'Two-column layout with a left side rail for compact facts and a broad work-history column.',
-            sectionOrder: ['summary', 'skills', 'education', 'certifications', 'experience', 'projects', 'research'],
-            titles: { summary: 'Profile', skills: 'Core Skills', education: 'Education', certifications: 'Certifications', experience: 'Experience', projects: 'Projects', research: 'Research' },
-            layout: { mode: 'two-column', columns: 2, columnRatio: '0.78fr 1.78fr', gap: 28, side: 'left', sidebarSections: ['skills', 'education', 'certifications'] },
-            sectionUpdates: {
-                skills: { placement: 'side', headerClassName: 'accent' },
-                education: { placement: 'side', headerClassName: 'accent' },
-                certifications: { placement: 'side', headerClassName: 'accent' },
-                summary: { placement: 'full' }
-            },
-            settings: {
-                accent: '#1f4f93',
-                fontFamily: '"IBM Plex Sans", Arial, sans-serif',
-                fontSize: 10.15,
-                lineHeight: 1.36,
-                pagePaddingX: 52,
-                pagePaddingY: 44,
-                headerDesign: 'split',
-                headerBackground: '#eff6ff',
-                sectionHeadingAccent: 'first-letter'
-            }
-        },
-        {
-            id: 'editorial',
-            name: 'Editorial',
-            badge: 'Visual',
-            template: 'modern',
-            description: 'Larger name treatment, open spacing, and a subtle color band for portfolio-forward applications.',
-            sectionOrder: ['summary', 'projects', 'experience', 'skills', 'education', 'certifications', 'research'],
-            titles: { summary: 'Profile', projects: 'Selected Work', experience: 'Experience', skills: 'Capabilities', education: 'Education', certifications: 'Certifications', research: 'Research' },
-            layout: { mode: 'single', columns: 1, gap: 24, side: 'right', sidebarSections: [] },
-            settings: {
-                accent: '#be123c',
-                fontFamily: '"Work Sans", Arial, sans-serif',
-                fontSize: 10.6,
-                lineHeight: 1.44,
-                nameSize: 30,
-                titleSize: 12.5,
-                pagePaddingX: 62,
-                pagePaddingY: 54,
-                headerDesign: 'band',
-                headerBackground: '#fff1f2',
-                sectionHeadingAccent: 'full',
-                sectionSeparatorWeight: 0
-            },
-            sectionUpdates: {
-                projects: { headerClassName: 'band' },
-                experience: { headerClassName: 'accent' },
-                skills: { headerClassName: 'accent' }
-            }
-        },
-        {
-            id: 'visual-studio',
-            name: 'Studio Contrast',
-            badge: 'Visual',
-            template: 'modern',
-            description: 'Bold full-width header, dark contact treatment, and strong entry headers for portfolio applications.',
-            sectionOrder: ['summary', 'projects', 'experience', 'skills', 'education', 'certifications', 'research'],
-            titles: { summary: 'Profile', projects: 'Selected Work', experience: 'Experience', skills: 'Capabilities', education: 'Education', certifications: 'Certifications', research: 'Research' },
-            layout: { mode: 'single', columns: 1, columnRatio: '1fr', side: 'right', sidebarSections: [], sectionFlow: 'document' },
-            settings: {
-                accent: '#14b8a6',
-                fontFamily: '"Syne", "Work Sans", Arial, sans-serif',
-                fontSize: 10.5,
-                lineHeight: 1.4,
-                nameSize: 31,
-                titleSize: 12.4,
-                sectionHeadingSize: 10.6,
-                itemHeadingSize: 11.2,
-                dateSize: 8.9,
-                metaSize: 9.1,
-                contactSize: 9,
-                pagePaddingX: 54,
-                pagePaddingY: 48,
-                headerAlign: 'left',
-                headerDesign: 'full-bleed',
-                headerPattern: 'diagonal',
-                headerBackground: '#111827',
-                headerTextColor: '#f8fafc',
-                colorName: '#f8fafc',
-                colorTitle: '#99f6e4',
-                colorContact: '#d1d5db',
-                colorSectionHeading: '#0f172a',
-                colorItemHeading: '#111827',
-                colorDate: '#0f766e',
-                colorMeta: '#475569',
-                colorBody: '#1f2937',
-                sectionHeadingAccent: 'full',
-                sectionSeparatorWeight: 2,
-                showHeaderIcons: true
-            },
-            sectionUpdates: {
-                projects: { headerClassName: 'accent' },
-                experience: { headerClassName: 'accent' }
-            }
-        },
-        {
-            id: 'visual-product',
-            name: 'Product Rail',
-            badge: 'Visual',
-            template: 'modern',
-            description: 'Refined two-column product resume with boxed header, side rail, and accent-led entry headings.',
-            sectionOrder: ['summary', 'experience', 'projects', 'skills', 'education', 'certifications', 'research'],
-            titles: { summary: 'Profile', experience: 'Experience', projects: 'Case Studies', skills: 'Skills', education: 'Education', certifications: 'Certifications', research: 'Research' },
-            layout: { mode: 'two-column', columns: 2, columnRatio: '1.66fr 0.86fr', gap: 24, side: 'right', sidebarSections: ['skills', 'education', 'certifications'], sectionFlow: 'document' },
-            settings: {
-                accent: '#047857',
-                fontFamily: '"Atkinson Hyperlegible", Arial, sans-serif',
-                fontSize: 10.2,
-                lineHeight: 1.38,
-                nameSize: 27,
-                titleSize: 11.5,
-                sectionHeadingSize: 10.5,
-                itemHeadingSize: 10.7,
-                pagePaddingX: 50,
-                pagePaddingY: 42,
-                headerAlign: 'left',
-                headerDesign: 'boxed',
-                headerBackground: '#ecfdf5',
-                headerTextColor: '#052e2b',
-                colorName: '#052e2b',
-                colorTitle: '#047857',
-                colorContact: '#334155',
-                colorSectionHeading: '#047857',
-                colorItemHeading: '#102a43',
-                colorDate: '#047857',
-                colorMeta: '#64748b',
-                colorBody: '#243244',
-                sectionHeadingAccent: 'full',
-                skillsColumns: 1,
-                showHeaderIcons: true
-            },
-            sectionUpdates: {
-                skills: { placement: 'side', headerClassName: 'accent' },
-                education: { placement: 'side', headerClassName: 'accent' },
-                certifications: { placement: 'side', headerClassName: 'accent' }
-            }
-        },
-        {
-            id: 'visual-architect',
-            name: 'Architect Lines',
-            badge: 'Visual',
-            template: 'modern',
-            description: 'Precise editorial lines, centered header, roomy hierarchy, and understated entry metadata.',
-            sectionOrder: ['summary', 'experience', 'projects', 'skills', 'education', 'research', 'certifications'],
-            titles: { summary: 'Profile', experience: 'Experience', projects: 'Projects', skills: 'Technical Range', education: 'Education', research: 'Research', certifications: 'Certifications' },
-            layout: { mode: 'single', columns: 1, columnRatio: '1fr', side: 'right', sidebarSections: [], sectionFlow: 'document' },
-            settings: {
-                accent: '#b45309',
-                fontFamily: 'Georgia, "Times New Roman", serif',
-                fontSize: 10.8,
-                lineHeight: 1.46,
-                nameSize: 29,
-                titleSize: 12,
-                sectionHeadingSize: 10.2,
-                itemHeadingSize: 11,
-                pagePaddingX: 64,
-                pagePaddingY: 56,
-                headerAlign: 'center',
-                headerDesign: 'minimal',
-                headerBackground: '#ffffff',
-                headerTextColor: '#171717',
-                colorName: '#171717',
-                colorTitle: '#92400e',
-                colorContact: '#525252',
-                colorSectionHeading: '#171717',
-                colorItemHeading: '#171717',
-                colorDate: '#92400e',
-                colorMeta: '#737373',
-                colorBody: '#262626',
-                sectionHeadingAccent: 'none',
-                sectionSeparatorWeight: 1,
-                showHeaderIcons: false
-            }
-        },
-        {
-            id: 'visual-systems',
-            name: 'Systems Grid',
-            badge: 'Visual',
-            template: 'modern',
-            description: 'Compact technical visual template with a left rail, structured entry headers, and high information density.',
-            sectionOrder: ['summary', 'skills', 'experience', 'projects', 'education', 'certifications', 'research'],
-            titles: { summary: 'Overview', skills: 'Systems', experience: 'Experience', projects: 'Builds', education: 'Education', certifications: 'Certifications', research: 'Research' },
-            layout: { mode: 'two-column', columns: 2, columnRatio: '0.82fr 1.7fr', gap: 22, side: 'left', sidebarSections: ['skills', 'education', 'certifications'], sectionFlow: 'document' },
-            settings: {
-                accent: '#2563eb',
-                fontFamily: '"IBM Plex Sans", Arial, sans-serif',
-                fontSize: 9.95,
-                lineHeight: 1.32,
-                nameSize: 26,
-                titleSize: 10.8,
-                sectionHeadingSize: 9.8,
-                itemHeadingSize: 10.2,
-                dateSize: 8.5,
-                metaSize: 8.7,
-                pagePaddingX: 46,
-                pagePaddingY: 40,
-                headerAlign: 'left',
-                headerDesign: 'split',
-                headerBackground: '#eff6ff',
-                headerTextColor: '#0f172a',
-                colorName: '#0f172a',
-                colorTitle: '#1d4ed8',
-                colorContact: '#334155',
-                colorSectionHeading: '#1d4ed8',
-                colorItemHeading: '#0f172a',
-                colorDate: '#1d4ed8',
-                colorMeta: '#64748b',
-                colorBody: '#1f2937',
-                sectionHeadingAccent: 'full',
-                skillsColumns: 1,
-                showHeaderIcons: true
-            },
-            sectionUpdates: {
-                summary: { placement: 'full' },
-                skills: { placement: 'side', headerClassName: 'accent' },
-                education: { placement: 'side', headerClassName: 'accent' },
-                certifications: { placement: 'side', headerClassName: 'accent' }
-            }
-        },
-        {
-            id: 'technical-dense',
-            name: 'Technical Dense',
-            badge: 'Hybrid',
-            template: 'modern',
-            description: 'Compact engineering layout with two-column skills and tighter spacing while staying readable.',
-            sectionOrder: ['summary', 'skills', 'experience', 'projects', 'education', 'certifications', 'research'],
-            titles: { summary: 'Summary', skills: 'Technical Skills', experience: 'Experience', projects: 'Projects', education: 'Education', certifications: 'Certifications', research: 'Research' },
-            settings: {
-                accent: '#4f46e5',
-                fontFamily: '"Noto Sans", Arial, sans-serif',
-                fontSize: 9.9,
-                lineHeight: 1.31,
-                pagePaddingX: 48,
-                pagePaddingY: 38,
-                headerDesign: 'minimal',
-                headerBackground: '#ffffff',
-                sectionHeadingAccent: 'full',
-                skillsColumns: 2
-            },
-            sectionUpdates: { skills: { columns: 2, headerClassName: 'accent' } }
-        },
-        {
-            id: 'academic-clean',
-            name: 'Academic Clean',
-            badge: 'Academic',
-            template: 'ats',
-            description: 'Education, research, and publications move forward with conservative typography and generous line spacing.',
-            sectionOrder: ['summary', 'education', 'research', 'projects', 'experience', 'skills', 'certifications'],
-            titles: { summary: 'Research Summary', education: 'Education', research: 'Research', projects: 'Academic Projects', experience: 'Experience', skills: 'Skills', certifications: 'Certifications' },
-            settings: {
-                fontFamily: 'Georgia, "Times New Roman", serif',
-                fontSize: 10.4,
-                lineHeight: 1.42,
-                accent: '#374151',
-                colorTitle: '#374151',
-                pagePaddingX: 58,
-                pagePaddingY: 50,
-                sectionHeadingAccent: 'none'
+            titles: { summary: 'Summary', experience: 'Experience', projects: 'Projects', skills: 'Skills', education: 'Education', research: 'Research', certifications: 'Certifications' },
+            design: {
+                sectionColumns: {
+                    mode: 'auto-by-content',
+                    max: 2,
+                    threshold: 2
+                }
             }
         }
     ];
@@ -644,6 +241,7 @@
         date: { font: 'fontMeta', color: 'colorDate', size: 'dateSize' },
         meta: { font: 'fontMeta', color: 'colorMeta', size: 'metaSize' },
         body: { font: 'fontBody', color: 'colorBody', size: 'fontSize' },
+        itemBody: { font: 'fontBody', color: 'colorBody', size: 'fontSize' },
         skillHeading: { font: 'fontItemHeading', color: 'colorSkillHeading', size: 'skillHeadingSize' },
         skillBody: { font: 'fontBody', color: 'colorSkillBody', size: 'skillBodySize' }
     };
@@ -696,12 +294,35 @@
         ['right', 'Right'],
         ['top', 'Top']
     ];
+    const PROFILE_GUIDE_FIELDS = [
+        ['name', 'Name', 'What should appear at the top of the resume?'],
+        ['title', 'Role', 'What role is this resume aiming for?'],
+        ['email', 'Email', 'Where should recruiters contact you?'],
+        ['location', 'Location', 'What location should appear on the resume?'],
+        ['linkedin', 'LinkedIn', 'Add a LinkedIn URL if you want it shown.'],
+        ['github', 'GitHub', 'Add a GitHub URL if it helps your role.'],
+        ['website', 'Website', 'Add a portfolio or personal site if you have one.']
+    ];
+    const NON_JSON_WIZARD_STEPS = [
+        { id: 'identity', type: 'identity', label: 'Name and occupation', prompt: 'Set the name and role that appear in the resume header.' },
+        { id: 'contact', type: 'contact', label: 'Contact info', prompt: 'Add the header details recruiters should see first.' },
+        { id: 'photo', type: 'photo', label: 'Profile picture', prompt: 'Upload a headshot if this resume should include one.' },
+        { id: 'summary', type: 'summary', label: 'Summary', prompt: 'Add a short profile paragraph. Skip it if you want to write it directly on the resume.' },
+        { id: 'experience', type: 'entry', section: 'experience', label: 'Experience', prompt: 'Add the roles that matter for this resume.' },
+        { id: 'projects', type: 'entry', section: 'projects', label: 'Projects', prompt: 'Add relevant projects if they help the application.' },
+        { id: 'skills', type: 'skills', section: 'skills', label: 'Skills', prompt: 'Add skills one by one, or paste a short list.' },
+        { id: 'education', type: 'entry', section: 'education', label: 'Education', prompt: 'Add education if it helps this resume.' },
+        { id: 'certifications', type: 'entry', section: 'certifications', label: 'Certifications', prompt: 'Add certifications, credential IDs, and verification links.' }
+    ];
 
     const elements = {};
     let previewZoom = DEFAULT_PREVIEW_ZOOM;
     let builderMode = loadBuilderMode();
     let state = loadState(builderMode) || createStateForMode(builderMode);
     let workflowStep = loadWorkflowStep();
+    let profileGuideCursor = 0;
+    let wizardAddChoiceSection = '';
+    let activeSkillGroupId = '';
     let pageAddMenuOpen = false;
     let activeAddAnchor = 'start';
     let undoStack = [];
@@ -734,6 +355,9 @@
         elements.resumePreview = document.getElementById('resumePreview');
         elements.paperStage = document.getElementById('paperStage');
         elements.identityGate = document.getElementById('identityGate');
+        elements.viewOptionsMenu = document.getElementById('viewOptionsMenu');
+        elements.viewOptionsToggle = document.getElementById('viewOptionsToggle');
+        elements.viewOptionsPanel = document.getElementById('viewOptionsPanel');
         elements.previewZoom = document.getElementById('previewZoom');
         elements.pageCount = document.getElementById('pageCount');
         elements.selectedTextControls = document.getElementById('selectedTextControls');
@@ -750,8 +374,8 @@
         elements.resumeSyntaxText = document.getElementById('resumeSyntaxText');
         elements.jsonResumePromptText = document.getElementById('jsonResumePromptText');
         elements.copyJsonResumePrompt = document.getElementById('copyJsonResumePrompt');
-        elements.saveResumeJson = document.getElementById('saveResumeJson');
-        elements.loadResumeJson = document.getElementById('loadResumeJson');
+        elements.copyCurrentResumeJson = document.getElementById('copyCurrentResumeJson');
+        elements.promptModal = document.getElementById('promptModal');
         elements.resumeSyntaxStatus = document.getElementById('resumeSyntaxStatus');
         elements.toast = document.getElementById('resumeToast');
     }
@@ -770,11 +394,40 @@
             handleEditorInput(event.target);
         });
 
+        elements.constantsPanel.addEventListener('click', event => {
+            const richButton = event.target.closest('[data-wizard-rich-command]');
+            if (richButton) {
+                handleWizardRichTextCommand(richButton);
+                return;
+            }
+
+            const button = event.target.closest('[data-profile-guide-action]');
+            if (!button) return;
+            handleProfileGuideAction(button.dataset.profileGuideAction, button);
+        });
+
+        elements.constantsPanel.addEventListener('keydown', event => {
+            if (!event.target.matches('[data-skill-draft]') || event.key !== 'Enter') return;
+            event.preventDefault();
+            addSkillsFromDraft(event.target);
+        });
+
         if (elements.atsTemplateList) {
             elements.atsTemplateList.addEventListener('click', event => {
                 const button = event.target.closest('[data-ats-template]');
                 if (!button) return;
                 applyAtsTemplatePreset(button.dataset.atsTemplate);
+            });
+
+            elements.atsTemplateList.addEventListener('mouseover', event => {
+                const button = event.target.closest('[data-ats-template]');
+                if (!button) return;
+                spotlightResumeForTemplate(button.dataset.atsTemplate);
+            });
+
+            elements.atsTemplateList.addEventListener('mouseout', event => {
+                if (event.relatedTarget && elements.atsTemplateList.contains(event.relatedTarget)) return;
+                clearTemplateSpotlight();
             });
         }
 
@@ -792,6 +445,7 @@
             elements.workflowStepper.addEventListener('click', event => {
                 const button = event.target.closest('.workflow-step[data-workflow-step]');
                 if (!button) return;
+                if (!syncResumeSyntaxBeforeStepChange(button.dataset.workflowStep)) return;
                 setWorkflowStep(button.dataset.workflowStep);
             });
         }
@@ -802,6 +456,26 @@
                 handleStartAction(button.dataset.startAction);
             });
         });
+
+        if (elements.viewOptionsToggle && elements.viewOptionsPanel) {
+            elements.viewOptionsToggle.addEventListener('click', event => {
+                event.stopPropagation();
+                setViewOptionsOpen(!isViewOptionsOpen());
+            });
+
+            elements.viewOptionsPanel.addEventListener('click', event => {
+                event.stopPropagation();
+                if (event.target.closest('[data-view-options-close]')) {
+                    setViewOptionsOpen(false, { restoreFocus: true });
+                }
+            });
+
+            document.addEventListener('click', event => {
+                if (!isViewOptionsOpen()) return;
+                if (elements.viewOptionsMenu && elements.viewOptionsMenu.contains(event.target)) return;
+                setViewOptionsOpen(false);
+            });
+        }
 
         document.querySelectorAll('[data-setting]').forEach(input => {
             input.addEventListener('input', event => {
@@ -912,6 +586,11 @@
         }
 
         document.addEventListener('keydown', event => {
+            if (event.key === 'Escape' && isViewOptionsOpen()) {
+                setViewOptionsOpen(false, { restoreFocus: true });
+                return;
+            }
+
             if (event.key === 'Escape' && elements.colorModal && !elements.colorModal.hidden) {
                 closeColorModal();
             }
@@ -1006,7 +685,7 @@
                 event.preventDefault();
             }
 
-            if (!event.target.closest('.inline-format-control, .bullet-style-inline, .resume-header-style-dock, .rich-text-toolbar')) return;
+            if (!event.target.closest('.inline-format-control, .bullet-style-inline, .resume-header-style-dock, .rich-text-toolbar, .resume-section-tools')) return;
             previewControlInteraction = true;
             window.setTimeout(() => {
                 previewControlInteraction = false;
@@ -1300,15 +979,24 @@
         });
 
         if (elements.copyJsonResumePrompt) {
-            elements.copyJsonResumePrompt.addEventListener('click', copyJsonResumePrompt);
+            elements.copyJsonResumePrompt.addEventListener('click', openPromptModal);
         }
 
-        if (elements.saveResumeJson) {
-            elements.saveResumeJson.addEventListener('click', saveResumeJsonToBrowser);
+        if (elements.copyCurrentResumeJson) {
+            elements.copyCurrentResumeJson.addEventListener('click', copyCurrentResumeJson);
         }
 
-        if (elements.loadResumeJson) {
-            elements.loadResumeJson.addEventListener('click', loadResumeJsonFromBrowser);
+        if (elements.promptModal) {
+            elements.promptModal.addEventListener('click', event => {
+                if (event.target === elements.promptModal || event.target.closest('[data-prompt-modal-close]')) {
+                    closePromptModal();
+                    return;
+                }
+
+                if (event.target.closest('[data-prompt-modal-copy]')) {
+                    copyJsonResumePrompt();
+                }
+            });
         }
 
         if (elements.resumeSyntaxText) {
@@ -1327,6 +1015,19 @@
         }
 
         openIdentityGate();
+    }
+
+    function isViewOptionsOpen() {
+        return Boolean(elements.viewOptionsPanel && !elements.viewOptionsPanel.hidden);
+    }
+
+    function setViewOptionsOpen(open, options = {}) {
+        if (!elements.viewOptionsToggle || !elements.viewOptionsPanel) return;
+        elements.viewOptionsPanel.hidden = !open;
+        elements.viewOptionsToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (!open && options.restoreFocus) {
+            elements.viewOptionsToggle.focus({ preventScroll: true });
+        }
     }
 
     function createInitialState() {
@@ -1404,7 +1105,7 @@
             styleClasses: deepClone(DEFAULT_STYLE_CLASSES),
             settings: {
                 accent: '#1f6feb',
-                fontFamily: 'Arial, Helvetica, sans-serif',
+                fontFamily: DEFAULT_RESUME_FONT,
                 fontSize: 10.25,
                 lineHeight: 1.35,
                 pagePaddingX: 56,
@@ -1412,18 +1113,18 @@
                 headerAlign: 'left',
                 bulletStyle: 'hyphen',
                 skillsColumns: 1,
-                fontName: 'Arial, Helvetica, sans-serif',
-                fontTitle: 'Arial, Helvetica, sans-serif',
-                fontHeading: 'Arial, Helvetica, sans-serif',
-                fontSectionHeading: 'Arial, Helvetica, sans-serif',
-                fontItemHeading: 'Arial, Helvetica, sans-serif',
-                fontBody: 'Arial, Helvetica, sans-serif',
-                fontContact: 'Arial, Helvetica, sans-serif',
-                fontMeta: 'Arial, Helvetica, sans-serif',
+                fontName: DEFAULT_RESUME_FONT,
+                fontTitle: DEFAULT_RESUME_FONT,
+                fontHeading: DEFAULT_RESUME_FONT,
+                fontSectionHeading: DEFAULT_RESUME_FONT,
+                fontItemHeading: DEFAULT_RESUME_FONT,
+                fontBody: DEFAULT_RESUME_FONT,
+                fontContact: DEFAULT_RESUME_FONT,
+                fontMeta: DEFAULT_RESUME_FONT,
                 colorName: '#111827',
                 colorTitle: '#315f9b',
                 colorContact: '#374151',
-                colorSectionHeading: '#111827',
+                colorSectionHeading: '#1f4f93',
                 colorItemHeading: '#111827',
                 colorDate: '#64748b',
                 colorMeta: '#6b7280',
@@ -1431,8 +1132,8 @@
                 colorSkillHeading: '#111827',
                 colorSkillBody: '#374151',
                 nameSize: 25,
-                sectionHeadingSize: 10.8,
-                itemHeadingSize: 10.25,
+                sectionHeadingSize: 11.05,
+                itemHeadingSize: 9.75,
                 dateSize: 9,
                 metaSize: 9.3,
                 contactSize: 9,
@@ -1510,11 +1211,18 @@
     function selectBuilderMode(mode) {
         builderMode = mode === 'guest' ? 'guest' : 'ahmad';
         localStorage.setItem(MODE_KEY, builderMode);
+        if (builderMode === 'guest') {
+            localStorage.removeItem(GUEST_WORKSPACE_KEY);
+            localStorage.removeItem(PROFILE_GUIDE_KEY);
+        } else {
+            localStorage.setItem(GUEST_WORKSPACE_KEY, 'true');
+            localStorage.setItem(PROFILE_GUIDE_KEY, 'true');
+        }
 
         state = builderMode === 'guest'
             ? createBlankState()
             : (loadState('ahmad') || createInitialState());
-        workflowStep = builderMode === 'guest' ? 'profile' : 'build';
+        workflowStep = builderMode === 'guest' ? 'data' : 'entries';
         localStorage.setItem(WORKFLOW_KEY, workflowStep);
         pageAddMenuOpen = false;
         activeAddAnchor = 'start';
@@ -1524,7 +1232,7 @@
         resetHistory();
         saveState({ history: false });
         renderAll();
-        showToast(builderMode === 'guest' ? 'Started blank resume' : 'Loaded Ahmad resume');
+        showToast(builderMode === 'guest' ? 'Paste JSON or start without it' : 'Loaded Ahmad resume');
     }
 
     function openIdentityGate() {
@@ -1537,13 +1245,13 @@
 
     function handleStartAction(action) {
         if (action === 'profile') {
-            setWorkflowStep('profile');
+            setWorkflowStep('entries');
             focusFirstProfileField();
             return;
         }
 
         if (action === 'add') {
-            setWorkflowStep('build');
+            setWorkflowStep('entries');
             activeAddAnchor = 'start';
             pageAddMenuOpen = true;
             renderPreview();
@@ -1553,7 +1261,7 @@
         }
 
         if (action === 'design') {
-            setWorkflowStep('design');
+            setWorkflowStep('templates');
             return;
         }
 
@@ -1561,10 +1269,10 @@
 
     function focusFirstProfileField() {
         window.setTimeout(() => {
-            const field = elements.constantsPanel && elements.constantsPanel.querySelector('[data-personal-field]');
+            const field = elements.constantsPanel && elements.constantsPanel.querySelector('input, textarea');
             if (field) {
                 field.focus();
-                field.select();
+                if (field.type !== 'file' && typeof field.select === 'function') field.select();
             }
         }, 0);
     }
@@ -1592,25 +1300,51 @@
 
     function loadWorkflowStep() {
         const saved = localStorage.getItem(WORKFLOW_KEY);
-        return WORKFLOW_STEPS.has(saved) ? saved : 'build';
+        const legacyMap = {
+            build: 'data',
+            profile: 'entries',
+            design: 'templates'
+        };
+        const normalized = legacyMap[saved] || saved;
+        return WORKFLOW_STEPS.has(normalized) ? normalized : 'data';
     }
 
     function setWorkflowStep(step) {
-        const nextStep = WORKFLOW_STEPS.has(step) ? step : 'build';
+        const nextStep = WORKFLOW_STEPS.has(step) ? step : 'data';
         if (nextStep !== workflowStep) {
             pageAddMenuOpen = false;
             activeAddAnchor = 'start';
         }
         workflowStep = nextStep;
         localStorage.setItem(WORKFLOW_KEY, workflowStep);
-        syncWorkflow();
-        refreshLucideIcons();
+        renderAll();
+    }
+
+    function syncResumeSyntaxBeforeStepChange(nextStep) {
+        if (nextStep === 'data') return true;
+        if (!elements.resumeSyntaxText || elements.resumeSyntaxText.dataset.dirty !== 'true') return true;
+
+        clearTimeout(syntaxAutoApplyTimer);
+        try {
+            applyResumeSyntaxFromText(elements.resumeSyntaxText.value, { render: false });
+            elements.resumeSyntaxText.dataset.dirty = 'false';
+            persistResumeJsonDraft();
+            updateSyntaxTextarea({ force: true });
+            setSyntaxStatus('JSON applied to wizard');
+            return true;
+        } catch (error) {
+            console.warn('Resume JSON tab sync failed:', error);
+            setSyntaxStatus('Fix JSON before opening the wizard.', true);
+            showToast('Fix JSON first');
+            return false;
+        }
     }
 
     function syncWorkflow() {
         document.body.dataset.workflowStep = workflowStep;
+        document.body.dataset.guestWorkspace = isGuestJsonIntro() ? 'json' : 'started';
         if (elements.activeToolTitle) {
-            elements.activeToolTitle.textContent = WORKFLOW_TITLES[workflowStep] || 'Toolbox';
+            elements.activeToolTitle.textContent = WORKFLOW_TITLES[workflowStep] || 'Resume';
         }
         document.body.dataset.builderMode = builderMode;
         if (!elements.workflowStepper) return;
@@ -1620,6 +1354,17 @@
             button.setAttribute('aria-current', active ? 'step' : 'false');
             button.setAttribute('aria-selected', active ? 'true' : 'false');
         });
+    }
+
+    function isGuestJsonIntro() {
+        return builderMode === 'guest' && localStorage.getItem(GUEST_WORKSPACE_KEY) !== 'true';
+    }
+
+    function enterGuestWorkspace(step = 'entries') {
+        localStorage.setItem(GUEST_WORKSPACE_KEY, 'true');
+        workflowStep = WORKFLOW_STEPS.has(step) ? step : 'entries';
+        localStorage.setItem(WORKFLOW_KEY, workflowStep);
+        document.body.dataset.guestWorkspace = 'started';
     }
 
     function populateFontSelects() {
@@ -1931,7 +1676,7 @@
     }
 
     function isPreviewControlTarget(target) {
-        return previewControlInteraction || Boolean(target && target.closest && target.closest('.inline-format-control, .bullet-style-inline, .resume-header-style-dock'));
+        return previewControlInteraction || Boolean(target && target.closest && target.closest('.inline-format-control, .bullet-style-inline, .resume-header-style-dock, .resume-section-tools'));
     }
 
     function setActiveTextStyleTarget(target) {
@@ -2080,6 +1825,7 @@
             date: 'Date',
             meta: 'Details',
             body: 'Text',
+            itemBody: 'Entry text',
             skillHeading: 'Skill label',
             skillBody: 'Skill text'
         };
@@ -2089,13 +1835,15 @@
     function renderAtsTemplatePresets() {
         if (!elements.atsTemplateList) return;
         const activePreset = state.templatePreset || 'experienced';
+
         elements.atsTemplateList.innerHTML = ATS_TEMPLATE_PRESETS.map(preset => {
             const active = preset.id === activePreset;
             return `
                 <button type="button" class="ats-template-card ${active ? 'active' : ''}" data-ats-template="${escapeAttr(preset.id)}" aria-pressed="${active ? 'true' : 'false'}">
-                    <span class="ats-template-badge" data-template-badge="${escapeAttr(preset.badge)}">${escapeHtml(preset.badge)}</span>
+                    <span class="template-placeholder" aria-hidden="true">
+                        <img src="public/resume/default-cv-thumbnail.png" alt="">
+                    </span>
                     <strong>${escapeHtml(preset.name)}</strong>
-                    <span>${escapeHtml(preset.description)}</span>
                 </button>
             `;
         }).join('');
@@ -2114,6 +1862,9 @@
             ...ATS_BASE_SETTINGS,
             ...(preset.settings || {})
         };
+        if (preset.template === 'ats' || preset.badge === 'High ATS') {
+            state.settings.showProfilePhoto = false;
+        }
         state.textStyles = {};
 
         const knownSections = new Set(Object.keys(state.sections || {}));
@@ -2151,6 +1902,49 @@
         showToast(`${preset.name} template applied`);
     }
 
+    function spotlightResumeForTemplate(presetId) {
+        const preset = ATS_TEMPLATE_PRESETS.find(item => item.id === presetId);
+        if (!preset || !elements.resumePreview) return;
+        clearTemplateSpotlight();
+        const paper = elements.resumePreview.querySelector('.resume-paper');
+        if (paper) paper.classList.add('has-template-spotlight');
+
+        const targets = getTemplateSpotlightTargets(preset);
+        targets.forEach(selector => {
+            elements.resumePreview.querySelectorAll(selector).forEach(element => {
+                element.classList.add('is-template-spotlit');
+            });
+        });
+    }
+
+    function clearTemplateSpotlight() {
+        if (!elements.resumePreview) return;
+        elements.resumePreview.querySelectorAll('.has-template-spotlight, .is-template-spotlit').forEach(element => {
+            element.classList.remove('has-template-spotlight', 'is-template-spotlit');
+        });
+    }
+
+    function getTemplateSpotlightTargets(preset) {
+        const targets = ['.resume-header'];
+        if (preset.layout && preset.layout.mode !== 'single') {
+            targets.push('.resume-body-grid', '.resume-side-column', '.resume-main-column');
+        }
+        if (Array.isArray(preset.sectionOrder)) {
+            preset.sectionOrder.slice(0, 3).forEach(sectionId => {
+                targets.push(`[data-resume-section="${escapeCssIdentifier(sectionId)}"]`);
+            });
+        }
+        if (preset.badge === 'Visual') {
+            targets.push('.resume-section-title-row', '.resume-item-heading');
+        }
+        return targets;
+    }
+
+    function escapeCssIdentifier(value) {
+        if (window.CSS && typeof window.CSS.escape === 'function') return window.CSS.escape(String(value));
+        return String(value).replace(/"/g, '\\"');
+    }
+
     function renderSectionLayers() {
         elements.sectionLayers.innerHTML = state.sectionOrder.map(sectionId => {
             const section = state.sections[sectionId];
@@ -2185,22 +1979,29 @@
     }
 
     function renderColumnStepper(section, scope = 'editor') {
+        if (templateControlsSectionColumns()) return '';
         const columns = getSectionColumns(section);
-        const disabledDown = columns <= 1 ? 'disabled' : '';
         const disabledUp = columns >= 4 ? 'disabled' : '';
         const actionAttribute = scope === 'preview' ? 'data-preview-action' : (scope === 'layer' ? 'data-layer-action' : 'data-action');
         const sectionAttribute = scope === 'layer' ? 'data-section' : 'data-section';
+        const choices = [1, 2, 3, 4].map(count => `
+            <button type="button" class="column-choice ${count === columns ? 'is-active' : ''}" ${actionAttribute}="columns-set" ${sectionAttribute}="${escapeAttr(section.id)}" data-columns="${count}" aria-pressed="${count === columns ? 'true' : 'false'}" aria-label="Use ${count} ${count === 1 ? 'column' : 'columns'}" title="${count} ${count === 1 ? 'column' : 'columns'}">
+                ${count}
+            </button>
+        `).join('');
+
         return `
-            <div class="column-stepper" data-column-stepper="${escapeAttr(scope)}" aria-label="${escapeAttr(section.title)} columns">
-                <button type="button" class="icon-button column-step-button" ${actionAttribute}="columns-down" ${sectionAttribute}="${escapeAttr(section.id)}" ${disabledDown} aria-label="Use fewer columns" title="Use fewer columns">
-                    <i data-lucide="minus" aria-hidden="true"></i>
-                </button>
-                <span class="column-step-count" aria-live="polite">
+            <div class="column-control" data-column-control="${escapeAttr(scope)}" aria-label="${escapeAttr(section.title)} columns">
+                <span class="column-control-label">
                     <i data-lucide="columns-2" aria-hidden="true"></i>
-                    ${columns}
+                    Columns
                 </span>
-                <button type="button" class="icon-button column-step-button" ${actionAttribute}="columns-up" ${sectionAttribute}="${escapeAttr(section.id)}" ${disabledUp} aria-label="Use more columns" title="Use more columns">
+                <div class="column-choice-group" role="group" aria-label="Column count">
+                    ${choices}
+                </div>
+                <button type="button" class="column-add-button" ${actionAttribute}="columns-up" ${sectionAttribute}="${escapeAttr(section.id)}" ${disabledUp} aria-label="Add column" title="Add column">
                     <i data-lucide="plus" aria-hidden="true"></i>
+                    <span>Add column</span>
                 </button>
             </div>
         `;
@@ -2269,29 +2070,684 @@
     }
 
     function renderConstantsPanel() {
-        elements.constantsPanel.innerHTML = `
-            <details class="control-disclosure constants-disclosure">
-                <summary>Identity and profile</summary>
-                <div class="constants-grid">
-                    ${renderConstantInput('Name', 'name', state.personal.name)}
-                    ${renderConstantInput('Role', 'title', state.personal.title)}
-                    ${renderConstantInput('Email', 'email', state.personal.email)}
-                    ${renderConstantInput('Location', 'location', state.personal.location)}
-                    ${renderConstantInput('Profile photo', 'profileImage', state.personal.profileImage)}
-                    <label class="constant-field field-wide">
-                        <span class="field-label">Upload photo</span>
-                        <input class="file-input" type="file" accept="image/*" data-profile-upload>
-                    </label>
-                    ${renderConstantInput('LinkedIn', 'linkedin', state.personal.linkedin)}
-                    ${renderConstantInput('GitHub', 'github', state.personal.github)}
-                    ${renderConstantInput('Website', 'website', state.personal.website)}
-                    <label class="inline-toggle field-wide">
-                        <input type="checkbox" data-setting="showProfilePhoto" ${state.settings.showProfilePhoto ? 'checked' : ''}>
-                        Show profile picture in resume header
-                    </label>
+        elements.constantsPanel.innerHTML = renderNonJsonWizard();
+    }
+
+    function renderNonJsonWizard() {
+        const step = getCurrentWizardStep();
+        const currentIndex = Math.max(0, Math.min(profileGuideCursor, NON_JSON_WIZARD_STEPS.length - 1));
+        const filledCount = NON_JSON_WIZARD_STEPS.filter(item => isWizardStepFilled(item)).length;
+        const isLast = currentIndex === NON_JSON_WIZARD_STEPS.length - 1;
+
+        return `
+            <div class="resume-wizard">
+                <div class="resume-wizard-topline">
+                    <span class="panel-kicker">Step ${currentIndex + 1} of ${NON_JSON_WIZARD_STEPS.length}</span>
+                    <span>${filledCount} filled</span>
                 </div>
-            </details>
+                <div class="resume-wizard-meter" aria-hidden="true">
+                    <span style="width:${((currentIndex + 1) / NON_JSON_WIZARD_STEPS.length) * 100}%"></span>
+                </div>
+                <section class="resume-wizard-card">
+                    <div class="resume-wizard-heading">
+                        <h2>${escapeHtml(step.label)}</h2>
+                        <p>${escapeHtml(step.prompt)}</p>
+                    </div>
+                    ${renderWizardStepFields(step)}
+                    <div class="resume-wizard-actions">
+                        <button type="button" class="tool-button tool-button-secondary compact-action" data-profile-guide-action="back" ${currentIndex === 0 ? 'disabled' : ''}>Back</button>
+                        <button type="button" class="tool-button tool-button-secondary compact-action" data-profile-guide-action="skip">Skip</button>
+                        <button type="button" class="tool-button tool-button-primary compact-action" data-profile-guide-action="next">${isLast ? 'Done' : 'Next'}</button>
+                    </div>
+                </section>
+                <div class="resume-wizard-dots" aria-label="Wizard progress">
+                    ${NON_JSON_WIZARD_STEPS.map((item, index) => `
+                        <span class="${index === currentIndex ? 'is-current' : ''} ${isWizardStepFilled(item) ? 'is-filled' : ''}" title="${escapeAttr(item.label)}"></span>
+                    `).join('')}
+                </div>
+            </div>
         `;
+    }
+
+    function getCurrentWizardStep() {
+        const maxIndex = NON_JSON_WIZARD_STEPS.length - 1;
+        profileGuideCursor = Math.max(0, Math.min(profileGuideCursor, maxIndex));
+        return NON_JSON_WIZARD_STEPS[profileGuideCursor];
+    }
+
+    function renderWizardStepFields(step) {
+        if (step.type === 'identity') {
+            return `
+                <div class="resume-wizard-field-grid">
+                    ${renderWizardField('Name', state.personal.name, 'data-personal-field="name"')}
+                    ${renderWizardField('Role / tagline', state.personal.title, 'data-personal-field="title"')}
+                </div>
+            `;
+        }
+
+        if (step.type === 'contact') {
+            return `
+                <div class="resume-wizard-field-grid">
+                    ${renderWizardField('Email', state.personal.email, 'data-personal-field="email"')}
+                    ${renderWizardField('Location', state.personal.location, 'data-personal-field="location"')}
+                    ${renderWizardField('LinkedIn', state.personal.linkedin, 'data-personal-field="linkedin"')}
+                    ${renderWizardField('GitHub', state.personal.github, 'data-personal-field="github"')}
+                    ${renderWizardField('Website', state.personal.website, 'data-personal-field="website"')}
+                </div>
+            `;
+        }
+
+        if (step.type === 'photo') {
+            return `
+                <div class="resume-wizard-stack">
+                    <div class="wizard-photo-field">
+                        <div class="wizard-photo-preview ${state.personal.profileImage ? 'has-photo' : ''}" data-preview-shape="${escapeAttr(state.settings.profilePhotoShape)}">
+                            ${state.personal.profileImage ? `
+                                <img src="${escapeAttr(state.personal.profileImage)}" alt="${escapeAttr(state.personal.name || 'Profile')} preview">
+                            ` : `
+                                <i data-lucide="user-round" aria-hidden="true"></i>
+                            `}
+                        </div>
+                        <div class="wizard-photo-controls">
+                            <label class="wizard-photo-upload">
+                                <span class="field-label">Photo</span>
+                                <input class="file-input" type="file" accept="image/*" data-profile-upload>
+                            </label>
+                            ${state.personal.profileImage ? `
+                                <button type="button" class="wizard-photo-remove" data-profile-guide-action="remove-photo">
+                                    <i data-lucide="x" aria-hidden="true"></i>
+                                    Remove photo
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                    ${renderWizardPhotoChoices()}
+                </div>
+            `;
+        }
+
+        if (step.type === 'personal') {
+            return renderWizardField(step.label, state.personal[step.field], `data-personal-field="${escapeAttr(step.field)}"`);
+        }
+
+        if (step.type === 'links') {
+            return `
+                <div class="resume-wizard-stack">
+                    ${renderWizardField('LinkedIn', state.personal.linkedin, 'data-personal-field="linkedin"')}
+                    ${renderWizardField('GitHub', state.personal.github, 'data-personal-field="github"')}
+                    ${renderWizardField('Website', state.personal.website, 'data-personal-field="website"')}
+                </div>
+            `;
+        }
+
+        if (step.type === 'summary') {
+            const section = state.sections.summary;
+            return renderWizardRichText('Summary paragraph', getSummaryBody(section), 'data-section-body="summary"');
+        }
+
+        if (step.type === 'skills') {
+            const section = state.sections.skills;
+            const columns = getSectionColumns(section);
+            const groups = ensureWizardSkillGroups(columns).slice(0, columns);
+            return renderWizardSkillsBuilder(groups, columns);
+        }
+
+        if (step.type === 'entry') {
+            const section = state.sections[step.section];
+            const columns = getSectionColumns(section);
+            const items = ensureWizardItems(step.section, columns);
+            const addChoiceOpen = wizardAddChoiceSection === step.section;
+            const templateColumnsLocked = templateControlsSectionColumns();
+            return `
+                <div class="resume-wizard-stack">
+                    <div class="resume-wizard-entry-grid" style="--wizard-columns:${columns}">
+                        ${items.map((item, index) => `
+                            <section class="resume-wizard-entry-card">
+                                <div class="resume-wizard-entry-topline">
+                                    <div class="resume-wizard-entry-count">Entry ${index + 1}</div>
+                                    ${items.length > 1 ? `
+                                        <button type="button" class="wizard-entry-remove" data-profile-guide-action="remove-entry" data-wizard-section="${escapeAttr(step.section)}" data-wizard-item="${escapeAttr(item.id)}" aria-label="Remove entry ${index + 1}" title="Remove entry">
+                                            <i data-lucide="x" aria-hidden="true"></i>
+                                        </button>
+                                    ` : ''}
+                                </div>
+                                ${renderWizardEntryFields(step.section, item)}
+                            </section>
+                        `).join('')}
+                    </div>
+                    <div class="wizard-add-entry-block">
+                        <button type="button" class="wizard-add-button" data-profile-guide-action="add-entry-options" data-wizard-section="${escapeAttr(step.section)}" aria-expanded="${addChoiceOpen ? 'true' : 'false'}">
+                            <i data-lucide="plus" aria-hidden="true"></i>
+                            Add ${escapeHtml(step.label.toLowerCase().replace(/s$/, ''))}
+                        </button>
+                        ${addChoiceOpen ? `
+                            <div class="wizard-add-entry-options" aria-label="Add entry placement">
+                                <button type="button" data-profile-guide-action="add-entry-below" data-wizard-section="${escapeAttr(step.section)}">
+                                    <i data-lucide="rows-2" aria-hidden="true"></i>
+                                    Below
+                                </button>
+                                ${templateColumnsLocked ? '' : `<button type="button" data-profile-guide-action="add-entry-column" data-wizard-section="${escapeAttr(step.section)}" ${columns >= 3 ? 'disabled' : ''}>
+                                    <i data-lucide="columns-2" aria-hidden="true"></i>
+                                    As column
+                                </button>`}
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        return '';
+    }
+
+    function renderWizardField(label, value, dataAttributes) {
+        return `
+            <label class="resume-wizard-field">
+                <span class="field-label">${escapeHtml(label)}</span>
+                <input class="field-input" value="${escapeAttr(value || '')}" ${dataAttributes} autocomplete="off">
+            </label>
+        `;
+    }
+
+    function renderWizardTextarea(label, value, dataAttributes) {
+        return `
+            <label class="resume-wizard-field">
+                <span class="field-label">${escapeHtml(label)}</span>
+                <textarea class="field-textarea rich-textarea" ${dataAttributes}>${escapeHtml(value || '')}</textarea>
+            </label>
+        `;
+    }
+
+    function renderWizardRichText(label, value, dataAttributes) {
+        return `
+            <div class="resume-wizard-field wizard-rich-field">
+                <span class="field-label">${escapeHtml(label)}</span>
+                <div class="wizard-rich-shell">
+                    <div class="wizard-rich-toolbar" aria-label="${escapeAttr(label)} formatting">
+                        <button type="button" class="rich-tool-button" data-wizard-rich-command="bold" aria-label="Bold" title="Bold">
+                            <i data-lucide="bold" aria-hidden="true"></i>
+                        </button>
+                        <button type="button" class="rich-tool-button" data-wizard-rich-command="italic" aria-label="Italic" title="Italic">
+                            <i data-lucide="italic" aria-hidden="true"></i>
+                        </button>
+                        <button type="button" class="rich-tool-button" data-wizard-rich-command="insertUnorderedList" aria-label="Bullets" title="Bullets">
+                            <i data-lucide="list" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                    <div class="wizard-rich-editor" contenteditable="true" data-wizard-rich ${dataAttributes}>${sanitizeRichHtml(value || '')}</div>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderWizardSkillsBuilder(groups, columns) {
+        const activeGroup = getActiveWizardSkillGroup(groups);
+        const skills = (Array.isArray(activeGroup.skills) ? activeGroup.skills : [])
+            .map(skill => String(skill || '').trim())
+            .filter(Boolean);
+
+        return `
+            <div class="wizard-skills-builder">
+                <div class="wizard-skills-toolbar">
+                    ${groups.length > 1 ? `
+                        <div class="wizard-skill-tabs" aria-label="Skill columns">
+                            ${groups.map((group, index) => `
+                                <button type="button" class="${group.id === activeGroup.id ? 'active' : ''}" data-profile-guide-action="select-skill-group" data-skill-group="${escapeAttr(group.id)}" aria-pressed="${group.id === activeGroup.id ? 'true' : 'false'}">
+                                    ${escapeHtml(group.name || `Column ${index + 1}`)}
+                                </button>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                    ${renderWizardColumnPicker('skills', columns)}
+                </div>
+
+                <section class="wizard-skill-card">
+                    <div class="wizard-skill-heading">
+                        ${renderWizardField('Category', activeGroup.name || '', `data-skill-group="${escapeAttr(activeGroup.id)}" data-skill-field="name"`)}
+                    </div>
+                    <label class="resume-wizard-field wizard-skill-add-field">
+                        <span class="field-label">Add skill</span>
+                        <div class="wizard-skill-add-row">
+                            <input class="field-input" value="" data-skill-draft data-skill-group="${escapeAttr(activeGroup.id)}" placeholder="Type a skill, or paste a short list" autocomplete="off">
+                            <button type="button" class="wizard-skill-add-button" data-profile-guide-action="add-skill" data-skill-group="${escapeAttr(activeGroup.id)}" aria-label="Add skill" title="Add skill">
+                                <i data-lucide="plus" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                    </label>
+                    <div class="wizard-skill-chip-list" aria-label="Added skills">
+                        ${skills.length ? skills.map((skill, index) => `
+                            <span class="wizard-skill-chip">
+                                ${escapeHtml(skill)}
+                                <button type="button" data-profile-guide-action="remove-skill" data-skill-group="${escapeAttr(activeGroup.id)}" data-skill-index="${index}" aria-label="Remove ${escapeAttr(skill)}" title="Remove skill">
+                                    <i data-lucide="x" aria-hidden="true"></i>
+                                </button>
+                            </span>
+                        `).join('') : '<span class="wizard-skill-empty">No skills added yet.</span>'}
+                    </div>
+                </section>
+            </div>
+        `;
+    }
+
+    function getActiveWizardSkillGroup(groups) {
+        const safeGroups = Array.isArray(groups) && groups.length ? groups : ensureWizardSkillGroups(1);
+        let active = safeGroups.find(group => group.id === activeSkillGroupId);
+        if (!active) {
+            active = safeGroups[0];
+            activeSkillGroupId = active.id;
+        }
+        return active;
+    }
+
+    function renderWizardEntryFields(sectionId, item) {
+        const titleField = getItemTitleField(sectionId);
+        const metaField = getWizardMetaField(sectionId, item);
+        const metaValue = item[metaField] || (sectionId === 'certifications' ? item.organization : '') || '';
+        const fields = [
+            renderWizardField(getEntryTitleLabel(sectionId), getItemTitle(sectionId, item), `data-item-field="${escapeAttr(titleField)}" data-section="${escapeAttr(sectionId)}" data-item="${escapeAttr(item.id)}"`),
+            renderWizardField(getEntryMetaLabel(sectionId), metaValue, `data-item-field="${escapeAttr(metaField)}" data-section="${escapeAttr(sectionId)}" data-item="${escapeAttr(item.id)}"`),
+            renderWizardDateField('Date', item.date || '', sectionId, item.id)
+        ];
+
+        if (sectionId === 'certifications') {
+            fields.push(renderWizardField('Credential ID', item.credentialId || '', `data-item-field="credentialId" data-section="${escapeAttr(sectionId)}" data-item="${escapeAttr(item.id)}"`));
+            fields.push(renderWizardField('Credential URL', item.url || '', `data-item-field="url" data-section="${escapeAttr(sectionId)}" data-item="${escapeAttr(item.id)}"`));
+            return `<div class="resume-wizard-entry-fields cert-fields">${fields.join('')}</div>`;
+        }
+
+        if (sectionId === 'projects' || sectionId === 'research') {
+            fields.push(renderWizardField('URL', item.url || '', `data-item-field="url" data-section="${escapeAttr(sectionId)}" data-item="${escapeAttr(item.id)}"`));
+        }
+
+        return `
+            <div class="resume-wizard-entry-fields">
+                ${fields.join('')}
+            </div>
+            ${renderWizardRichText('Details', getItemBodyHtml(sectionId, item), `data-item-field="body" data-section="${escapeAttr(sectionId)}" data-item="${escapeAttr(item.id)}"`)}
+        `;
+    }
+
+    function renderWizardDateField(label, value, sectionId, itemId) {
+        return `
+            <label class="resume-wizard-field wizard-date-field">
+                <span class="field-label">${escapeHtml(label)}</span>
+                <input class="field-input" value="${escapeAttr(value || '')}" data-item-field="date" data-section="${escapeAttr(sectionId)}" data-item="${escapeAttr(itemId)}" autocomplete="off">
+            </label>
+        `;
+    }
+
+    function renderWizardPhotoChoices() {
+        const shapes = [
+            ['circle', 'Circle'],
+            ['rounded-square', 'Rounded'],
+            ['square', 'Square']
+        ];
+        const placements = [
+            ['left', 'Left'],
+            ['right', 'Right'],
+            ['top', 'Top']
+        ];
+
+        return `
+            <div class="wizard-photo-options">
+                <div class="wizard-choice-group">
+                    <span class="field-label">Image shape</span>
+                    <div class="wizard-visual-options">
+                        ${shapes.map(([value, label]) => `
+                            <button type="button" class="${state.settings.profilePhotoShape === value ? 'active' : ''}" data-profile-guide-action="set-photo-setting" data-photo-setting="profilePhotoShape" data-photo-value="${escapeAttr(value)}" aria-pressed="${state.settings.profilePhotoShape === value ? 'true' : 'false'}">
+                                <span class="photo-shape-swatch" data-shape="${escapeAttr(value)}"></span>
+                                ${escapeHtml(label)}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+                <div class="wizard-choice-group">
+                    <span class="field-label">Image placement</span>
+                    <div class="wizard-visual-options">
+                        ${placements.map(([value, label]) => `
+                            <button type="button" class="${state.settings.profilePhotoPlacement === value ? 'active' : ''}" data-profile-guide-action="set-photo-setting" data-photo-setting="profilePhotoPlacement" data-photo-value="${escapeAttr(value)}" aria-pressed="${state.settings.profilePhotoPlacement === value ? 'true' : 'false'}">
+                                <span class="photo-placement-swatch" data-placement="${escapeAttr(value)}"><span></span></span>
+                                ${escapeHtml(label)}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderWizardColumnPicker(sectionId, currentColumns) {
+        if (templateControlsSectionColumns()) return '';
+        return `
+            <div class="wizard-column-picker" aria-label="Column layout">
+                <span class="field-label">Columns</span>
+                <div>
+                    ${[1, 2, 3].map(columns => `
+                        <button type="button" class="${Number(currentColumns) === columns ? 'active' : ''}" data-profile-guide-action="set-columns" data-wizard-section="${escapeAttr(sectionId)}" data-columns="${columns}" aria-pressed="${Number(currentColumns) === columns ? 'true' : 'false'}">
+                            ${columns}
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    function getEntryTitleLabel(sectionId) {
+        const labels = {
+            experience: 'Role',
+            projects: 'Project name',
+            education: 'Degree',
+            research: 'Title',
+            certifications: 'Certification'
+        };
+        return labels[sectionId] || 'Entry title';
+    }
+
+    function getEntryMetaLabel(sectionId) {
+        const labels = {
+            experience: 'Organization',
+            projects: 'Organization',
+            education: 'School',
+            research: 'Publication',
+            certifications: 'Issuer'
+        };
+        return labels[sectionId] || 'Organization';
+    }
+
+    function getWizardMetaField(sectionId, item) {
+        if (sectionId === 'certifications') return 'issuer';
+        if (sectionId === 'research') return 'organization';
+        return getItemMetaField(sectionId, item) || 'organization';
+    }
+
+    function ensureWizardItem(sectionId) {
+        return ensureWizardItems(sectionId, 1)[0] || { id: '', body: '' };
+    }
+
+    function ensureWizardItems(sectionId, minimumCount = 1) {
+        const section = state.sections[sectionId];
+        if (!section) return [];
+        section.items = section.items || [];
+        while (section.items.length < minimumCount) {
+            section.items.push(createBlankItemForSection(sectionId));
+        }
+        return section.items;
+    }
+
+    function createBlankItemForSection(sectionId) {
+        const base = {
+            id: uniqueId(sectionId),
+            sourceId: '',
+            organization: '',
+            date: '',
+            status: '',
+            url: '',
+            order: 1,
+            placement: 'auto',
+            body: ''
+        };
+        if (sectionId === 'experience') return { ...base, role: '' };
+        if (sectionId === 'projects') return { ...base, name: '' };
+        if (sectionId === 'education') return { ...base, degree: '' };
+        if (sectionId === 'research') return { ...base, title: '' };
+        if (sectionId === 'certifications') return { ...base, name: '', issuer: '', credentialId: '' };
+        return { ...base, name: '' };
+    }
+
+    function ensureWizardSkillGroup() {
+        return ensureWizardSkillGroups(1)[0];
+    }
+
+    function ensureWizardSkillGroups(minimumCount = 1) {
+        const section = state.sections.skills;
+        section.groups = section.groups || [];
+        while (section.groups.length < minimumCount) {
+            section.groups.push({
+                id: uniqueId('skills'),
+                sourceId: '',
+                name: '',
+                skills: []
+            });
+        }
+        return section.groups;
+    }
+
+    function isWizardStepFilled(step) {
+        if (step.type === 'identity') return ['name', 'title'].some(field => normalizeInlineText(state.personal[field]));
+        if (step.type === 'contact') return ['email', 'location', 'linkedin', 'github', 'website'].some(field => normalizeInlineText(state.personal[field]));
+        if (step.type === 'photo') return Boolean(state.personal.profileImage);
+        if (step.type === 'personal') return Boolean(normalizeInlineText(state.personal[step.field]));
+        if (step.type === 'links') return ['linkedin', 'github', 'website'].some(field => normalizeInlineText(state.personal[field]));
+        if (step.type === 'summary') return Boolean(richHtmlToPlainText(getSummaryBody(state.sections.summary)).trim());
+        if (step.type === 'skills') return (state.sections.skills.groups || []).some(group => group.name || (group.skills || []).some(skill => normalizeInlineText(skill)));
+        if (step.type === 'entry') return (state.sections[step.section].items || []).some(item => {
+            const title = getItemTitle(step.section, item);
+            const body = richHtmlToPlainText(getItemBodyHtml(step.section, item));
+            return normalizeInlineText(title) || normalizeInlineText(getItemMetaValue(step.section, item)) || normalizeInlineText(item.date) || normalizeInlineText(body);
+        });
+        return false;
+    }
+
+    function shouldShowProfileGuide() {
+        return builderMode === 'guest'
+            && workflowStep === 'entries'
+            && localStorage.getItem(PROFILE_GUIDE_KEY) !== 'true'
+            && isBlankGuestResume();
+    }
+
+    function isBlankGuestResume() {
+        const hasPersonal = PROFILE_GUIDE_FIELDS.some(([field]) => normalizeInlineText(state.personal[field]));
+        const hasSections = Object.values(state.sections || {}).some(section => {
+            if (!section || section.enabled === false) return false;
+            if (section.type === 'summary') return Boolean(richHtmlToPlainText(getSummaryBody(section)).trim());
+            if (section.type === 'skills') return (section.groups || []).some(group => group.name || (group.skills || []).some(skill => normalizeInlineText(skill)));
+            return (section.items || []).length > 0;
+        });
+        return !hasSections || !hasPersonal;
+    }
+
+    function renderProfileGuide() {
+        const clampedIndex = Math.max(0, Math.min(profileGuideCursor, PROFILE_GUIDE_FIELDS.length - 1));
+        profileGuideCursor = clampedIndex;
+        const [field, label, prompt] = PROFILE_GUIDE_FIELDS[clampedIndex];
+        const completedCount = PROFILE_GUIDE_FIELDS.filter(([key]) => normalizeInlineText(state.personal[key])).length;
+        const value = state.personal[field] || '';
+        return `
+            <div class="profile-guide">
+                <div class="profile-guide-progress">
+                    <strong>${clampedIndex + 1} of ${PROFILE_GUIDE_FIELDS.length}</strong>
+                </div>
+                <h2>${escapeHtml(label)}</h2>
+                <p>${escapeHtml(prompt)}</p>
+                <label class="profile-guide-field">
+                    <span class="field-label">${escapeHtml(label)}</span>
+                    <input class="field-input" value="${escapeAttr(value)}" data-personal-field="${escapeAttr(field)}" autocomplete="off">
+                </label>
+                <div class="profile-guide-actions">
+                    <button type="button" class="tool-button tool-button-secondary compact-action" data-profile-guide-action="skip">Skip</button>
+                    <button type="button" class="tool-button tool-button-primary compact-action" data-profile-guide-action="next">Next</button>
+                </div>
+                <div class="profile-guide-summary" aria-label="Completed profile fields">
+                    ${PROFILE_GUIDE_FIELDS.map(([key, fieldLabel], index) => `
+                        <span class="${normalizeInlineText(state.personal[key]) ? 'is-filled' : (index === clampedIndex ? 'is-current' : '')}">${escapeHtml(fieldLabel)}</span>
+                    `).join('')}
+                </div>
+                <button type="button" class="text-link-button" data-profile-guide-action="finish">Show full editor</button>
+                <small>${completedCount} filled</small>
+            </div>
+        `;
+    }
+
+    function handleProfileGuideAction(action, button = null) {
+        if (action === 'back') {
+            profileGuideCursor = Math.max(0, profileGuideCursor - 1);
+            renderConstantsPanel();
+            focusFirstProfileField();
+            return;
+        }
+
+        if (action === 'add-entry-options') {
+            const sectionId = button ? button.dataset.wizardSection : '';
+            wizardAddChoiceSection = wizardAddChoiceSection === sectionId ? '' : sectionId;
+            renderConstantsPanel();
+            refreshLucideIcons();
+            return;
+        }
+
+        if (action === 'add-entry-below' || action === 'add-entry-column' || action === 'add-entry') {
+            const sectionId = button ? button.dataset.wizardSection : '';
+            const section = state.sections[sectionId];
+            if (!section) return;
+            section.items = section.items || [];
+            section.items.push(createBlankItemForSection(sectionId));
+            if (action === 'add-entry-column' && !templateControlsSectionColumns()) {
+                setSectionColumns(sectionId, Math.min(3, getSectionColumns(section) + 1));
+            }
+            wizardAddChoiceSection = '';
+            saveState();
+            renderAll();
+            focusFirstProfileField();
+            return;
+        }
+
+        if (action === 'remove-entry') {
+            const sectionId = button ? button.dataset.wizardSection : '';
+            const itemId = button ? button.dataset.wizardItem : '';
+            const section = state.sections[sectionId];
+            if (!section || !itemId) return;
+            section.items = (section.items || []).filter(item => item.id !== itemId);
+            section.columns = Math.max(1, Math.min(getSectionColumns(section), section.items.length || 1));
+            saveState();
+            renderAll();
+            focusFirstProfileField();
+            return;
+        }
+
+        if (action === 'add-skill') {
+            const group = button ? findSkillGroup(button.dataset.skillGroup) : ensureWizardSkillGroup();
+            if (!group) return;
+            const draft = elements.constantsPanel.querySelector(`[data-skill-draft][data-skill-group="${cssEscape(group.id)}"]`);
+            addSkillsFromDraft(draft, group);
+            return;
+        }
+
+        if (action === 'remove-skill') {
+            const group = button ? findSkillGroup(button.dataset.skillGroup) : null;
+            if (!group) return;
+            const index = Math.max(0, Number(button.dataset.skillIndex) || 0);
+            group.skills = (Array.isArray(group.skills) ? group.skills : [])
+                .map(skill => String(skill || '').trim())
+                .filter(Boolean)
+                .filter((_, skillIndex) => skillIndex !== index);
+            saveState();
+            renderAll();
+            return;
+        }
+
+        if (action === 'select-skill-group') {
+            const group = button ? findSkillGroup(button.dataset.skillGroup) : null;
+            if (!group) return;
+            activeSkillGroupId = group.id;
+            renderConstantsPanel();
+            refreshLucideIcons();
+            return;
+        }
+
+        if (action === 'remove-photo') {
+            state.personal.profileImage = '';
+            state.settings.showProfilePhoto = false;
+            saveState();
+            renderAll();
+            return;
+        }
+
+        if (action === 'set-photo-setting') {
+            const setting = button ? button.dataset.photoSetting : '';
+            const value = button ? button.dataset.photoValue : '';
+            const allowed = {
+                profilePhotoShape: new Set(['circle', 'rounded-square', 'square']),
+                profilePhotoPlacement: new Set(['left', 'right', 'top'])
+            };
+            if (!allowed[setting] || !allowed[setting].has(value)) return;
+            state.settings[setting] = value;
+            saveState();
+            renderAll();
+            return;
+        }
+
+        if (action === 'set-columns') {
+            const sectionId = button ? button.dataset.wizardSection : '';
+            const columns = Math.max(1, Math.min(3, Number(button ? button.dataset.columns : 1) || 1));
+            const section = state.sections[sectionId];
+            setSectionColumns(sectionId, columns);
+            if (section && section.type === 'skills') {
+                ensureWizardSkillGroups(columns);
+                activeSkillGroupId = getActiveWizardSkillGroup(section.groups).id;
+            } else if (section && section.type !== 'summary') {
+                ensureWizardItems(sectionId, columns);
+            }
+            saveState();
+            renderAll();
+            return;
+        }
+
+        if (action === 'next' || action === 'skip') {
+            if (profileGuideCursor >= NON_JSON_WIZARD_STEPS.length - 1) {
+                showToast('Wizard complete');
+                return;
+            }
+            profileGuideCursor += 1;
+            renderConstantsPanel();
+            focusFirstProfileField();
+        }
+    }
+
+    function handleWizardRichTextCommand(button) {
+        const shell = button.closest('.wizard-rich-shell');
+        const editable = shell ? shell.querySelector('[data-wizard-rich]') : null;
+        if (!editable) return;
+
+        editable.focus({ preventScroll: true });
+        document.execCommand(button.dataset.wizardRichCommand, false, null);
+        handleEditorInput(editable);
+    }
+
+    function addSkillsFromDraft(input, explicitGroup = null) {
+        const group = explicitGroup || (input ? findSkillGroup(input.dataset.skillGroup) : ensureWizardSkillGroup());
+        if (!group) return;
+
+        const nextSkills = String(input ? input.value : '')
+            .split(/[,\n]/)
+            .map(skill => skill.trim())
+            .filter(Boolean);
+
+        if (!nextSkills.length) {
+            if (input) input.focus({ preventScroll: true });
+            return;
+        }
+
+        const existing = (Array.isArray(group.skills) ? group.skills : [])
+            .map(skill => String(skill || '').trim())
+            .filter(Boolean);
+        const known = new Set(existing.map(skill => skill.toLowerCase()));
+
+        nextSkills.forEach(skill => {
+            const key = skill.toLowerCase();
+            if (known.has(key)) return;
+            existing.push(skill);
+            known.add(key);
+        });
+
+        group.skills = existing;
+        activeSkillGroupId = group.id;
+        if (state.sections.skills) state.sections.skills.enabled = true;
+        saveState();
+        renderAll();
+
+        window.setTimeout(() => {
+            const nextInput = elements.constantsPanel.querySelector(`[data-skill-draft][data-skill-group="${cssEscape(group.id)}"]`);
+            if (nextInput) nextInput.focus({ preventScroll: true });
+        }, 0);
     }
 
     function handleProfileUpload(input) {
@@ -2362,20 +2818,8 @@
         const normalized = normalizeState(deepClone(targetState), builderMode);
         return {
             personal: normalized.personal,
-            layout: extractResumeStructureLayout(normalized.layout),
             sectionOrder: normalized.sectionOrder,
             sections: extractResumeContentSections(normalized.sections, normalized.sectionOrder)
-        };
-    }
-
-    function extractResumeStructureLayout(layout = {}) {
-        return {
-            mode: layout.mode,
-            columns: layout.columns,
-            columnRatio: layout.columnRatio,
-            side: layout.side,
-            sidebarSections: Array.isArray(layout.sidebarSections) ? layout.sidebarSections.slice() : [],
-            sectionFlow: layout.sectionFlow
         };
     }
 
@@ -2398,10 +2842,7 @@
             id: section.id,
             type: section.type,
             title: section.title,
-            enabled: section.enabled !== false,
-            columns: getSectionColumns(section),
-            placement: normalizePlacement(section.placement || 'auto'),
-            layout: extractResumeSectionStructure(section.layout)
+            enabled: section.enabled !== false
         };
 
         if (section.type === 'summary') {
@@ -2423,20 +2864,12 @@
     }
 
     function extractResumeContentItem(item) {
-        const hiddenKeys = new Set(['sourceId', 'className', 'style']);
+        const hiddenKeys = new Set(['sourceId', 'className', 'style', 'placement']);
         return Object.fromEntries(
             Object.entries(item || {})
                 .filter(([key, value]) => !hiddenKeys.has(key) && value !== undefined)
                 .map(([key, value]) => [key, Array.isArray(value) ? value.slice() : value])
         );
-    }
-
-    function extractResumeSectionStructure(layout = {}) {
-        const structure = {};
-        if (layout && layout.columns != null) structure.columns = layout.columns;
-        if (layout && layout.breakBefore) structure.breakBefore = true;
-        if (layout && layout.keepTogether) structure.keepTogether = true;
-        return structure;
     }
 
     function formatResumeSyntax(targetState = state) {
@@ -2458,6 +2891,41 @@
         syntaxAutoApplyTimer = setTimeout(autoApplyResumeSyntax, 700);
     }
 
+    function renderResumeJsonFromTextarea() {
+        if (!elements.resumeSyntaxText) return;
+
+        try {
+            applyResumeSyntaxFromText(elements.resumeSyntaxText.value, { render: false });
+            elements.resumeSyntaxText.dataset.dirty = 'false';
+            persistResumeJsonDraft();
+            enterGuestWorkspace('data');
+            localStorage.setItem(PROFILE_GUIDE_KEY, 'true');
+            renderAll();
+            setSyntaxStatus('JSON rendered');
+            showToast('Resume rendered');
+        } catch (error) {
+            console.warn('Resume JSON render failed:', error);
+            setSyntaxStatus(error.message || 'Fix JSON before rendering.', true);
+            showToast('Fix JSON before rendering');
+        }
+    }
+
+    function startGuestWorkspaceWithoutJson() {
+        if (builderMode === 'guest') {
+            state = createBlankState();
+            enterGuestWorkspace('entries');
+            localStorage.removeItem(PROFILE_GUIDE_KEY);
+            profileGuideCursor = 0;
+            saveState({ history: false });
+            renderAll();
+            focusFirstProfileField();
+            showToast('Started without JSON');
+            return;
+        }
+
+        setWorkflowStep('entries');
+    }
+
     function autoApplyResumeSyntax() {
         clearTimeout(syntaxAutoApplyTimer);
         if (!elements.resumeSyntaxText || elements.resumeSyntaxText.dataset.dirty !== 'true') return false;
@@ -2465,9 +2933,13 @@
         try {
             applyResumeSyntaxFromText(elements.resumeSyntaxText.value, { render: true });
             elements.resumeSyntaxText.dataset.dirty = 'false';
+            if (builderMode === 'guest') {
+                enterGuestWorkspace('data');
+                localStorage.setItem(PROFILE_GUIDE_KEY, 'true');
+            }
             updateSyntaxTextarea({ force: true });
             persistResumeJsonDraft();
-            setSyntaxStatus('JSON auto-applied');
+            setSyntaxStatus('JSON rendered');
             return true;
         } catch (error) {
             console.warn('Resume JSON auto-apply failed:', error);
@@ -2476,45 +2948,24 @@
         }
     }
 
-    function saveResumeJsonToBrowser() {
-        try {
-            if (elements.resumeSyntaxText && elements.resumeSyntaxText.dataset.dirty === 'true') {
-                applyResumeSyntaxFromText(elements.resumeSyntaxText.value, { render: false });
-                elements.resumeSyntaxText.dataset.dirty = 'false';
-            }
-
-            updateSyntaxTextarea({ force: true });
-            persistResumeJsonDraft();
-            setSyntaxStatus('JSON saved in this browser');
-            showToast('JSON saved in browser');
-        } catch (error) {
-            console.warn('Resume JSON save failed:', error);
-            setSyntaxStatus('Save failed. Fix JSON syntax first.', true);
-            showToast('Fix JSON before saving');
-        }
-    }
-
-    function loadResumeJsonFromBrowser() {
-        const savedJson = localStorage.getItem(getResumeJsonStorageKey(builderMode));
-        if (!savedJson) {
-            setSyntaxStatus('No saved JSON found in this browser.', true);
-            showToast('No saved JSON found');
+    function openPromptModal() {
+        updateJsonResumePrompt({ force: true });
+        if (!elements.promptModal) {
+            copyJsonResumePrompt();
             return;
         }
+        elements.promptModal.hidden = false;
+        document.body.classList.add('prompt-modal-open');
+        refreshLucideIcons();
+        const copyButton = elements.promptModal.querySelector('[data-prompt-modal-copy]');
+        if (copyButton) copyButton.focus({ preventScroll: true });
+    }
 
-        try {
-            applyResumeSyntaxFromText(savedJson, { render: true });
-            if (elements.resumeSyntaxText) {
-                elements.resumeSyntaxText.value = savedJson;
-                elements.resumeSyntaxText.dataset.dirty = 'false';
-            }
-            setSyntaxStatus('Loaded saved JSON from this browser');
-            showToast('Saved JSON loaded');
-        } catch (error) {
-            console.warn('Resume JSON load failed:', error);
-            setSyntaxStatus('Saved JSON could not be loaded.', true);
-            showToast('Saved JSON is invalid');
-        }
+    function closePromptModal() {
+        if (!elements.promptModal) return;
+        elements.promptModal.hidden = true;
+        document.body.classList.remove('prompt-modal-open');
+        if (elements.copyJsonResumePrompt) elements.copyJsonResumePrompt.focus({ preventScroll: true });
     }
 
     async function copyJsonResumePrompt() {
@@ -2525,10 +2976,26 @@
             await copyTextToClipboard(prompt);
             setSyntaxStatus('LLM prompt copied');
             showToast('Prompt copied');
+            closePromptModal();
         } catch (error) {
             console.warn('JSON resume prompt copy failed:', error);
             setSyntaxStatus('Copy failed. Select the prompt text manually.', true);
             showToast('Could not copy prompt');
+        }
+    }
+
+    async function copyCurrentResumeJson() {
+        if (!elements.resumeSyntaxText) return;
+        const currentJson = elements.resumeSyntaxText.value || formatResumeSyntax();
+
+        try {
+            await copyTextToClipboard(currentJson);
+            setSyntaxStatus('Current JSON copied');
+            showToast('JSON copied');
+        } catch (error) {
+            console.warn('Current JSON copy failed:', error);
+            setSyntaxStatus('Copy failed. Select the JSON manually.', true);
+            showToast('Could not copy JSON');
         }
     }
 
@@ -2576,14 +3043,6 @@
                     github: '[GitHub URL]',
                     website: '[Portfolio URL]'
                 },
-                layout: {
-                    mode: 'single',
-                    columns: 1,
-                    columnRatio: '2fr 1fr',
-                    side: 'right',
-                    sidebarSections: ['skills', 'education', 'certifications'],
-                    sectionFlow: 'document'
-                },
                 sectionOrder: ['summary', 'experience', 'projects', 'skills', 'education', 'certifications'],
                 sections: {
                     summary: {
@@ -2591,9 +3050,6 @@
                         type: 'summary',
                         title: 'Summary',
                         enabled: true,
-                        columns: 1,
-                        placement: 'auto',
-                        layout: {},
                         body: '<p>[2-4 sentence summary tailored to the job post, using only truthful candidate facts.]</p>'
                     },
                     experience: {
@@ -2601,9 +3057,6 @@
                         type: 'experience',
                         title: 'Experience',
                         enabled: true,
-                        columns: 1,
-                        placement: 'auto',
-                        layout: {},
                         items: [
                             {
                                 id: 'experience-1',
@@ -2613,7 +3066,6 @@
                                 status: '',
                                 url: '',
                                 order: 1,
-                                placement: 'auto',
                                 body: '<ul><li>[Action verb + relevant task/project + result, metric, or concrete scope.]</li><li>[Action verb + job-relevant keyword + truthful impact.]</li></ul>'
                             }
                         ]
@@ -2623,9 +3075,6 @@
                         type: 'projects',
                         title: 'Projects',
                         enabled: true,
-                        columns: 1,
-                        placement: 'auto',
-                        layout: {},
                         items: [
                             {
                                 id: 'project-1',
@@ -2635,7 +3084,6 @@
                                 status: '',
                                 url: '[Project URL]',
                                 order: 1,
-                                placement: 'auto',
                                 body: '<p>[Short project context tied to the target role.]</p><ul><li>[Built/led/improved + technology/skill + outcome.]</li></ul>'
                             }
                         ]
@@ -2645,9 +3093,6 @@
                         type: 'skills',
                         title: 'Skills',
                         enabled: true,
-                        columns: 1,
-                        placement: 'auto',
-                        layout: {},
                         groups: [
                             {
                                 id: 'skills-technical',
@@ -2666,9 +3111,6 @@
                         type: 'education',
                         title: 'Education',
                         enabled: true,
-                        columns: 1,
-                        placement: 'auto',
-                        layout: {},
                         items: [
                             {
                                 id: 'education-1',
@@ -2678,7 +3120,6 @@
                                 status: '',
                                 url: '',
                                 order: 1,
-                                placement: 'auto',
                                 body: '<p>[Relevant coursework, honors, or short education detail.]</p>'
                             }
                         ]
@@ -2688,19 +3129,16 @@
                         type: 'certifications',
                         title: 'Certifications',
                         enabled: false,
-                        columns: 1,
-                        placement: 'auto',
-                        layout: {},
                         items: [
                             {
                                 id: 'certification-1',
                                 name: '[Certification]',
-                                organization: '[Issuer]',
+                                issuer: '[Issuer]',
                                 date: '[Date]',
                                 status: '',
-                                url: '',
+                                url: '[Credential URL]',
+                                credentialId: '[Credential ID]',
                                 order: 1,
-                                placement: 'auto',
                                 body: ''
                             }
                         ]
@@ -2722,30 +3160,26 @@
             '- Write the whole resume for the job post or target role the user provides.',
             '- Use only facts supplied by the user. Do not invent employers, degrees, dates, metrics, links, credentials, or technologies.',
             '- If a useful fact is missing, leave a clear placeholder in brackets instead of fabricating it.',
+            '- If the user has not provided enough required context to write the resume, ask a few focused questions first. Keep that question step short and do not turn it into a lengthy process.',
             '- Keep the JSON format, version, and top-level shape intact.',
             '- Prefer concise, high-impact bullets with action verbs and measurable scope.',
-            '- You may reorder sections, hide sections with enabled:false, add custom sections, change columns/placements, and change rich text bodies.',
-            '- Do not add visual design fields. Templates, colors, fonts, spacing, classes, and header styling are controlled by the builder UI.',
+            '- You may reorder sections, hide sections with enabled:false, add custom sections, and change rich text bodies.',
+            '- Do not use JSON to decide template design. Columns, column ratios, spacing, colors, heading separators, bullet styling, classes, and header styling are controlled by the active template.',
             '- For each job, align personal.title, summary, skills, and bullets to the exact job title and repeated hard-skill keywords from the job description.',
             '',
             'Useful syntax:',
             '- format: "ayk.resume.syntax"',
             '- version: 1',
             '- resume.personal: name, title, email, location, profileImage, linkedin, github, website',
-            '- resume.layout controls document structure: { mode:"single"|"two-column"|"modern", columns:1|2, columnRatio:"2fr 1fr", side:"left"|"right", sidebarSections:["skills","education","certifications"], sectionFlow:"document"|"balanced" }.',
+            '- resume.layout may be present for compatibility, but the active template decides document layout, columns, column ratios, spacing, colors, heading separators, and bullet styling.',
             '- resume.sectionOrder is the render order. Add a section id here to render a custom section.',
-            '- resume.sections[id] needs id, type, title, enabled, columns, placement, layout, and either body, items, or groups.',
-            '- Section structure fields: columns:1-4, placement:"auto"|"main"|"side"|"left"|"right"|"full", layout:{ columns, breakBefore, keepTogether }.',
+            '- resume.sections[id] needs id, type, title, enabled, and either body, items, or groups.',
+            '- Section structure fields such as columns, placement, and layout are tolerated for compatibility, but the active template design decides how many columns render.',
             '- summary sections use body with simple HTML: <p>, <ul>, <li>, <strong>, <em>, <a href="">.',
             '- skills sections use groups: [{ id, name, skills: [] }].',
-            '- entry sections use items: [{ id, name/role/degree/title, organization/issuer, date, status, url, body, bullets, order, placement }].',
+            '- entry sections use items: [{ id, name/role/degree/title, organization/issuer, date, status, url, credentialId, body, bullets, order, placement }].',
+            '- Certifications can use name, issuer, date, credentialId, and url.',
             '- Entry structure fields: order controls order within a section; placement can move an entry to main/side/full in multi-column templates.',
-            '',
-            'Builder template guidance:',
-            '- Do not choose templates in JSON. The user applies templates in one click from the builder.',
-            `- Available builder templates include: ${ATS_TEMPLATE_PRESETS.map(preset => preset.id).join(', ')}.`,
-            '- For maximum ATS parsing, the user should apply a High ATS template in the Templates tab.',
-            '- For portfolio or design-forward jobs, the user should apply a Modern, Visual, or Hybrid template in the Templates tab.',
             '',
             'ATS wording rules:',
             '- Every bullet should follow this pattern when truthful: Action Verb + Task or Project + Metric or Result.',
@@ -3580,37 +4014,8 @@
     }
 
     function renderEditor() {
-        const sectionsHtml = state.sectionOrder.map(sectionId => {
-            const section = state.sections[sectionId];
-            if (!section) return '';
-            return `
-                <section class="editor-section" data-section="${escapeAttr(sectionId)}">
-                    <header class="editor-section-header">
-                        <div class="section-title-row">
-                            <input class="section-title-input" value="${escapeAttr(section.title)}" data-section-title="${escapeAttr(sectionId)}">
-                            <label class="section-toggle">
-                                <input type="checkbox" ${section.enabled ? 'checked' : ''} data-section-enabled="${escapeAttr(sectionId)}">
-                                Show section
-                            </label>
-                        </div>
-                        <div class="section-actions">
-                            <button type="button" class="icon-button" data-action="add-item" data-section="${escapeAttr(sectionId)}" aria-label="Add item" title="Add">
-                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14" /><path d="M5 12h14" /></svg>
-                            </button>
-                        </div>
-                    </header>
-                    <div class="editor-section-body">
-                        <div class="drop-hint" aria-label="Drop content to add">
-                            <i data-lucide="${section.type === 'skills' ? 'columns-3' : 'list-plus'}" aria-hidden="true"></i>
-                            <span>${section.type === 'skills' ? 'Drop for column' : 'Drop to add'}</span>
-                        </div>
-                        ${renderSectionEditor(section)}
-                    </div>
-                </section>
-            `;
-        }).join('');
-
-        elements.editorSections.innerHTML = sectionsHtml;
+        elements.editorSections.hidden = true;
+        elements.editorSections.innerHTML = '';
     }
 
     function renderPersonalEditor() {
@@ -3803,6 +4208,14 @@
     function resolveTextStyle(role, styleKey) {
         const config = getTextStyleRole(role);
         const override = getTextStyleOverride(styleKey);
+        if (role === 'itemBody' && (state.templatePreset || 'experienced') === 'experienced') {
+            return {
+                fontFamily: state.settings.fontBody || state.settings.fontFamily || DEFAULT_RESUME_FONT,
+                color: '#1f2937',
+                fontSize: 9.25,
+                lineHeight: 1.34
+            };
+        }
         return {
             fontFamily: override.fontFamily || state.settings[config.font] || state.settings.fontBody,
             color: override.color || state.settings[config.color] || '#111827',
@@ -3814,7 +4227,8 @@
     function renderTextStyleAttributes(role, styleKey) {
         const style = resolveTextStyle(role, styleKey);
         const lineHeight = style.lineHeight ? ` --text-line-height:${escapeAttr(style.lineHeight)};` : '';
-        return `data-style-role="${escapeAttr(role)}" data-style-key="${escapeAttr(styleKey)}" style="--text-font:${escapeAttr(style.fontFamily)}; --text-color:${escapeAttr(style.color)}; --text-size:${escapeAttr(style.fontSize)}pt;${lineHeight}"`;
+        const directLineHeight = style.lineHeight ? ` line-height:${escapeAttr(style.lineHeight)};` : '';
+        return `data-style-role="${escapeAttr(role)}" data-style-key="${escapeAttr(styleKey)}" style="--text-font:${escapeAttr(style.fontFamily)}; --text-color:${escapeAttr(style.color)}; --text-size:${escapeAttr(style.fontSize)}pt;${lineHeight} font-family:${escapeAttr(style.fontFamily)}; color:${escapeAttr(style.color)}; font-size:${escapeAttr(style.fontSize)}pt;${directLineHeight}"`;
     }
 
     function renderJsonStyleAttributes(styleObject = {}, extraVariables = {}) {
@@ -3828,9 +4242,9 @@
         return declarations.length ? `style="${declarations.join(' ')}"` : '';
     }
 
-    function renderSectionStyle(section) {
+    function renderSectionStyle(section, options = {}) {
         const variables = {
-            '--section-columns': getSectionColumns(section),
+            '--section-columns': getSectionColumns(section, options),
             '--section-content-gap': section.layout && section.layout.gap != null ? `${section.layout.gap}px` : ''
         };
         return renderJsonStyleAttributes(resolveClassStyle('section', section.className, section.style), variables);
@@ -4047,18 +4461,7 @@
     }
 
     function renderResumeInsertControl(anchor, isEmpty = false) {
-        const open = pageAddMenuOpen && activeAddAnchor === anchor;
-        return `
-            <div class="resume-insert-control ${isEmpty ? 'is-empty' : ''} ${open ? 'is-open' : ''}" data-insert-after="${escapeAttr(anchor)}">
-                <button type="button" class="page-add-button" data-page-add-toggle data-insert-after="${escapeAttr(anchor)}" aria-expanded="${open ? 'true' : 'false'}" aria-label="Add content here" title="Add content here">
-                    <i data-lucide="plus" aria-hidden="true"></i>
-                    <span>${isEmpty ? 'Start resume' : 'Add here'}</span>
-                </button>
-                <div class="page-add-menu" ${open ? '' : 'hidden'}>
-                    ${renderPageAddMenu(anchor)}
-                </div>
-            </div>
-        `;
+        return '';
     }
 
     function renderResumeHeader() {
@@ -4126,15 +4529,28 @@
         return `<i data-lucide="${escapeAttr(icon)}" aria-hidden="true"></i>`;
     }
 
+    function hasMeaningfulItemContent(sectionId, item) {
+        if (!item) return false;
+        return [
+            getItemTitle(sectionId, item),
+            getItemMetaValue(sectionId, item),
+            item.date,
+            item.status,
+            item.url,
+            richHtmlToPlainText(getItemBodyHtml(sectionId, item))
+        ].some(value => normalizeInlineText(value));
+    }
+
     function renderResumeSection(section) {
         if (section.type === 'summary') {
             const body = getSummaryBody(section);
             if (!richHtmlToPlainText(body)) return '';
+            const columns = getSectionColumns(section, { contentCount: 1 });
             return `
-                <section class="resume-section resume-summary" data-resume-section="${escapeAttr(section.id)}" data-placement="${escapeAttr(getSectionColumnPlacement(section))}" ${renderSectionStyle(section)}>
+                <section class="resume-section resume-summary" data-resume-section="${escapeAttr(section.id)}" data-placement="${escapeAttr(getSectionColumnPlacement(section))}" ${renderSectionStyle(section, { contentCount: 1 })}>
                     ${renderResumeSectionTools(section)}
                     ${renderResumeSectionTitle(section)}
-                    <div class="resume-section-content" data-section-columns="${getSectionColumns(section)}">
+                    <div class="resume-section-content" data-section-columns="${columns}">
                         <div class="resume-rich-block inline-format-target">
                             <div class="resume-rich-text text-style-target" contenteditable="true" data-placeholder="Type summary" data-edit-kind="section-body" data-section="${escapeAttr(section.id)}" ${renderTextStyleAttributes('body', `section.${section.id}.body`)}>${sanitizeRichHtml(body)}</div>
                             ${renderRichTextToolbar(`section.${section.id}.body`)}
@@ -4146,13 +4562,19 @@
         }
 
         if (section.type === 'skills') {
-            const groups = (section.groups || []).filter(group => group.name || (group.skills || []).length);
+            const groups = (section.groups || [])
+                .map(group => ({
+                    ...group,
+                    skills: (group.skills || []).map(skill => normalizeInlineText(skill)).filter(Boolean)
+                }))
+                .filter(group => group.name || group.skills.length);
             if (!groups.length) return '';
+            const columns = getSectionColumns(section, { contentCount: groups.length });
             return `
-                <section class="resume-section" data-resume-section="${escapeAttr(section.id)}" data-placement="${escapeAttr(getSectionColumnPlacement(section))}" ${renderSectionStyle(section)}>
+                <section class="resume-section" data-resume-section="${escapeAttr(section.id)}" data-placement="${escapeAttr(getSectionColumnPlacement(section))}" ${renderSectionStyle(section, { contentCount: groups.length })}>
                     ${renderResumeSectionTools(section)}
                     ${renderResumeSectionTitle(section)}
-                    <div class="skills-grid" data-section-columns="${getSectionColumns(section)}" style="--skills-columns:${getSectionColumns(section)};">
+                    <div class="skills-grid" data-section-columns="${columns}" style="--skills-columns:${columns};">
                         ${groups.map(group => `
                             <div class="skill-group">
                                 <div class="inline-format-target">
@@ -4170,17 +4592,44 @@
             `;
         }
 
-        const items = section.items || [];
+        const items = (section.items || []).filter(item => hasMeaningfulItemContent(section.type, item));
         if (!items.length) return '';
+        const columns = getSectionColumns(section, { contentCount: items.length });
+        const itemHtml = templateControlsSectionColumns() && columns > 1
+            ? renderBalancedTemplateColumns(section.type, sortSectionItems(items), columns)
+            : sortSectionItems(items).map(item => renderResumeItem(section.type, item)).join('');
         return `
-            <section class="resume-section" data-resume-section="${escapeAttr(section.id)}" data-placement="${escapeAttr(getSectionColumnPlacement(section))}" ${renderSectionStyle(section)}>
+            <section class="resume-section" data-resume-section="${escapeAttr(section.id)}" data-placement="${escapeAttr(getSectionColumnPlacement(section))}" ${renderSectionStyle(section, { contentCount: items.length })}>
                 ${renderResumeSectionTools(section)}
                 ${renderResumeSectionTitle(section)}
-                <div class="resume-section-content" data-section-columns="${getSectionColumns(section)}">
-                    ${sortSectionItems(items).map(item => renderResumeItem(section.type, item)).join('')}
+                <div class="resume-section-content" data-section-columns="${columns}">
+                    ${itemHtml}
                 </div>
             </section>
         `;
+    }
+
+    function renderBalancedTemplateColumns(sectionType, items, columns) {
+        const buckets = Array.from({ length: columns }, () => ({ weight: 0, items: [] }));
+        items.forEach(item => {
+            const target = buckets.reduce((best, bucket) => bucket.weight < best.weight ? bucket : best, buckets[0]);
+            target.items.push(item);
+            target.weight += estimateResumeItemWeight(sectionType, item);
+        });
+
+        return buckets.map((bucket, index) => `
+            <div class="resume-section-column" data-template-column="${index + 1}">
+                ${bucket.items.map(item => renderResumeItem(sectionType, item)).join('')}
+            </div>
+        `).join('');
+    }
+
+    function estimateResumeItemWeight(sectionType, item) {
+        const title = getItemTitle(sectionType, item);
+        const meta = getItemMetaValue(sectionType, item);
+        const body = richHtmlToPlainText(getItemBodyHtml(sectionType, item));
+        const bullets = Array.isArray(item.bullets) ? item.bullets.join(' ') : '';
+        return normalizeInlineText([title, meta, item.date, item.url, body, bullets].join(' ')).length || 1;
     }
 
     function renderResumeSectionTools(section) {
@@ -4191,9 +4640,6 @@
                 </button>
                 <button type="button" class="resume-section-tool drag-tool" draggable="true" data-section-drag data-section-id="${escapeAttr(section.id)}" aria-label="Drag ${escapeAttr(section.title)}" title="Drag">
                     <i data-lucide="grip-vertical" aria-hidden="true"></i>
-                </button>
-                <button type="button" class="resume-section-tool" data-preview-action="add-after-section" data-section="${escapeAttr(section.id)}" aria-label="Add after ${escapeAttr(section.title)}" title="Add after">
-                    <i data-lucide="plus" aria-hidden="true"></i>
                 </button>
             </div>
         `;
@@ -4326,8 +4772,10 @@
         const org = item.organization || item.issuer || '';
         const url = item.url || '';
         const details = item.details || '';
+        const credentialId = item.credentialId || '';
 
         if (org) lines.push(`<p>${escapeHtml(org)}</p>`);
+        if (type === 'certifications' && credentialId) lines.push(`<p>Credential ID: ${escapeHtml(credentialId)}</p>`);
         if (details) lines.push(`<p>${escapeHtml(details)}</p>`);
 
         const bullets = Array.isArray(item.bullets) ? item.bullets.filter(Boolean) : [];
@@ -4432,9 +4880,11 @@
         const titleField = getItemTitleField(type);
         const title = getItemTitle(type, item);
         const body = getItemBodyHtmlForPreview(type, item);
+        const hasBody = Boolean(richHtmlToPlainText(body));
         const url = cleanUrl(item.url || '');
         const metaField = getItemMetaField(type, item);
         const metaValue = getItemMetaValue(type, item);
+        const credentialId = type === 'certifications' ? normalizeInlineText(item.credentialId || '') : '';
         return `
             <article class="resume-item ${item.status ? 'has-status' : ''}" data-resume-entry="${escapeAttr(item.id)}" data-entry-section="${escapeAttr(type)}" data-placement="${escapeAttr(normalizePlacement(item.placement || 'auto'))}" ${renderItemJsonStyle(item)}>
                 <button type="button" class="resume-entry-drag drag-tool" draggable="true" data-entry-drag data-section="${escapeAttr(type)}" data-item="${escapeAttr(item.id)}" aria-label="Drag entry" title="Drag entry">
@@ -4462,17 +4912,23 @@
                         ${renderTextStyleControl('meta', `item.${type}.${item.id}.${metaField}`, 'Details', 'text')}
                     </div>
                 ` : ''}
+                ${credentialId ? `
+                    <div class="resume-item-meta inline-format-target">
+                        <span>Credential ID: </span><span class="text-style-target" contenteditable="true" data-placeholder="Credential ID" data-edit-kind="item" data-section="${escapeAttr(type)}" data-item="${escapeAttr(item.id)}" data-field="credentialId" ${renderTextStyleAttributes('meta', `item.${type}.${item.id}.credentialId`)}>${escapeHtml(credentialId)}</span>
+                        ${renderTextStyleControl('meta', `item.${type}.${item.id}.credentialId`, 'Credential ID', 'badge-check')}
+                    </div>
+                ` : ''}
                 ${url ? `
                     <div class="resume-item-url-row inline-format-target" contenteditable="false">
                         <span class="resume-item-url text-style-target" contenteditable="true" data-placeholder="URL" data-edit-kind="item" data-section="${escapeAttr(type)}" data-item="${escapeAttr(item.id)}" data-field="url" ${renderTextStyleAttributes('meta', `item.${type}.${item.id}.url`)}>${escapeHtml(formatVisibleUrl(url))}</span>
                         ${renderTextStyleControl('meta', `item.${type}.${item.id}.url`, 'URL', 'link')}
                     </div>
                 ` : ''}
-                <div class="resume-rich-block inline-format-target">
-                    <div class="resume-rich-text text-style-target" contenteditable="true" data-placeholder="Text object" data-edit-kind="rich" data-section="${escapeAttr(type)}" data-item="${escapeAttr(item.id)}" data-field="body" ${renderTextStyleAttributes('body', `item.${type}.${item.id}.body`)}>${sanitizeRichHtml(body)}</div>
+                ${hasBody ? `<div class="resume-rich-block inline-format-target">
+                    <div class="resume-rich-text text-style-target" contenteditable="true" data-placeholder="Text object" data-edit-kind="rich" data-section="${escapeAttr(type)}" data-item="${escapeAttr(item.id)}" data-field="body" ${renderTextStyleAttributes('itemBody', `item.${type}.${item.id}.body`)}>${sanitizeRichHtml(body)}</div>
                     ${renderRichTextToolbar(`item.${type}.${item.id}.body`)}
-                    ${renderTextStyleControl('body', `item.${type}.${item.id}.body`, 'Text object', 'pilcrow')}
-                </div>
+                    ${renderTextStyleControl('itemBody', `item.${type}.${item.id}.body`, 'Entry text', 'pilcrow')}
+                </div>` : ''}
             </article>
         `;
     }
@@ -4730,6 +5186,7 @@
     }
 
     function allResumeSectionsSingleColumn(sections) {
+        if (templateControlsSectionColumns()) return true;
         const sectionColumnsAreSafe = sections.every(section => getSectionColumns(section) <= 1);
         return sectionColumnsAreSafe && Number(state.settings.skillsColumns || 1) <= 1;
     }
@@ -4764,14 +5221,7 @@
 
     function hasPrioritySectionOrder(sections) {
         const order = sections.map(section => section.type);
-        const expectedByPreset = {
-            'entry-level': ['summary', 'education', 'projects', 'skills', 'experience'],
-            'internship': ['summary', 'education', 'projects', 'skills', 'experience'],
-            'recent-graduate': ['summary', 'education', 'projects', 'experience', 'skills'],
-            'career-changer': ['summary', 'skills', 'experience', 'projects', 'education'],
-            'entrepreneur-freelancer': ['summary', 'projects', 'experience', 'skills', 'education']
-        };
-        const expected = expectedByPreset[state.templatePreset] || ['summary', 'experience', 'projects', 'skills', 'education'];
+        const expected = ['summary', 'experience', 'projects', 'skills', 'education'];
         let lastIndex = -1;
 
         return expected.every(type => {
@@ -4831,27 +5281,49 @@
             state.sections[target.dataset.sectionEnabled].enabled = target.checked;
         } else if (target.matches('[data-section-body]')) {
             const section = state.sections[target.dataset.sectionBody];
-            if (section) section.body = plainTextToRichHtml(target.value);
+            if (section) {
+                const value = target.matches('[data-wizard-rich]') ? sanitizeRichHtml(target.innerHTML) : plainTextToRichHtml(target.value);
+                section.body = value;
+                if (normalizeInlineText(richHtmlToPlainText(value))) section.enabled = true;
+            }
         } else if (target.matches('[data-item-field]')) {
             const item = findItem(target.dataset.section, target.dataset.item);
             if (item) {
+                const section = state.sections[target.dataset.section];
                 if (target.dataset.itemField === 'bullets') {
                     item.bullets = linesToArray(target.value);
                     item.body = itemToBodyHtml(item, target.dataset.section);
                 } else if (target.dataset.itemField === 'body') {
-                    item.body = plainTextToRichHtml(target.value);
+                    item.body = target.matches('[data-wizard-rich]') ? sanitizeRichHtml(target.innerHTML) : plainTextToRichHtml(target.value);
                 } else {
                     item[target.dataset.itemField] = target.value;
                 }
+                const changedValue = target.matches('[data-wizard-rich]') ? richHtmlToPlainText(target.innerHTML) : target.value;
+                if (section && normalizeInlineText(changedValue)) section.enabled = true;
             }
+        } else if (target.matches('[data-skill-item]')) {
+            const group = findSkillGroup(target.dataset.skillGroup);
+            if (group) {
+                const index = Math.max(0, Number(target.dataset.skillIndex) || 0);
+                group.skills = Array.isArray(group.skills) ? group.skills : [];
+                while (group.skills.length <= index) group.skills.push('');
+                group.skills[index] = target.value;
+                if (state.sections.skills && normalizeInlineText(target.value)) state.sections.skills.enabled = true;
+            }
+        } else if (target.matches('[data-skill-draft]')) {
+            return;
         } else if (target.matches('[data-skill-group]')) {
             const group = findSkillGroup(target.dataset.skillGroup);
             if (group) {
                 if (target.dataset.skillField === 'skills') {
-                    group.skills = linesToArray(target.value);
+                    group.skills = String(target.value || '')
+                        .split(/[,\n]/)
+                        .map(part => part.trim())
+                        .filter(Boolean);
                 } else {
                     group[target.dataset.skillField] = target.value;
                 }
+                if (state.sections.skills && normalizeInlineText(target.value)) state.sections.skills.enabled = true;
             }
         } else {
             return;
@@ -4917,6 +5389,10 @@
             addManualItem(section);
         }
 
+        if (action === 'columns-set' && section) {
+            setSectionColumns(sectionId, button.dataset.columns);
+        }
+
         if ((action === 'columns-up' || action === 'columns-down') && section) {
             changeSectionColumns(sectionId, action === 'columns-up' ? 1 : -1);
         }
@@ -4963,6 +5439,10 @@
             showToast('Section moved');
         }
 
+        if (action === 'columns-set') {
+            setSectionColumns(sectionId, button.dataset.columns);
+        }
+
         if (action === 'columns-up' || action === 'columns-down') {
             changeSectionColumns(sectionId, action === 'columns-up' ? 1 : -1);
         }
@@ -4988,6 +5468,10 @@
             section.enabled = false;
             pageAddMenuOpen = false;
             showToast(`Removed ${section.title}`);
+        }
+
+        if (action === 'columns-set') {
+            setSectionColumns(sectionId, button.dataset.columns);
         }
 
         if (action === 'columns-up' || action === 'columns-down') {
@@ -5028,30 +5512,78 @@
     }
 
     function changeSectionColumns(sectionId, offset) {
+        if (templateControlsSectionColumns()) {
+            showToast('Columns are controlled by the template');
+            return;
+        }
         const section = state.sections[sectionId];
         if (!section) return;
         setSectionColumns(sectionId, getSectionColumns(section) + offset);
     }
 
     function setSectionColumns(sectionId, value) {
+        if (templateControlsSectionColumns()) {
+            showToast('Columns are controlled by the template');
+            return;
+        }
         const section = state.sections[sectionId];
         if (!section) return;
-        const currentColumns = getSectionColumns(section);
         const nextColumns = Math.max(1, Math.min(4, Number(value) || 1));
         section.columns = nextColumns;
         if (section.type === 'skills') {
             state.settings.skillsColumns = nextColumns;
-        }
-        if (nextColumns > currentColumns) {
             ensureSectionHasEditableSlots(section, nextColumns);
         }
         showToast(`${section.title} uses ${nextColumns} ${nextColumns === 1 ? 'column' : 'columns'}`);
     }
 
-    function getSectionColumns(section) {
+    function getSectionColumns(section, options = {}) {
         if (!section) return 1;
+        const templateColumns = getTemplateSectionColumns(section, options);
+        if (templateColumns) return templateColumns;
         const fallback = section.type === 'skills' ? state.settings.skillsColumns : 1;
         return Math.max(1, Math.min(4, Number(section.columns || fallback || 1)));
+    }
+
+    function getTemplateSectionColumns(section, options = {}) {
+        const preset = getActiveTemplatePreset();
+        const rule = preset && preset.design && preset.design.sectionColumns;
+        if (!rule || !section) return 0;
+        if (section.type === 'summary') return 1;
+
+        const threshold = Math.max(1, Number(rule.threshold || 2));
+        const maxColumns = Math.max(1, Math.min(4, Number(rule.max || 1)));
+        const contentCount = Number.isFinite(Number(options.contentCount))
+            ? Number(options.contentCount)
+            : getSectionColumnContentCount(section);
+
+        if (rule.mode === 'auto-by-content') {
+            return contentCount >= threshold ? Math.min(maxColumns, contentCount) : 1;
+        }
+
+        if (rule.mode === 'fixed') return maxColumns;
+        return 0;
+    }
+
+    function getSectionColumnContentCount(section) {
+        if (!section) return 0;
+        if (section.type === 'summary') return richHtmlToPlainText(getSummaryBody(section)).trim() ? 1 : 0;
+        if (section.type === 'skills') {
+            return (section.groups || [])
+                .filter(group => group && (normalizeInlineText(group.name) || (group.skills || []).some(skill => normalizeInlineText(skill))))
+                .length;
+        }
+        return (section.items || []).filter(item => hasMeaningfulItemContent(section.type, item)).length;
+    }
+
+    function getActiveTemplatePreset(targetState = state) {
+        const presetId = targetState && targetState.templatePreset;
+        return ATS_TEMPLATE_PRESETS.find(preset => preset.id === presetId) || ATS_TEMPLATE_PRESETS[0] || null;
+    }
+
+    function templateControlsSectionColumns(targetState = state) {
+        const preset = getActiveTemplatePreset(targetState);
+        return Boolean(preset && preset.design && preset.design.sectionColumns);
     }
 
     function ensureSectionHasEditableSlots(section, targetColumns) {
@@ -5065,16 +5597,13 @@
                     id: uniqueId('skills'),
                     sourceId: '',
                     name: `Column ${section.groups.length + 1}`,
-                    skills: ['Add skills here']
+                    skills: []
                 });
             }
             return;
         }
 
         section.items = section.items || [];
-        while (section.items.length < targetColumns) {
-            addManualItem(section);
-        }
     }
 
     function reorderSectionBefore(sectionId, targetSectionId) {
@@ -5494,7 +6023,8 @@
                 issuer: 'Issuer',
                 date: 'Year',
                 status: '',
-                url: ''
+                url: '',
+                credentialId: ''
             };
             item.body = itemToBodyHtml(item, section.type);
             section.items.push(item);
@@ -5611,10 +6141,11 @@
             id: uniqueId('certifications'),
             sourceId,
             name: item.name || '',
-            issuer: item.issuer || '',
+            issuer: item.issuer || item.organization || '',
             date: item.date || '',
             status: item.status || '',
-            url: item.url || ''
+            url: item.url || '',
+            credentialId: item.credentialId || item.credentialID || item.idNumber || ''
         };
         mapped.body = itemToBodyHtml(mapped, 'certifications');
         return mapped;
@@ -5648,13 +6179,19 @@
     }
 
     function applyPreviewZoom() {
-        elements.resumePreview.style.transform = `scale(${previewZoom})`;
+        const effectiveZoom = getEffectivePreviewZoom();
+        elements.resumePreview.style.transform = `scale(${effectiveZoom})`;
         const paper = elements.resumePreview.querySelector('.resume-paper');
         if (paper) {
             updatePreviewPageGuides();
-            elements.resumePreview.style.width = `${paper.offsetWidth * previewZoom}px`;
-            elements.resumePreview.style.height = `${paper.offsetHeight * previewZoom}px`;
+            elements.resumePreview.style.width = `${paper.offsetWidth * effectiveZoom}px`;
+            elements.resumePreview.style.height = `${paper.offsetHeight * effectiveZoom}px`;
         }
+    }
+
+    function getEffectivePreviewZoom() {
+        if (workflowStep !== 'data') return previewZoom;
+        return Math.min(previewZoom, 0.76);
     }
 
     function nextFrame() {
@@ -5701,7 +6238,7 @@
         settings.fontItemHeading = savedSettings.fontItemHeading || savedSettings.fontHeading || fresh.settings.fontItemHeading;
         settings.fontContact = savedSettings.fontContact || savedSettings.fontBody || fresh.settings.fontContact;
         settings.fontMeta = savedSettings.fontMeta || savedSettings.fontHeading || fresh.settings.fontMeta;
-        const unifiedResumeFont = settings.fontFamily || settings.fontBody || fresh.settings.fontBody;
+        const unifiedResumeFont = normalizeDefaultResumeFont(settings.fontFamily || settings.fontBody || fresh.settings.fontBody);
         settings.fontFamily = unifiedResumeFont;
         settings.fontName = unifiedResumeFont;
         settings.fontTitle = unifiedResumeFont;
@@ -5712,6 +6249,8 @@
         settings.fontContact = unifiedResumeFont;
         settings.fontMeta = unifiedResumeFont;
         settings.contactLayout = ['stacked', 'horizontal'].includes(settings.contactLayout) ? settings.contactLayout : fresh.settings.contactLayout;
+        settings.profilePhotoShape = ['circle', 'rounded-square', 'square'].includes(settings.profilePhotoShape) ? settings.profilePhotoShape : fresh.settings.profilePhotoShape;
+        settings.profilePhotoPlacement = ['left', 'right', 'top'].includes(settings.profilePhotoPlacement) ? settings.profilePhotoPlacement : fresh.settings.profilePhotoPlacement;
         settings.fontSize = clampNumber(settings.fontSize, 9.5, 12.5, fresh.settings.fontSize);
         settings.lineHeight = clampNumber(settings.lineHeight, 1.28, 1.6, fresh.settings.lineHeight);
         settings.metaSize = clampNumber(settings.metaSize, 8.8, 11, fresh.settings.metaSize);
@@ -5738,10 +6277,34 @@
         normalized.templatePreset = ATS_TEMPLATE_PRESETS.some(preset => preset.id === normalized.templatePreset)
             ? normalized.templatePreset
             : fresh.templatePreset;
+        const activePreset = ATS_TEMPLATE_PRESETS.find(preset => preset.id === normalized.templatePreset) || ATS_TEMPLATE_PRESETS[0];
+        if (activePreset) {
+            normalized.template = activePreset.template || fresh.template;
+            if (safeValue.templatePreset !== activePreset.id) {
+                normalized.layout = normalizeLayout(activePreset.layout || DEFAULT_LAYOUT);
+                normalized.styleClasses = normalizeStyleClasses(activePreset.styleClasses || DEFAULT_STYLE_CLASSES);
+                normalized.settings = {
+                    ...normalized.settings,
+                    ...ATS_BASE_SETTINGS,
+                    ...(activePreset.settings || {})
+                };
+            }
+        }
         normalized.personal.profileImage = String(normalized.personal.profileImage || '').trim();
         normalized.settings.showProfilePhoto = Boolean(normalized.settings.showProfilePhoto && normalized.personal.profileImage);
         normalizeResumeContentShape(normalized);
         return normalized;
+    }
+
+    function normalizeDefaultResumeFont(value) {
+        const font = String(value || '').trim();
+        const normalized = font.replace(/["']/g, '').replace(/\s+/g, ' ').toLowerCase();
+        const legacyBasicFonts = new Set([
+            'arial, helvetica, sans-serif',
+            'helvetica, arial, sans-serif',
+            'arial'
+        ]);
+        return legacyBasicFonts.has(normalized) ? DEFAULT_RESUME_FONT : (font || DEFAULT_RESUME_FONT);
     }
 
     function normalizeResumeContentShape(targetState) {
@@ -6047,8 +6610,12 @@
             'square-round-corner': '<path d="M21 11V8a5 5 0 0 0-5-5h-3"></path><path d="M3 13v3a5 5 0 0 0 5 5h3"></path><path d="M21 16v5h-5"></path><path d="M8 3H3v5"></path>',
             image: '<rect width="18" height="18" x="3" y="3" rx="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"></path>',
             list: '<path d="M8 6h13"></path><path d="M8 12h13"></path><path d="M8 18h13"></path><path d="M3 6h.01"></path><path d="M3 12h.01"></path><path d="M3 18h.01"></path>',
+            bold: '<path d="M6 4h8a4 4 0 0 1 0 8H6z"></path><path d="M6 12h9a4 4 0 0 1 0 8H6z"></path>',
+            italic: '<path d="M19 4h-9"></path><path d="M14 20H5"></path><path d="M15 4 9 20"></path>',
             'grip-vertical': '<circle cx="9" cy="5" r="1"></circle><circle cx="9" cy="12" r="1"></circle><circle cx="9" cy="19" r="1"></circle><circle cx="15" cy="5" r="1"></circle><circle cx="15" cy="12" r="1"></circle><circle cx="15" cy="19" r="1"></circle>',
             'zoom-in': '<circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path><path d="M11 8v6"></path><path d="M8 11h6"></path>',
+            'file-text': '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"></path><path d="M14 2v6h6"></path><path d="M16 13H8"></path><path d="M16 17H8"></path><path d="M10 9H8"></path>',
+            'chevron-down': '<path d="m6 9 6 6 6-6"></path>',
             'list-plus': '<path d="M11 12H3"></path><path d="M16 6H3"></path><path d="M16 18H3"></path><path d="M18 9v6"></path><path d="M21 12h-6"></path>',
             mail: '<rect width="20" height="16" x="2" y="4" rx="2"></rect><path d="m22 7-10 6L2 7"></path>',
             'map-pin': '<path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="3"></circle>',
@@ -6056,6 +6623,12 @@
             github: '<path d="M15 22v-3.9a3.4 3.4 0 0 0-.9-2.6c3 0 6.1-1.5 6.1-6.6A5.1 5.1 0 0 0 18.8 5 4.7 4.7 0 0 0 18.7 1S17.6.7 15 2.5a12.8 12.8 0 0 0-6 0C6.4.7 5.3 1 5.3 1a4.7 4.7 0 0 0-.1 4A5.1 5.1 0 0 0 3.8 9c0 5.1 3.1 6.6 6.1 6.6a3.4 3.4 0 0 0-.9 2.6V22"></path>',
             globe: '<circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path>',
             'globe-2': '<circle cx="12" cy="12" r="10"></circle><path d="M2 12h20"></path><path d="M12 2a15.3 15.3 0 0 1 0 20"></path><path d="M12 2a15.3 15.3 0 0 0 0 20"></path>'
+            ,
+            braces: '<path d="M8 3H7a2 2 0 0 0-2 2v3a2 2 0 0 1-2 2 2 2 0 0 1 2 2v3a2 2 0 0 0 2 2h1"></path><path d="M16 3h1a2 2 0 0 1 2 2v3a2 2 0 0 0 2 2 2 2 0 0 0-2 2v3a2 2 0 0 1-2 2h-1"></path>',
+            'file-check-2': '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"></path><path d="M14 2v6h6"></path><path d="m9 15 2 2 4-4"></path>',
+            'file-plus-2': '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"></path><path d="M14 2v6h6"></path><path d="M12 18v-6"></path><path d="M9 15h6"></path>',
+            'rotate-ccw': '<path d="M3 12a9 9 0 1 0 3-6.7"></path><path d="M3 4v6h6"></path>',
+            'sliders-horizontal': '<path d="M21 4h-7"></path><path d="M10 4H3"></path><path d="M21 12h-9"></path><path d="M8 12H3"></path><path d="M21 20h-5"></path><path d="M12 20H3"></path><circle cx="12" cy="4" r="2"></circle><circle cx="10" cy="12" r="2"></circle><circle cx="14" cy="20" r="2"></circle>'
         };
         return `<svg class="lucide-fallback" viewBox="0 0 24 24" aria-hidden="true">${paths[name] || paths.mail}</svg>`;
     }

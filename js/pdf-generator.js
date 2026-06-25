@@ -1,6 +1,6 @@
 /*
  * PDF CV Generator
- * Generates a readable, print-first CV from JOURNEY_DATA using jsPDF.
+ * Generates a readable, print-first CV from CV_DATA using jsPDF.
  */
 
 async function generateResumePDF() {
@@ -11,7 +11,7 @@ async function generateResumePDF() {
         format: 'a4'
     });
 
-    const data = JOURNEY_DATA;
+    const data = typeof CV_DATA !== 'undefined' ? CV_DATA : JOURNEY_DATA;
     const page = {
         width: 210,
         height: 297,
@@ -47,42 +47,14 @@ async function generateResumePDF() {
     };
 
     const siteUrl = (data.meta && data.meta.siteUrl) || 'https://ahmadyaseen.com';
-    const profileParagraphs = [
-        ...((data.about && data.about.full) || []),
-        'My work spans product thinking, frontend, backend, deployment, and practical AI integrations.'
-    ];
-    const cvProjects = [
-        {
-            emoji: '\uD83E\uDD9E',
-            title: 'ClawPilot',
-            summary: 'Managed Openclaw Hosting',
-            url: 'https://clawpilot-web-landing.vercel.app/'
-        },
-        {
-            emoji: '\uD83D\uDCCB',
-            title: 'LiveBoard',
-            summary: 'Collaborative freeform whiteboard',
-            url: 'https://liveboard-zeta.vercel.app/'
-        },
-        {
-            emoji: '\uD83C\uDFAF',
-            title: 'Stumbnail',
-            summary: 'Thumbnail Generator',
-            url: 'https://stumbnail.com'
-        },
-        {
-            emoji: '\uD83D\uDCFA',
-            title: 'Screenchat',
-            summary: 'Chat with any page. (Extension)',
-            url: 'https://github.com/Ahmadkhattak1/ScreenChat'
-        },
-        {
-            emoji: '\uD83D\uDDC2\uFE0F',
-            title: 'Scrapify',
-            summary: 'Google Business Profile Data Scraper (Extension)',
-            url: 'https://github.com/Ahmadkhattak1/scrapify-extension'
-        }
-    ];
+    const profileParagraphs = data.summary || [];
+    const projectEmoji = ['\u2601\uFE0F', '\uD83C\uDFAF', '\uD83D\uDCFA', '\uD83D\uDCCB', '\uD83D\uDDC2\uFE0F'];
+    const cvProjects = (data.allProjects || []).slice(0, 5).map((project, index) => ({
+        emoji: projectEmoji[index] || '\u2022',
+        title: project.name,
+        summary: project.description,
+        url: project.url
+    }));
     const contactItems = [
         {
             key: 'email',
@@ -242,7 +214,7 @@ async function generateResumePDF() {
         y = drawInlineContacts(contactItems, y, {
             startX: headerTextX + 1.5,
             iconSize: 4,
-            gap: 6.1,
+            gap: 10,
             fontSize: 8.7
         });
         y += 4.6;
@@ -272,7 +244,7 @@ async function generateResumePDF() {
             const itemWidth = iconSize + 2 + labelWidth;
 
             if (cursorX + itemWidth > page.width - page.marginX) {
-                baselineY += getLineHeight(fontSize, 1.42);
+                baselineY += getLineHeight(fontSize, 1.6);
                 cursorX = startX;
             }
 
@@ -332,7 +304,9 @@ async function generateResumePDF() {
         const dateWidth = measureTextWidth(item.date, 9, 'normal', fonts.heading);
         const titleWidth = sectionContentWidth - dateWidth - 10;
         const titleLines = splitText(item.role, titleWidth, titleFont, 'bold', fonts.heading);
-        const bullets = descriptionToBullets(item.description);
+        const bullets = Array.isArray(item.bullets) && item.bullets.length
+            ? item.bullets
+            : descriptionToBullets(item.description);
         const bulletHeights = bullets.map(bullet => measureWrappedHeight(`- ${bullet}`, bulletWidth, bulletFont, 'normal', 1.46, fonts.body));
         const estimatedHeight =
             (titleLines.length * getLineHeight(titleFont, 1.18)) +
@@ -520,15 +494,21 @@ async function generateResumePDF() {
     }
 
     function drawSkillsSection() {
-        const groups = [
-            ['Frontend', data.skills.frontend],
-            ['Backend', data.skills.backend],
-            ['AI / ML', data.skills.ai],
-            ['Data', data.skills.data],
-            ['Tools', data.skills.tools]
-        ];
+        const labels = {
+            cloud: 'Cloud',
+            operations: 'Operations',
+            security: 'Security',
+            frontend: 'Frontend',
+            backend: 'Backend',
+            ai: 'AI / ML',
+            data: 'Data',
+            tools: 'Tools',
+            platforms: 'Platforms'
+        };
+        const groups = Object.entries(data.skills || {}).map(([key, items]) => [labels[key] || key, items]);
 
         groups.forEach(([label, items]) => {
+            if (!items || !items.length) return;
             const labelFont = 10;
             const bodyFont = 9.4;
             const text = items.join(', ');

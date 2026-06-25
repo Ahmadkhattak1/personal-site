@@ -20,10 +20,10 @@ const CONFIG = {
     // Personal Information
     personal: {
         name: "Ahmad Yaseen",
-        title: "Founder | AI Engineer | Researcher",
+        title: "Cloud Engineer & Full-Stack SaaS Builder",
         profileImage: "public/profile.png",
         profileImageAlt: "Profile Picture",
-        currently: "Exploring Machine Learning & building Stumbnail"
+        currently: "Building SaaS products and moving deeper into cloud engineering"
     },
 
     // Social Links
@@ -62,15 +62,16 @@ const CONFIG = {
 
     // Skills Section
     skills: [
-        "Machine Learning & AI Architecture",
+        "AWS Cloud Fundamentals",
         {
             text: "Programming & Frameworks",
             subItems: ["Python (PyTorch, TensorFlow)", "JavaScript/TypeScript (React, Next.js, Node.js)", "C++ for Performance"]
         },
-        "Computer Vision & NLP",
+        "Compute Provisioning & Virtual Machine Operations",
         "Full Stack Web Development",
-        "Cloud Infrastructure (Firebase, GCP)",
-        "Product Strategy & Execution"
+        "Application Hosting & Deployment Workflows",
+        "Monitoring, Uptime & Runtime Operations",
+        "Cloud Security, Network Access & IAM Fundamentals"
     ],
 
     // Projects Section
@@ -86,8 +87,8 @@ const CONFIG = {
             name: "ClawPilot",
             url: "https://clawpilot.app",
             logo: "public/projects/Clawpilot.svg",
-            description: "Managed OpenClaw hosting and setup platform for a multi-platform AI assistant.",
-            tags: ["AI", "Next.js", "Node.js", "Supabase", "DigitalOcean"]
+            description: "Cloud-native OpenClaw and Hermes Agent platform with managed user machines, agent runtimes, deployment, and production operations.",
+            tags: ["Cloud Native", "Agent Runtimes", "Next.js", "Supabase", "DigitalOcean"]
         },
         {
             name: "LiveBoard",
@@ -128,18 +129,16 @@ const CONFIG = {
             logo: "public/projects/ezmoji.png",
             description: "Browser extension for inserting emojis fast with aliases, shortcuts, and quick search.",
             tags: ["Browser Extension", "Productivity", "Emoji"]
-        },
-        {
-            name: "Host Hermes Agent",
-            url: "https://hosthermesagent.com",
-            logo: "public/projects/host-hermes-agent.png",
-            description: "Managed Hermes Agent hosting with one-click deploy, dedicated cloud compute, and always-on browser plus terminal access.",
-            tags: ["AI", "Hosting", "Agents"]
         }
     ],
 
     // Certifications Section
     certifications: [
+        {
+            name: "AWS Certified Cloud Practitioner",
+            url: "https://www.credly.com/badges/77de5c17-ab36-4ea4-89cc-b3195dfa59a9/public_url",
+            previewImage: "aws-certified-cloud-practitioner.png"
+        },
         {
             name: "HarvardX's CS50P (Python)",
             url: "https://courses.edx.org/certificates/eeb3c6ea512d4b7fb92f7ef0b320ea39",
@@ -176,7 +175,14 @@ const CONFIG = {
     // Experience Section
     experience: [
         {
-            role: "Founder & Lead Engineer",
+            role: "Cloud Engineering Direction",
+            company: "ClawPilot",
+            companyUrl: "https://clawpilot.app",
+            year: "2026 - Present",
+            description: "Merged Hermes Agent hosting into ClawPilot and expanded the work into managed compute, agent runtime operations, deployment, and production availability."
+        },
+        {
+            role: "Founder & Full-Stack SaaS Builder",
             company: "Stumbnail",
             companyUrl: "https://stumbnail.com",
             year: "2024 - Present",

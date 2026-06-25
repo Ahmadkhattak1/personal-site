@@ -104,8 +104,13 @@
         const skillCategories = {
             frontend: 'Frontend',
             backend: 'Backend',
+            cloud: 'Cloud',
+            operations: 'Operations',
+            security: 'Security',
             ai: 'AI / ML',
-            tools: 'Tools'
+            data: 'Data',
+            tools: 'Tools',
+            platforms: 'Platforms'
         };
 
         container.innerHTML = Object.entries(JOURNEY_DATA.skills).map(([key, skills]) => `
@@ -176,6 +181,11 @@
 
         container.innerHTML = JOURNEY_DATA.certifications.map(cert => `
             <a href="${cert.url}" target="_blank" rel="noopener noreferrer" class="cert-item cursor-generic-button">
+                ${cert.previewImage ? `
+                    <div class="cert-item-badge" aria-hidden="true">
+                        <img src="public/certs/${cert.previewImage}" alt="">
+                    </div>
+                ` : ''}
                 <div class="cert-item-info">
                     <div class="cert-item-name">${cert.name}</div>
                     <div class="cert-item-issuer">${cert.issuer}${cert.date ? ` · ${cert.date}` : ''}</div>
