@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Geist:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&family=Syne:wght@600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="styles/main.css">
-    <link rel="stylesheet" href="styles/resume-builder.css?v=mobile-builder-3">
+    <link rel="stylesheet" href="styles/resume-builder.css?v=ats-template-1">
 </head>
 
 <body class="resume-builder-page" data-workflow-step="data">
@@ -110,10 +110,25 @@
                 Reset
             </button>
             <a href="/" class="tool-button tool-button-secondary compact-header-link">Home</a>
-            <button type="button" class="tool-button tool-button-primary header-export-button" id="exportPdfHeader" data-export-pdf>
-                <i data-lucide="download" aria-hidden="true"></i>
-                Export PDF
-            </button>
+            <div class="export-menu" id="exportMenu">
+                <button type="button" class="tool-button tool-button-primary header-export-button" id="exportPdfHeader" data-export-pdf>
+                    <i data-lucide="download" aria-hidden="true"></i>
+                    Export PDF
+                </button>
+                <button type="button" class="tool-button tool-button-primary export-menu-toggle" id="exportMenuToggle" aria-label="Choose export format" aria-expanded="false" aria-controls="exportMenuPanel">
+                    <i data-lucide="chevron-down" aria-hidden="true"></i>
+                </button>
+                <div class="export-menu-panel" id="exportMenuPanel" role="menu" hidden>
+                    <button type="button" class="export-menu-item" role="menuitem" data-export-pdf>
+                        <i data-lucide="file-text" aria-hidden="true"></i>
+                        PDF
+                    </button>
+                    <button type="button" class="export-menu-item" role="menuitem" data-export-docx>
+                        <i data-lucide="file-type" aria-hidden="true"></i>
+                        DOCX
+                    </button>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -232,6 +247,19 @@
             <div class="prompt-modal-body">
                 <p>Paste this prompt into your AI chat and add your background, target role, and any job post you want to apply for.</p>
                 <p>The AI should return clean resume JSON. If it does not have enough context, it should ask you a few short questions first.</p>
+                <div class="ats-tip-card" aria-labelledby="atsTipsTitle">
+                    <h3 id="atsTipsTitle">ATS-friendly resume tips</h3>
+                    <ul class="ats-tip-list">
+                        <li><strong>Use standard headings.</strong> Choose predictable labels like Work Experience, Education, Skills, Projects, and Certifications.</li>
+                        <li><strong>Match keywords in context.</strong> Put important job-description terms inside real bullets with outcomes, not only in the skills list.</li>
+                        <li><strong>Keep text readable by machines.</strong> Avoid text inside images, decorative graphics, text boxes, tables, headers, and footers.</li>
+                        <li><strong>Use reverse chronological order.</strong> Show the newest role first and write dates consistently, such as May 2022 - July 2022.</li>
+                        <li><strong>Export a simple file.</strong> Use .docx or a clean PDF unless the employer asks for another format.</li>
+                        <li><strong>Prioritize relevant skills.</strong> Reorder skills based on the job post so the most repeated and important tools appear first.</li>
+                        <li><strong>Stay single column for ATS.</strong> One clean column parses more reliably than multi-column resume layouts.</li>
+                        <li><strong>Tailor every application.</strong> Update the title, summary, skills, and strongest bullets for each target role.</li>
+                    </ul>
+                </div>
             </div>
             <footer class="prompt-modal-footer">
                 <button type="button" class="tool-button tool-button-secondary" data-prompt-modal-close>Close</button>
@@ -247,7 +275,7 @@
 
     <script src="js/journey-data.js"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-    <script src="js/resume-builder.js?v=mobile-builder-2"></script>
+    <script src="js/resume-builder.js?v=ats-template-1"></script>
 </body>
 
 </html>

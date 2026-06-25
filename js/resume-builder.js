@@ -149,6 +149,7 @@
             id: 'experienced',
             name: 'Default',
             template: 'ats',
+            thumbnail: 'public/resume/default-cv-thumbnail.png',
             suppressProfilePhoto: true,
             description: 'Default ATS-friendly resume layout. Prioritizes Experience before Projects and Skills.',
             sectionOrder: ['summary', 'experience', 'projects', 'skills', 'education', 'research', 'certifications'],
@@ -159,6 +160,81 @@
                     max: 2,
                     threshold: 2
                 }
+            }
+        },
+        {
+            id: 'ats-friendly',
+            name: 'ATS Friendly',
+            template: 'ats',
+            thumbnail: 'public/resume/ats-friendly-thumbnail.png',
+            suppressProfilePhoto: true,
+            description: 'Single-column ATS resume with centered identity, black headings, and simple section rules.',
+            sectionOrder: ['summary', 'experience', 'education', 'skills', 'certifications', 'projects', 'research'],
+            titles: { summary: 'Professional Summary', experience: 'Work Experience', projects: 'Projects', skills: 'Skills', education: 'Education', research: 'Research', certifications: 'Certifications' },
+            layout: { ...DEFAULT_LAYOUT, mode: 'single', columns: 1 },
+            design: {
+                sectionColumns: {
+                    mode: 'fixed',
+                    max: 1
+                }
+            },
+            sectionUpdates: {
+                skills: { columns: 1 }
+            },
+            settings: {
+                accent: '#111111',
+                fontFamily: '"Source Sans 3", "Noto Sans", sans-serif',
+                fontName: '"Source Sans 3", "Noto Sans", sans-serif',
+                fontTitle: '"Source Sans 3", "Noto Sans", sans-serif',
+                fontHeading: '"Source Sans 3", "Noto Sans", sans-serif',
+                fontSectionHeading: '"Source Sans 3", "Noto Sans", sans-serif',
+                fontItemHeading: '"Source Sans 3", "Noto Sans", sans-serif',
+                fontBody: '"Source Sans 3", "Noto Sans", sans-serif',
+                fontContact: '"Source Sans 3", "Noto Sans", sans-serif',
+                fontMeta: '"Source Sans 3", "Noto Sans", sans-serif',
+                colorName: '#000000',
+                colorTitle: '#111111',
+                colorContact: '#111111',
+                colorSectionHeading: '#111111',
+                colorItemHeading: '#111111',
+                colorDate: '#111111',
+                colorMeta: '#111111',
+                colorBody: '#111111',
+                colorSkillHeading: '#111111',
+                colorSkillBody: '#111111',
+                fontSize: 10.2,
+                lineHeight: 1.25,
+                pagePaddingX: 48,
+                pagePaddingY: 48,
+                headerAlign: 'center',
+                headerDesign: 'minimal',
+                headerPattern: 'none',
+                headerBackground: '#ffffff',
+                headerTextColor: '#111111',
+                headerLineHeight: 1.02,
+                headerPadding: 0,
+                headerSeparatorColor: '#111111',
+                headerSeparatorWeight: 0,
+                contactLayout: 'horizontal',
+                headerContactGap: 6,
+                bulletStyle: 'disc',
+                skillsColumns: 1,
+                sectionHeadingAccent: 'none',
+                sectionHeadingLineHeight: 1.08,
+                sectionSeparatorColor: '#555555',
+                sectionSeparatorWeight: 1,
+                showHeaderIcons: false,
+                showProfilePhoto: false,
+                titleSize: 11.2,
+                titleLineHeight: 1.15,
+                nameSize: 28,
+                sectionHeadingSize: 14.2,
+                itemHeadingSize: 10.7,
+                dateSize: 9.7,
+                metaSize: 9.6,
+                contactSize: 9.8,
+                skillHeadingSize: 10.2,
+                skillBodySize: 10.2
             }
         }
     ];
@@ -339,6 +415,10 @@
         elements.undoResume = document.getElementById('undoResume');
         elements.redoResume = document.getElementById('redoResume');
         elements.exportPdfButtons = Array.from(document.querySelectorAll('[data-export-pdf]'));
+        elements.exportDocxButtons = Array.from(document.querySelectorAll('[data-export-docx]'));
+        elements.exportMenu = document.getElementById('exportMenu');
+        elements.exportMenuToggle = document.getElementById('exportMenuToggle');
+        elements.exportMenuPanel = document.getElementById('exportMenuPanel');
         elements.resetResume = document.getElementById('resetResume');
         elements.resumeSyntaxText = document.getElementById('resumeSyntaxText');
         elements.jsonResumePromptText = document.getElementById('jsonResumePromptText');
@@ -836,9 +916,34 @@
         elements.exportPdfButtons.forEach(button => {
             button.addEventListener('click', async event => {
                 event.stopPropagation();
+                closeExportMenu();
                 await exportCleanPdf();
             });
         });
+
+        elements.exportDocxButtons.forEach(button => {
+            button.addEventListener('click', async event => {
+                event.stopPropagation();
+                closeExportMenu();
+                await exportCleanDocx();
+            });
+        });
+
+        if (elements.exportMenuToggle && elements.exportMenuPanel) {
+            elements.exportMenuToggle.addEventListener('click', event => {
+                event.stopPropagation();
+                toggleExportMenu();
+            });
+
+            document.addEventListener('click', event => {
+                if (!elements.exportMenu || elements.exportMenu.contains(event.target)) return;
+                closeExportMenu();
+            });
+
+            document.addEventListener('keydown', event => {
+                if (event.key === 'Escape') closeExportMenu();
+            });
+        }
 
         elements.undoResume.addEventListener('click', undoResume);
 
@@ -1716,7 +1821,7 @@
             return `
                 <button type="button" class="template-card ${active ? 'active' : ''}" data-template-preset="${escapeAttr(preset.id)}" aria-pressed="${active ? 'true' : 'false'}">
                     <span class="template-placeholder" aria-hidden="true">
-                        <img src="public/resume/default-cv-thumbnail.png" alt="">
+                        <img src="${escapeAttr(preset.thumbnail || 'public/resume/default-cv-thumbnail.png')}" alt="">
                     </span>
                     <strong>${escapeHtml(preset.name)}</strong>
                 </button>
@@ -1774,6 +1879,7 @@
         state = normalizeState(state, builderMode);
         saveState();
         renderAll();
+        clearTemplateSpotlight();
         showToast(`${preset.name} template applied`);
     }
 
@@ -2896,7 +3002,7 @@
                         type: 'summary',
                         title: 'Summary',
                         enabled: true,
-                        body: '<p>[2-4 sentence summary tailored to the job post, using only truthful candidate facts.]</p>'
+                        body: '<p>[2-3 sentence summary tailored to the job post, using only truthful candidate facts. For an experienced professional, use 3-5 sentences only when the extra detail adds clear value.]</p>'
                     },
                     experience: {
                         id: 'experience',
@@ -3005,13 +3111,16 @@
             'Goal:',
             '- Write the whole resume for the job post or target role the user provides.',
             '- Use only facts supplied by the user. Do not invent employers, degrees, dates, metrics, links, credentials, or technologies.',
-            '- If a useful fact is missing, leave a clear placeholder in brackets instead of fabricating it.',
-            '- If the user has not provided enough required context to write the resume, ask a few focused questions first. Keep that question step short and do not turn it into a lengthy process.',
+            '- If required information is missing, or if the user appears to have forgotten important details needed to write the resume well, ask the user for that information before producing the final JSON.',
+            '- Ask focused questions for missing essentials such as target job, role titles, employers, dates, education, project details, tools used, measurable results, links, certifications, or constraints.',
+            '- If only optional details are missing and the resume can still be drafted accurately, use clear bracketed placeholders for those optional details instead of fabricating them.',
+            '- Keep the question step short and do not turn it into a lengthy process.',
             '- Keep the JSON format, version, and top-level shape intact.',
             '- Prefer concise, high-impact bullets with action verbs and measurable scope.',
             '- You may reorder sections, hide sections with enabled:false, add custom sections, and change rich text bodies.',
             '- Do not use JSON to decide template design. Columns, column ratios, spacing, colors, heading separators, bullet styling, classes, and header styling are controlled by the active template.',
             '- For each job, align personal.title, summary, skills, and bullets to the exact job title and repeated hard-skill keywords from the job description.',
+            '- Favor ATS-friendly content structure: conventional section titles, single-column-friendly ordering, plain readable text, and reverse chronological entries.',
             '',
             'Useful syntax:',
             '- format: "ayk.resume.syntax"',
@@ -3028,14 +3137,67 @@
             '- Entry structure fields: order controls order within a section; placement can move an entry to main/side/full in multi-column templates.',
             '',
             'ATS wording rules:',
+            '- Use standard section headings whenever possible: Work Experience, Education, Skills, Projects, Certifications, Professional Summary, and Research.',
+            '- Keep entries in reverse chronological order, newest first. Use consistent month-and-year dates such as May 2022 - July 2022 instead of vague seasons or mixed formats.',
+            '- Keep the summary concise. Do not let it go beyond 3 sentences for most resumes. For an experienced professional, 3-5 sentences is acceptable only if the extra sentences add role-relevant value.',
+            '- When writing the summary, focus on two things: first, who the candidate is and what they do, including professional identity and area of expertise aligned to the target job; second, the strongest relevant achievements, such as measurable results, awards, promotions, problems solved, or examples of going beyond baseline responsibilities.',
+            '- The summary should show a track record of producing results, not just list generic traits.',
+            '',
+            'Work Experience guidance:',
+            '- Work Experience is where the candidate proves they have the skills, experience, and background for the target job. For most candidates, it should be the longest section.',
+            '- Use bullet points because they improve skim value.',
+            '- Use present tense for current roles, such as manages, performs, leads, builds, supports, or owns. Use past tense for past roles, such as achieved, managed, performed, built, delivered, or improved.',
+            '- Give context for each role: what kind of company or organization it was, what products or services it offered, which customers or industry it served, organization size when known, and how the candidate supported company goals, products, customers, or business units.',
+            '- Focus on the candidate’s main functions instead of every small detail. Prioritize what occupied most of their time and what is relevant to the next target job.',
+            '- Most importantly, call out what the candidate achieved or contributed: landing new clients, reducing operational costs, automating manual processes, exceeding revenue targets, earning performance awards, successfully delivering large-scale projects, solving technical problems, improving reliability, or increasing efficiency.',
+            '',
+            'Bullet point structure:',
+            '- Use cause-and-effect bullets. Describe what the candidate did and what happened as a result.',
+            '- PAR formula: Problem + Action + Result. Example: "Reduced average customer support response time from 48 hours to under 24 hours by implementing a Zendesk ticketing system and restructuring the triage workflow across a 12-person support team."',
+            '- PAR example: "Recovered $340K in aged receivables within 90 days by redesigning the collections process and introducing automated payment reminders through NetSuite."',
+            '- STAR formula: Situation + Task + Action + Result. Use it when context matters or the scenario is complex.',
+            '- STAR example: "Managed inventory levels across 3 warehouse locations to ensure product availability while minimizing stockouts during a period of supply chain disruption; reduced inventory carrying costs by 15% through demand forecasting adjustments."',
+            '- STAR example: "Diagnosed a critical server outage affecting 2,000+ users during peak business hours and implemented a temporary failover solution within 45 minutes, preventing an estimated $80K in downtime losses."',
+            '- Result-first formula: lead with a strong outcome when the result is impressive. Example: "Generated $1.2M in new annual recurring revenue by building and managing a partner channel program across the Northeast region."',
+            '- Action Verb + Skill + Result formula: use this for technical resumes where tools matter. Example: "Built an automated data pipeline using Python and Airflow that consolidated reporting from 4 separate systems, reducing monthly close time from 5 days to 2."',
+            '',
+            'Projects guidance:',
+            '- If the candidate does not have much work experience, the Projects section should prove they can do the work.',
+            '- Every project should answer three questions: what was built, how it was built, and what the result was.',
+            '- Avoid weak project descriptions like "Created a website for a local business." Prefer specific descriptions such as: "Developed a responsive e-commerce site for a local bakery using React and Node.js, integrating Stripe for payments and handling 200+ online orders in the first month."',
+            '- For group projects, clearly state the candidate’s specific role. Examples: "Led a 3-person team in developing an inventory management system, coordinating weekly sprints and handling all client communication" or "Owned front-end development within a 5-person team, building all UI components in React and delivering on a two-week sprint cycle."',
+            '- Include useful supporting links when available: GitHub repos with clean code, live sites, project write-ups, research posters, or case studies.',
+            '- Prioritize projects that align with the target role, demonstrate skills the employer wants, have measurable outcomes, or show independent or collaborative execution.',
+            '- For technical roles, include technologies used, project scale, technical challenges, and performance improvements.',
+            '- Three well-described, relevant projects are better than a long list of minor assignments. Every project should clearly connect to the target role.',
+            '',
+            'What not to do:',
+            '- Avoid generic statements that could apply to anyone in the field.',
+            '- Do not repeat the same phrases across multiple roles because it makes the resume look thin or copied.',
+            '- Avoid overly fancy, flowery, or inflated language. Clear and direct writing is better than trying to sound impressive.',
+            '',
+            'Resume length guidance:',
+            '- The resume should only be as long as it needs to be. The goal is to establish qualifications, create curiosity, and get the interview.',
+            '- For most candidates, one or two pages is enough.',
+            '- For IT, cybersecurity, software engineering, or government roles, two to three pages can be normal because technical detail matters.',
+            '- For senior executives with long career histories, three pages can be acceptable.',
+            '- For academia, a CV is standard and can run five to twelve pages depending on publications, research, and academic history.',
+            '',
+            'Existing bullet rules:',
             '- Every bullet should follow this pattern when truthful: Action Verb + Task or Project + Metric or Result.',
             '- Use strong action verbs like Built, Led, Deployed, Provisioned, Operated, Improved, Reduced, Increased, Automated, Launched, Integrated, Migrated, Optimized, or Maintained.',
+            '- Match job-description keywords with context. If a keyword matters, place it in a relevant summary sentence, skill group, experience bullet, or project bullet with evidence of use.',
+            '- Do not keyword-stuff. Repeat important terms only where they describe truthful work, tools, responsibilities, or outcomes.',
             '- Prefer numbers and scope: users, revenue, cost, time saved, uptime, latency, number of systems, number of projects, team size, or frequency.',
             '- If no exact metric exists, use concrete scope instead of vague claims: production users, paid users, hosted workloads, customer environments, cloud deployment, runtime operations, or security/access work.',
             '- Keep most recent experience most detailed; avoid more than six bullets under one role unless splitting into multiple roles/projects makes the scan clearer.',
             '- Projects should include project name, role or ownership, relevant keywords/technologies, hard numbers or concrete results, and only projects relevant to the target job.',
             '- Education should be short after experience is established: degree, institution, dates, and only relevant coursework/achievements.',
             '- Put target job title and repeated hard-skill keywords from the job description in the title, summary, skills, experience, and projects where accurate.',
+            '- Prioritize skills according to the job description. If Python is emphasized more than Excel, list Python and related tools before Excel.',
+            '- Keep contact details in resume.personal fields rather than buried in headers, footers, images, tables, icons, or decorative graphics.',
+            '- Write content so it works in a simple .docx or clean PDF export. Avoid suggesting graphic-heavy layouts, text inside images, tables, text boxes, or multi-column structures.',
+            '- Tailor the resume to this specific job post. Do not produce a generic universal resume when a target role or posting is available.',
             '- If there is no profile image, leave personal.profileImage empty.',
             '',
             'Generic JSON shape to fill:',
@@ -3267,12 +3429,7 @@
             return;
         }
 
-        const exportButtonStates = elements.exportPdfButtons.map(button => ({
-            button,
-            html: button.innerHTML,
-            disabled: button.disabled,
-            ariaBusy: button.getAttribute('aria-busy')
-        }));
+        const exportButtonStates = captureExportButtonStates();
         const previewStyle = {
             transform: elements.resumePreview.style.transform,
             width: elements.resumePreview.style.width,
@@ -3316,16 +3473,473 @@
         }
     }
 
-    function setExportButtonsBusy(isBusy) {
-        elements.exportPdfButtons.forEach(button => {
+    async function exportCleanDocx() {
+        const enabledSections = getEnabledResumeSections();
+        const hasContent = [
+            state.personal.name,
+            state.personal.title,
+            state.personal.email,
+            state.personal.location,
+            state.personal.linkedin,
+            state.personal.github,
+            state.personal.website
+        ].some(value => normalizeInlineText(value)) || enabledSections.length;
+
+        if (!hasContent) {
+            showToast('Nothing to export yet');
+            return;
+        }
+
+        const exportButtonStates = captureExportButtonStates();
+
+        try {
+            setExportButtonsBusy(true, 'Exporting...');
+            await ensureDocxTool();
+            const doc = buildDocxDocument(enabledSections, collectDocxPreviewStyles());
+            const blob = await window.docx.Packer.toBlob(doc);
+            saveBlob(blob, `${slugify(state.personal.name || 'resume')}-resume.docx`);
+            showToast('DOCX exported');
+        } catch (error) {
+            console.warn('DOCX export failed:', error);
+            showToast('Could not export DOCX');
+        } finally {
+            restoreExportButtons(exportButtonStates);
+            refreshLucideIcons();
+        }
+    }
+
+    function toggleExportMenu() {
+        const isOpen = elements.exportMenuToggle.getAttribute('aria-expanded') === 'true';
+        if (isOpen) {
+            closeExportMenu();
+        } else {
+            elements.exportMenuPanel.hidden = false;
+            elements.exportMenuToggle.setAttribute('aria-expanded', 'true');
+        }
+    }
+
+    function closeExportMenu() {
+        if (!elements.exportMenuToggle || !elements.exportMenuPanel) return;
+        elements.exportMenuPanel.hidden = true;
+        elements.exportMenuToggle.setAttribute('aria-expanded', 'false');
+    }
+
+    function getEnabledResumeSections() {
+        return state.sectionOrder
+            .map(sectionId => state.sections[sectionId])
+            .filter(section => section && section.enabled);
+    }
+
+    function buildDocxDocument(enabledSections, docxStyle = createFallbackDocxStyle()) {
+        const {
+            Document,
+            Paragraph,
+            TextRun,
+            AlignmentType,
+            BorderStyle
+        } = window.docx;
+        const children = [];
+        const contact = buildDocxContactLine();
+
+        if (normalizeInlineText(state.personal.name)) {
+            children.push(new Paragraph({
+                alignment: AlignmentType.CENTER,
+                spacing: { after: 45 },
+                children: [new TextRun({
+                    text: normalizeInlineText(state.personal.name),
+                    bold: true,
+                    font: docxStyle.name.font,
+                    color: docxStyle.name.color,
+                    size: docxStyle.name.size
+                })]
+            }));
+        }
+
+        if (normalizeInlineText(state.personal.title)) {
+            children.push(new Paragraph({
+                alignment: AlignmentType.CENTER,
+                spacing: { after: contact ? 34 : 120 },
+                children: [new TextRun({
+                    text: normalizeInlineText(state.personal.title),
+                    font: docxStyle.title.font,
+                    color: docxStyle.title.color,
+                    size: docxStyle.title.size
+                })]
+            }));
+        }
+
+        if (contact) {
+            children.push(new Paragraph({
+                alignment: AlignmentType.CENTER,
+                spacing: { after: 130 },
+                children: [new TextRun({
+                    text: contact,
+                    font: docxStyle.contact.font,
+                    color: docxStyle.contact.color,
+                    size: docxStyle.contact.size
+                })]
+            }));
+        }
+
+        enabledSections.forEach(section => {
+            const sectionParagraphs = buildDocxSectionParagraphs(section, docxStyle);
+            if (!sectionParagraphs.length) return;
+
+            children.push(new Paragraph({
+                spacing: { before: 100, after: 45 },
+                border: {
+                    bottom: {
+                        color: docxStyle.section.borderColor,
+                        space: 1,
+                        style: BorderStyle.SINGLE,
+                        size: 4
+                    }
+                },
+                children: [new TextRun({
+                    text: normalizeInlineText(section.title).toUpperCase(),
+                    bold: true,
+                    font: docxStyle.section.font,
+                    color: docxStyle.section.color,
+                    size: docxStyle.section.size
+                })]
+            }));
+            children.push(...sectionParagraphs);
+        });
+
+        return new Document({
+            creator: 'Resume Builder',
+            title: state.personal.name ? `${state.personal.name} Resume` : 'Resume',
+            description: 'ATS-friendly resume',
+            sections: [{
+                properties: {
+                    page: {
+                        margin: {
+                            top: docxStyle.page.marginTop,
+                            right: docxStyle.page.marginRight,
+                            bottom: docxStyle.page.marginBottom,
+                            left: docxStyle.page.marginLeft
+                        }
+                    }
+                },
+                children: children.length ? children : [new Paragraph('Resume')]
+            }]
+        });
+    }
+
+    function buildDocxContactLine() {
+        return [
+            state.personal.email,
+            state.personal.location,
+            formatVisibleUrl(state.personal.linkedin),
+            formatVisibleUrl(state.personal.github),
+            formatVisibleUrl(state.personal.website)
+        ].map(value => normalizeInlineText(value)).filter(Boolean).join(' | ');
+    }
+
+    function buildDocxSectionParagraphs(section, docxStyle) {
+        if (section.type === 'summary') {
+            return richHtmlToDocxParagraphs(getSummaryBody(section), {
+                spacingAfter: 55,
+                runStyle: docxStyle.body
+            });
+        }
+
+        if (section.type === 'skills') {
+            return (section.groups || [])
+                .map(group => ({
+                    name: normalizeInlineText(group.name),
+                    skills: (group.skills || []).map(skill => normalizeInlineText(skill)).filter(Boolean)
+                }))
+                .filter(group => group.name || group.skills.length)
+                .map(group => new window.docx.Paragraph({
+                    spacing: { after: 40 },
+                    children: [
+                        ...(group.name ? [new window.docx.TextRun({
+                            text: `${group.name}: `,
+                            bold: true,
+                            font: docxStyle.skillHeading.font,
+                            color: docxStyle.skillHeading.color,
+                            size: docxStyle.skillHeading.size
+                        })] : []),
+                        new window.docx.TextRun({
+                            text: group.skills.join(', '),
+                            font: docxStyle.body.font,
+                            color: docxStyle.body.color,
+                            size: docxStyle.body.size
+                        })
+                    ]
+                }));
+        }
+
+        return sortSectionItems(section.items || [])
+            .filter(item => hasMeaningfulItemContent(section.type, item))
+            .flatMap(item => buildDocxItemParagraphs(section.type, item, docxStyle));
+    }
+
+    function buildDocxItemParagraphs(sectionType, item, docxStyle) {
+        const { Paragraph, TextRun } = window.docx;
+        const paragraphs = [];
+        const title = normalizeInlineText(getItemTitle(sectionType, item));
+        const dateParts = [item.date, item.status].map(value => normalizeInlineText(value)).filter(Boolean);
+        const heading = [title, dateParts.join(' | ')].filter(Boolean).join(' - ');
+        const meta = normalizeInlineText(getItemMetaValue(sectionType, item));
+        const credentialId = sectionType === 'certifications' ? normalizeInlineText(item.credentialId || '') : '';
+        const url = cleanUrl(item.url || '');
+
+        if (heading) {
+            paragraphs.push(new Paragraph({
+                spacing: { before: 45, after: 18 },
+                children: [new TextRun({
+                    text: heading,
+                    bold: true,
+                    font: docxStyle.item.font,
+                    color: docxStyle.item.color,
+                    size: docxStyle.item.size
+                })]
+            }));
+        }
+
+        if (meta) {
+            paragraphs.push(new Paragraph({
+                spacing: { after: 8 },
+                children: [new TextRun({
+                    text: meta,
+                    italics: true,
+                    font: docxStyle.meta.font,
+                    color: docxStyle.meta.color,
+                    size: docxStyle.meta.size
+                })]
+            }));
+        }
+
+        if (credentialId) {
+            paragraphs.push(new Paragraph({
+                spacing: { after: 8 },
+                children: [new TextRun({
+                    text: `Credential ID: ${credentialId}`,
+                    font: docxStyle.meta.font,
+                    color: docxStyle.meta.color,
+                    size: docxStyle.meta.size
+                })]
+            }));
+        }
+
+        if (url) {
+            paragraphs.push(new Paragraph({
+                spacing: { after: 8 },
+                children: [new TextRun({
+                    text: formatVisibleUrl(url, { section: sectionType }),
+                    font: docxStyle.meta.font,
+                    color: docxStyle.meta.color,
+                    size: docxStyle.meta.size
+                })]
+            }));
+        }
+
+        paragraphs.push(...richHtmlToDocxParagraphs(getItemBodyHtmlForPreview(sectionType, item), {
+            spacingAfter: 35,
+            runStyle: docxStyle.body,
+            bulletIndent: docxStyle.bulletIndent
+        }));
+        return paragraphs;
+    }
+
+    function richHtmlToDocxParagraphs(value, options = {}) {
+        const { Paragraph } = window.docx;
+        const template = document.createElement('template');
+        template.innerHTML = sanitizeRichHtml(value);
+        const paragraphs = [];
+        const spacingAfter = options.spacingAfter ?? 60;
+        const runStyle = options.runStyle || createFallbackDocxStyle().body;
+
+        Array.from(template.content.childNodes).forEach(node => {
+            if (node.nodeType === Node.TEXT_NODE) {
+                const text = normalizeInlineText(node.textContent);
+                if (text) paragraphs.push(new Paragraph({ spacing: { after: spacingAfter }, children: richNodeToTextRuns(node, runStyle) }));
+                return;
+            }
+
+            if (node.nodeType !== Node.ELEMENT_NODE) return;
+            if (node.matches('ul, ol')) {
+                Array.from(node.querySelectorAll(':scope > li')).forEach(item => {
+                    paragraphs.push(new Paragraph({
+                        bullet: { level: 0 },
+                        indent: options.bulletIndent,
+                        spacing: { after: spacingAfter },
+                        children: richNodeToTextRuns(item, runStyle)
+                    }));
+                });
+                return;
+            }
+
+            if (node.matches('p, div')) {
+                const runs = richNodeToTextRuns(node, runStyle);
+                if (runs.length) {
+                    paragraphs.push(new Paragraph({ spacing: { after: spacingAfter }, children: runs }));
+                }
+            }
+        });
+
+        return paragraphs;
+    }
+
+    function richNodeToTextRuns(node, inherited = {}) {
+        const { TextRun } = window.docx;
+        const runs = [];
+
+        node.childNodes.forEach(child => {
+            if (child.nodeType === Node.TEXT_NODE) {
+                const text = child.textContent.replace(/\s+/g, ' ');
+                if (text.trim()) runs.push(new TextRun({
+                    text,
+                    font: inherited.font,
+                    color: inherited.color,
+                    size: inherited.size,
+                    bold: inherited.bold,
+                    italics: inherited.italics
+                }));
+                return;
+            }
+
+            if (child.nodeType !== Node.ELEMENT_NODE) return;
+            const tag = child.tagName;
+            const nextStyle = {
+                ...inherited,
+                bold: inherited.bold || tag === 'STRONG' || tag === 'B',
+                italics: inherited.italics || tag === 'EM' || tag === 'I'
+            };
+            runs.push(...richNodeToTextRuns(child, nextStyle));
+        });
+
+        if (!runs.length && node.textContent && normalizeInlineText(node.textContent)) {
+            runs.push(new TextRun({
+                text: normalizeInlineText(node.textContent),
+                font: inherited.font,
+                color: inherited.color,
+                size: inherited.size,
+                bold: inherited.bold,
+                italics: inherited.italics
+            }));
+        }
+
+        return runs;
+    }
+
+    function collectDocxPreviewStyles() {
+        const fallback = createFallbackDocxStyle();
+        const paper = elements.resumePreview && elements.resumePreview.querySelector('.resume-paper');
+        if (!paper) return fallback;
+
+        const read = (selector, fallbackRole) => {
+            const element = paper.querySelector(selector);
+            if (!element) return fallback[fallbackRole];
+            const styles = getComputedStyle(element);
+            return {
+                font: cssFontFamilyToDocx(styles.fontFamily, fallback[fallbackRole].font),
+                color: cssColorToDocx(styles.color, fallback[fallbackRole].color),
+                size: cssFontSizeToHalfPoints(styles.fontSize, fallback[fallbackRole].size)
+            };
+        };
+        const sectionTitle = paper.querySelector('.resume-section-title');
+        const sectionStyles = sectionTitle ? getComputedStyle(sectionTitle) : null;
+        const paperStyles = getComputedStyle(paper);
+        const pagePaddingX = Number.parseFloat(paperStyles.paddingLeft) || Number(state.settings.pagePaddingX);
+        const pagePaddingY = Number.parseFloat(paperStyles.paddingTop) || Number(state.settings.pagePaddingY);
+
+        return {
+            page: {
+                marginTop: cssPxToTwips(pagePaddingY, fallback.page.marginTop),
+                marginRight: cssPxToTwips(pagePaddingX, fallback.page.marginRight),
+                marginBottom: cssPxToTwips(pagePaddingY, fallback.page.marginBottom),
+                marginLeft: cssPxToTwips(pagePaddingX, fallback.page.marginLeft)
+            },
+            name: read('.resume-name', 'name'),
+            title: read('.resume-title', 'title'),
+            contact: read('.resume-contact-item .text-style-target, .resume-contact-item', 'contact'),
+            section: {
+                ...read('.resume-section-title', 'section'),
+                borderColor: cssColorToDocx(sectionStyles && sectionStyles.borderBottomColor, fallback.section.borderColor)
+            },
+            item: read('.resume-item-title', 'item'),
+            meta: read('.resume-item-meta, .resume-item-url, .resume-item-date', 'meta'),
+            body: read('.resume-rich-text, .resume-summary p', 'body'),
+            skillHeading: read('.skill-group-title', 'skillHeading'),
+            bulletIndent: {
+                left: 360,
+                hanging: 180
+            }
+        };
+    }
+
+    function createFallbackDocxStyle() {
+        const serif = 'Times New Roman';
+        return {
+            page: { marginTop: 720, marginRight: 720, marginBottom: 720, marginLeft: 720 },
+            name: { font: serif, color: '000000', size: 32 },
+            title: { font: serif, color: '000000', size: 24 },
+            contact: { font: serif, color: '000000', size: 20 },
+            section: { font: serif, color: '2E74B5', borderColor: 'D7DEE8', size: 24 },
+            item: { font: serif, color: '000000', size: 22 },
+            meta: { font: serif, color: '000000', size: 22 },
+            body: { font: serif, color: '000000', size: 22 },
+            skillHeading: { font: serif, color: '000000', size: 22 },
+            bulletIndent: { left: 360, hanging: 180 }
+        };
+    }
+
+    function cssFontFamilyToDocx(value, fallback) {
+        const first = String(value || '')
+            .split(',')[0]
+            .replace(/^["']|["']$/g, '')
+            .trim();
+        if (!first || /^(serif|sans-serif|monospace)$/i.test(first)) return fallback;
+        return first;
+    }
+
+    function cssFontSizeToHalfPoints(value, fallback) {
+        const px = Number.parseFloat(value);
+        if (!Number.isFinite(px)) return fallback;
+        return Math.max(14, Math.min(72, Math.round(px * 1.5)));
+    }
+
+    function cssPxToTwips(value, fallback) {
+        const px = Number(value);
+        if (!Number.isFinite(px)) return fallback;
+        return Math.max(360, Math.min(1440, Math.round(px * 15)));
+    }
+
+    function cssColorToDocx(value, fallback) {
+        const color = parseCssColor(value);
+        if (!color) return fallback;
+        return [color.r, color.g, color.b]
+            .map(channel => Math.max(0, Math.min(255, channel)).toString(16).padStart(2, '0'))
+            .join('')
+            .toUpperCase();
+    }
+
+    function captureExportButtonStates() {
+        return getExportButtons().map(button => ({
+            button,
+            html: button.innerHTML,
+            disabled: button.disabled,
+            ariaBusy: button.getAttribute('aria-busy')
+        }));
+    }
+
+    function setExportButtonsBusy(isBusy, label = 'Exporting...') {
+        getExportButtons().forEach(button => {
             button.disabled = isBusy;
             if (isBusy) {
                 button.setAttribute('aria-busy', 'true');
-                button.textContent = 'Exporting...';
+                button.textContent = label;
             } else {
                 button.removeAttribute('aria-busy');
             }
         });
+
+        if (elements.exportMenuToggle) {
+            elements.exportMenuToggle.disabled = Boolean(isBusy);
+        }
     }
 
     function restoreExportButtons(states) {
@@ -3338,6 +3952,17 @@
                 stateSnapshot.button.setAttribute('aria-busy', stateSnapshot.ariaBusy);
             }
         });
+
+        if (elements.exportMenuToggle) {
+            elements.exportMenuToggle.disabled = false;
+        }
+    }
+
+    function getExportButtons() {
+        return [
+            ...(elements.exportPdfButtons || []),
+            ...(elements.exportDocxButtons || [])
+        ];
     }
 
     async function ensureSelectablePdfTool() {
@@ -3348,6 +3973,27 @@
         if (!window.jspdf || typeof window.jspdf.jsPDF !== 'function') {
             throw new Error('PDF export tools are unavailable');
         }
+    }
+
+    async function ensureDocxTool() {
+        if (!window.docx || typeof window.docx.Document !== 'function' || !window.docx.Packer) {
+            await loadExternalScript('https://unpkg.com/docx@8.5.0/build/index.umd.js');
+        }
+
+        if (!window.docx || typeof window.docx.Document !== 'function' || !window.docx.Packer) {
+            throw new Error('DOCX export tools are unavailable');
+        }
+    }
+
+    function saveBlob(blob, filename) {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
     }
 
     function loadExternalScript(src) {
