@@ -264,19 +264,22 @@ const JOURNEY_DATA = {
             name: "JavaScript Fundamentals",
             issuer: "Scrimba",
             url: "https://scrimba.com/@Ahmadkhattak1:certs;cert2CsEjr6BTAJVX14Fk3qLQUgjcAeQRirC7E",
-            date: "2025"
+            date: "2025",
+            previewImage: "LearnJavascript-Scrimba.webp"
         },
         {
             name: "HTML & CSS",
             issuer: "Scrimba",
             url: "https://scrimba.com/@Ahmadkhattak1:certs;cert2CsEjr6BTAJVX14Fk3qJvBZT4zue9hco8U",
-            date: "2025"
+            date: "2025",
+            previewImage: "html-css-scrimba.webp"
         },
         {
             name: "Intro to UI Design Fundamentals",
             issuer: "Scrimba",
             url: "https://scrimba.com/@Ahmadkhattak1:certs;cert2CsEjr6BTAJVX14Fk3qKAZkLACCSCNouDG",
-            date: "2025"
+            date: "2025",
+            previewImage: "intro-to-design-fundamentals-scrimba.webp"
         }
     ],
 
@@ -466,19 +469,22 @@ const CV_DATA = {
             name: "JavaScript Fundamentals",
             issuer: "Scrimba",
             url: "https://scrimba.com/@Ahmadkhattak1:certs;cert2CsEjr6BTAJVX14Fk3qLQUgjcAeQRirC7E",
-            date: "2025"
+            date: "2025",
+            previewImage: "LearnJavascript-Scrimba.webp"
         },
         {
             name: "HTML & CSS",
             issuer: "Scrimba",
             url: "https://scrimba.com/@Ahmadkhattak1:certs;cert2CsEjr6BTAJVX14Fk3qJvBZT4zue9hco8U",
-            date: "2025"
+            date: "2025",
+            previewImage: "html-css-scrimba.webp"
         },
         {
             name: "Intro to UI Design Fundamentals",
             issuer: "Scrimba",
             url: "https://scrimba.com/@Ahmadkhattak1:certs;cert2CsEjr6BTAJVX14Fk3qKAZkLACCSCNouDG",
-            date: "2025"
+            date: "2025",
+            previewImage: "intro-to-design-fundamentals-scrimba.webp"
         }
     ],
     meta: {

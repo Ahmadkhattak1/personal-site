@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Geist:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&family=Syne:wght@600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="styles/main.css">
-    <link rel="stylesheet" href="styles/resume-builder.css?v=ats-template-1">
+    <link rel="stylesheet" href="styles/resume-builder.css?v=ats-profile-template-9">
 </head>
 
 <body class="resume-builder-page" data-workflow-step="data">
@@ -39,9 +39,18 @@
                 <i data-lucide="layout-template" aria-hidden="true"></i>
                 Templates
             </button>
+            <button type="button" class="workflow-step" data-workflow-step="saved" role="tab" aria-selected="false">
+                <i data-lucide="archive" aria-hidden="true"></i>
+                Saved
+                <span class="saved-tab-count" id="savedTabCount" aria-label="0 saved resumes">0</span>
+            </button>
         </nav>
 
         <div class="resume-app-actions">
+            <button type="button" class="tool-button tool-button-secondary save-resume-button" id="saveCurrentResume">
+                <i data-lucide="save" aria-hidden="true"></i>
+                <span data-save-button-label>Save</span>
+            </button>
             <div class="view-options-menu" id="viewOptionsMenu">
                 <button type="button" class="tool-button tool-button-secondary view-options-trigger" id="viewOptionsToggle" aria-expanded="false" aria-haspopup="dialog" aria-controls="viewOptionsPanel">
                     <i data-lucide="sliders-horizontal" aria-hidden="true"></i>
@@ -162,6 +171,20 @@
                 </div>
             </section>
 
+            <section class="saved-resumes-panel" id="savedResumesPanel" data-panel-step="saved" aria-label="Saved resumes">
+                <header class="saved-resumes-header">
+                    <div>
+                        <h2>Saved resumes</h2>
+                        <p>Stored only in this browser.</p>
+                    </div>
+                    <button type="button" class="tool-button tool-button-primary" id="saveResumeAsNew">
+                        <i data-lucide="file-plus-2" aria-hidden="true"></i>
+                        Save current as new
+                    </button>
+                </header>
+                <div class="saved-resume-list" id="savedResumeList"></div>
+            </section>
+
             <section class="template-disclosure" data-panel-step="templates" aria-label="Resume templates">
                 <div class="template-panel">
                     <div class="template-list" id="templateList" aria-label="Resume templates"></div>
@@ -244,8 +267,8 @@
                 </button>
             </header>
             <div class="prompt-modal-body">
-                <p>Paste this prompt into your AI chat and add your background, target role, and any job post you want to apply for.</p>
-                <p>The AI should return clean resume JSON. If it does not have enough context, it should ask you a few short questions first.</p>
+                <p>Paste this prompt into your AI chat. It will first interview you about your target role, background, and every applicable resume section.</p>
+                <p>After you answer the questions, it will return a complete resume as clean JSON for this builder.</p>
                 <div class="ats-tip-card" aria-labelledby="atsTipsTitle">
                     <h3 id="atsTipsTitle">ATS-friendly resume tips</h3>
                     <ul class="ats-tip-list">
@@ -274,7 +297,8 @@
 
     <script src="js/journey-data.js"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-    <script src="js/resume-builder.js?v=ats-template-1"></script>
+    <script src="js/resume-default-profile-data.js?v=2"></script>
+    <script src="js/resume-builder.js?v=ats-profile-template-13"></script>
 </body>
 
 </html>

@@ -59,50 +59,11 @@
     letter-spacing: -0.02em;
 }
 
-/* Resume Button - Clean Design */
-.resume-btn {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-sm);
-    padding: var(--space-md) var(--space-lg);
-    background: var(--bg-primary);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    transition: all var(--transition-fast);
-}
-
-.resume-btn:hover {
-    border-color: var(--accent);
-    background: var(--bg-tertiary);
-}
-
-.resume-btn-text {
-    font-family: var(--font-body);
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: var(--text-primary);
-}
-
-.resume-btn-icon {
-    font-family: var(--font-mono);
-    font-size: 1rem;
-    color: var(--accent);
-    transition: transform var(--transition-fast);
-}
-
-.resume-btn:hover .resume-btn-icon {
-    transform: translateY(2px);
-}
-
 .resume-builder-link {
     display: flex;
     align-items: center;
     justify-content: center;
     min-height: 42px;
-    margin-top: var(--space-sm);
     padding: var(--space-sm) var(--space-md);
     border: 1px solid var(--accent-border);
     border-radius: var(--radius-sm);
@@ -462,51 +423,54 @@
    CERTIFICATIONS SECTION
    ============================================ */
 .certs-list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-md);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--space-lg);
 }
 
 .cert-item {
-    display: flex;
-    align-items: center;
+    display: grid;
+    grid-template-rows: auto 1fr;
     gap: var(--space-md);
-    justify-content: space-between;
-    padding: var(--space-lg);
+    min-height: 100%;
+    padding: var(--space-md);
     background: var(--bg-secondary);
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
     text-decoration: none;
     color: inherit;
-    transition: all var(--transition-fast);
+    position: relative;
+    overflow: hidden;
+    transition: border-color var(--transition-fast), transform var(--transition-fast);
 }
 
 .cert-item:hover {
     border-color: var(--border-light);
+    transform: translateY(-2px);
 }
 
-.cert-item-badge {
-    width: 76px;
-    height: 76px;
-    flex: 0 0 76px;
-    display: grid;
-    place-items: center;
-    padding: 7px;
+.cert-item-preview {
+    aspect-ratio: 4 / 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: var(--bg-primary);
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
+    overflow: hidden;
 }
 
-.cert-item-badge img {
+.cert-item-preview img {
     width: 100%;
     height: 100%;
     object-fit: contain;
     display: block;
+    padding: var(--space-sm);
 }
 
 .cert-item-info {
-    flex: 1;
     min-width: 0;
+    padding-right: 28px;
 }
 
 .cert-item-name {
@@ -518,10 +482,14 @@
 .cert-item-issuer {
     font-size: 0.875rem;
     color: var(--text-secondary);
+    line-height: 1.5;
 }
 
 .cert-item-arrow {
     color: var(--text-muted);
+    position: absolute;
+    right: var(--space-md);
+    bottom: var(--space-md);
     transition: all var(--transition-fast);
 }
 
@@ -621,6 +589,10 @@
     .projects-grid {
         grid-template-columns: 1fr;
     }
+
+    .certs-list {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    }
 }
 
 @media (max-width: 480px) {
@@ -638,16 +610,8 @@
         align-items: flex-start;
     }
 
-    .cert-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: var(--space-sm);
-    }
-
-    .cert-item-badge {
-        width: 88px;
-        height: 88px;
-        flex-basis: 88px;
+    .certs-list {
+        grid-template-columns: 1fr;
     }
 
     .cert-item-arrow {

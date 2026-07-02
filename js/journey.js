@@ -179,16 +179,16 @@
         const container = document.getElementById('certsList');
         if (!container || !JOURNEY_DATA.certifications) return;
 
-        container.innerHTML = JOURNEY_DATA.certifications.map(cert => `
+        const visualCerts = JOURNEY_DATA.certifications.filter(cert => cert.previewImage);
+
+        container.innerHTML = visualCerts.map(cert => `
             <a href="${cert.url}" target="_blank" rel="noopener noreferrer" class="cert-item cursor-generic-button">
-                ${cert.previewImage ? `
-                    <div class="cert-item-badge" aria-hidden="true">
-                        <img src="public/certs/${cert.previewImage}" alt="">
-                    </div>
-                ` : ''}
+                <div class="cert-item-preview">
+                    <img src="public/certs/${cert.previewImage}" alt="${cert.name} certificate preview" loading="lazy">
+                </div>
                 <div class="cert-item-info">
                     <div class="cert-item-name">${cert.name}</div>
-                    <div class="cert-item-issuer">${cert.issuer}${cert.date ? ` · ${cert.date}` : ''}</div>
+                    <div class="cert-item-issuer">${cert.issuer}${cert.date ? ` - ${cert.date}` : ''}</div>
                 </div>
                 <svg class="cert-item-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M7 17L17 7M17 7H7M17 7V17"/>
@@ -311,44 +311,6 @@
     }
 
     // ============================================
-    // DOWNLOAD RESUME BUTTON
-    // ============================================
-    function setupDownloadButton() {
-        const downloadBtn = document.getElementById('downloadResume');
-
-        if (downloadBtn) {
-            downloadBtn.addEventListener('click', async () => {
-                if (typeof generateResumePDF === 'function') {
-                    const textEl = downloadBtn.querySelector('.resume-btn-text');
-                    const originalText = textEl ? textEl.textContent : '';
-
-                    downloadBtn.disabled = true;
-                    downloadBtn.setAttribute('aria-busy', 'true');
-                    if (textEl) {
-                        textEl.textContent = 'Preparing CV';
-                    }
-
-                    try {
-                        await generateResumePDF();
-                    } catch (error) {
-                        console.error('Resume generation failed:', error);
-                        alert('Unable to generate the resume right now. Please try again.');
-                    } finally {
-                        downloadBtn.disabled = false;
-                        downloadBtn.removeAttribute('aria-busy');
-                        if (textEl) {
-                            textEl.textContent = originalText;
-                        }
-                    }
-                } else {
-                    console.error('PDF generator not loaded');
-                    alert('PDF generator is loading. Please try again.');
-                }
-            });
-        }
-    }
-
-    // ============================================
     // INITIALIZE
     // ============================================
     function init() {
@@ -365,7 +327,6 @@
         // Setup interactions
         setupScrollSpy();
         setupSmoothScroll();
-        setupDownloadButton();
     }
 
     // Run on DOM ready

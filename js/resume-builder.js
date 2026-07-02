@@ -14,11 +14,14 @@
     const WORKFLOW_KEY = 'ayk.resumeBuilder.workflow';
     const GUEST_WORKSPACE_KEY = 'ayk.resumeBuilder.guestWorkspaceStarted.v1';
     const PROFILE_GUIDE_KEY = 'ayk.resumeBuilder.profileGuideComplete.v1';
-    const WORKFLOW_STEPS = new Set(['data', 'entries', 'templates']);
+    const SAVED_RESUMES_KEY = 'ayk.resumeBuilder.savedResumes.v1';
+    const ACTIVE_SAVED_RESUME_KEY = 'ayk.resumeBuilder.activeSavedResume.v1';
+    const WORKFLOW_STEPS = new Set(['data', 'entries', 'templates', 'saved']);
     const WORKFLOW_TITLES = {
         data: 'Data (JSON)',
         entries: 'Non-JSON',
-        templates: 'Templates'
+        templates: 'Templates',
+        saved: 'Saved resumes'
     };
     const MODE_OVERRIDE = new URLSearchParams(window.location.search).get('mode');
     if (MODE_OVERRIDE === 'ahmad' || MODE_OVERRIDE === 'guest') {
@@ -236,6 +239,83 @@
                 skillHeadingSize: 10.2,
                 skillBodySize: 10.2
             }
+        },
+        {
+            id: 'ats-friendly-profile',
+            name: 'ATS Friendly with Profile',
+            template: 'ats',
+            thumbnail: 'public/resume/ats-friendly-profile-thumbnail.png',
+            profilePhotoRequired: true,
+            description: 'Single-column ATS resume with a compact profile-photo header, labeled contact details, and blue section rules.',
+            sectionOrder: ['summary', 'experience', 'education', 'skills', 'certifications', 'projects', 'research'],
+            titles: { summary: 'Summary', experience: 'Work Experience', projects: 'Projects', skills: 'Skills', education: 'Education', research: 'Research', certifications: 'Certifications' },
+            layout: { ...DEFAULT_LAYOUT, mode: 'single', columns: 1 },
+            design: {
+                sectionColumns: {
+                    mode: 'fixed',
+                    max: 1
+                }
+            },
+            sectionUpdates: {
+                skills: { columns: 1 }
+            },
+            settings: {
+                accent: '#164f75',
+                fontFamily: 'Arial, Helvetica, sans-serif',
+                fontName: 'Arial, Helvetica, sans-serif',
+                fontTitle: 'Arial, Helvetica, sans-serif',
+                fontHeading: 'Arial, Helvetica, sans-serif',
+                fontSectionHeading: 'Arial, Helvetica, sans-serif',
+                fontItemHeading: 'Arial, Helvetica, sans-serif',
+                fontBody: 'Arial, Helvetica, sans-serif',
+                fontContact: 'Arial, Helvetica, sans-serif',
+                fontMeta: 'Arial, Helvetica, sans-serif',
+                colorName: '#164f75',
+                colorTitle: '#222222',
+                colorContact: '#222222',
+                colorSectionHeading: '#164f75',
+                colorItemHeading: '#1f1f1f',
+                colorDate: '#1f1f1f',
+                colorMeta: '#1f1f1f',
+                colorBody: '#252525',
+                colorSkillHeading: '#1f1f1f',
+                colorSkillBody: '#252525',
+                fontSize: 9.6,
+                lineHeight: 1.28,
+                pagePaddingX: 46,
+                pagePaddingY: 42,
+                headerAlign: 'left',
+                headerDesign: 'minimal',
+                headerPattern: 'none',
+                headerBackground: '#ffffff',
+                headerTextColor: '#222222',
+                headerLineHeight: 1,
+                headerPadding: 0,
+                headerSeparatorColor: '#ffffff',
+                headerSeparatorWeight: 0,
+                contactLayout: 'stacked',
+                headerContactGap: 2,
+                bulletStyle: 'disc',
+                skillsColumns: 1,
+                sectionHeadingAccent: 'none',
+                sectionHeadingLineHeight: 1.05,
+                sectionSeparatorColor: '#164f75',
+                sectionSeparatorWeight: 1,
+                showHeaderIcons: false,
+                showProfilePhoto: true,
+                profilePhotoShape: 'square',
+                profilePhotoPlacement: 'left',
+                titleSize: 9.8,
+                titleLineHeight: 1.12,
+                nameSize: 18,
+                sectionHeadingSize: 10.2,
+                itemHeadingSize: 9.55,
+                dateSize: 9.2,
+                metaSize: 9.2,
+                contactSize: 9.15,
+                skillHeadingSize: 9.4,
+                skillBodySize: 9.3
+            }
         }
     ];
     const FONT_OPTIONS = [
@@ -347,6 +427,7 @@
         ['name', 'Name', 'What should appear at the top of the resume?'],
         ['title', 'Role', 'What role is this resume aiming for?'],
         ['email', 'Email', 'Where should recruiters contact you?'],
+        ['phone', 'Phone', 'What phone number should recruiters use?'],
         ['location', 'Location', 'What location should appear on the resume?'],
         ['linkedin', 'LinkedIn', 'Add a LinkedIn URL if you want it shown.'],
         ['github', 'GitHub', 'Add a GitHub URL if it helps your role.'],
@@ -369,6 +450,11 @@
     let builderMode = loadBuilderMode();
     let state = loadState(builderMode) || createStateForMode(builderMode);
     let workflowStep = loadWorkflowStep();
+    if (builderMode === 'guest' && localStorage.getItem(GUEST_WORKSPACE_KEY) !== 'true') {
+        localStorage.setItem(GUEST_WORKSPACE_KEY, 'true');
+        workflowStep = 'entries';
+        localStorage.setItem(WORKFLOW_KEY, workflowStep);
+    }
     let profileGuideCursor = 0;
     let wizardAddChoiceSection = '';
     let activeSkillGroupId = '';
@@ -383,6 +469,9 @@
     let previewEditablePointerTransition = false;
     let activeTextStyleTarget = null;
     let activeColorTarget = null;
+    let activeSavedResumeId = loadActiveSavedResumeId();
+    let savedResumeExportInProgress = false;
+    let pendingSavedResumeDeleteId = '';
 
     function init() {
         cacheElements();
@@ -427,6 +516,10 @@
         elements.promptModal = document.getElementById('promptModal');
         elements.resumeSyntaxStatus = document.getElementById('resumeSyntaxStatus');
         elements.toast = document.getElementById('resumeToast');
+        elements.savedResumeList = document.getElementById('savedResumeList');
+        elements.savedTabCount = document.getElementById('savedTabCount');
+        elements.saveCurrentResume = document.getElementById('saveCurrentResume');
+        elements.saveResumeAsNew = document.getElementById('saveResumeAsNew');
     }
 
     function bindEvents() {
@@ -964,11 +1057,47 @@
         });
 
         elements.resetResume.addEventListener('click', () => {
+            setActiveSavedResumeId('');
             state = createStateForMode(builderMode);
             saveState();
             showToast('Resume reset');
             renderAll();
         });
+
+        if (elements.saveCurrentResume) {
+            elements.saveCurrentResume.addEventListener('click', () => saveCurrentResume());
+        }
+
+        if (elements.saveResumeAsNew) {
+            elements.saveResumeAsNew.addEventListener('click', () => saveCurrentResume({ asNew: true }));
+        }
+
+        if (elements.savedResumeList) {
+            elements.savedResumeList.addEventListener('click', async event => {
+                const button = event.target.closest('[data-saved-action]');
+                if (!button || savedResumeExportInProgress) return;
+                const { savedAction, savedId } = button.dataset;
+                if (savedAction === 'open') openSavedResume(savedId);
+                if (savedAction === 'duplicate') duplicateSavedResume(savedId);
+                if (savedAction === 'delete') requestSavedResumeDelete(savedId);
+                if (savedAction === 'confirm-delete') deleteSavedResume(savedId);
+                if (savedAction === 'cancel-delete') cancelSavedResumeDelete();
+                if (savedAction === 'export-pdf') await exportSavedResume(savedId, 'pdf');
+                if (savedAction === 'export-docx') await exportSavedResume(savedId, 'docx');
+            });
+
+            elements.savedResumeList.addEventListener('input', event => {
+                const input = event.target.closest('[data-saved-name]');
+                if (!input) return;
+                persistSavedResumeName(input.dataset.savedName, input.value);
+            });
+
+            elements.savedResumeList.addEventListener('change', event => {
+                const input = event.target.closest('[data-saved-name]');
+                if (!input) return;
+                renameSavedResume(input.dataset.savedName, input.value);
+            });
+        }
 
         if (elements.copyJsonResumePrompt) {
             elements.copyJsonResumePrompt.addEventListener('click', openPromptModal);
@@ -1157,6 +1286,7 @@
                 name: personal.name || '',
                 title: personal.title || '',
                 email: personal.email || '',
+                phone: personal.phone || '',
                 location: personal.location || '',
                 profileImage: personal.profileImage || 'public/profile.png',
                 linkedin: cleanUrl(personal.linkedin || ''),
@@ -1175,6 +1305,7 @@
             name: '',
             title: '',
             email: '',
+            phone: '',
             location: '',
             profileImage: '',
             linkedin: '',
@@ -1182,10 +1313,19 @@
             website: ''
         };
 
-        Object.values(blank.sections).forEach(section => {
+        Object.entries(blank.sections).forEach(([sectionId, section]) => {
             section.enabled = false;
-            if (section.items) section.items = [];
-            if (section.groups) section.groups = [];
+            if (section.type === 'summary') {
+                section.items = [{ id: uniqueId('summary'), sourceId: '', text: '' }];
+                return;
+            }
+
+            if (section.type === 'skills') {
+                section.groups = [{ id: uniqueId('skills'), sourceId: '', name: '', skills: [] }];
+                return;
+            }
+
+            section.items = [createBlankItemForSection(sectionId)];
         });
 
         return blank;
@@ -1203,8 +1343,9 @@
     function selectBuilderMode(mode) {
         builderMode = mode === 'guest' ? 'guest' : 'ahmad';
         localStorage.setItem(MODE_KEY, builderMode);
+        activeSavedResumeId = loadActiveSavedResumeId();
         if (builderMode === 'guest') {
-            localStorage.removeItem(GUEST_WORKSPACE_KEY);
+            localStorage.setItem(GUEST_WORKSPACE_KEY, 'true');
             localStorage.removeItem(PROFILE_GUIDE_KEY);
         } else {
             localStorage.setItem(GUEST_WORKSPACE_KEY, 'true');
@@ -1214,7 +1355,7 @@
         state = builderMode === 'guest'
             ? createBlankState()
             : (loadState('ahmad') || createInitialState());
-        workflowStep = builderMode === 'guest' ? 'data' : 'entries';
+        workflowStep = 'entries';
         localStorage.setItem(WORKFLOW_KEY, workflowStep);
         pageAddMenuOpen = false;
         activeAddAnchor = 'start';
@@ -1224,7 +1365,7 @@
         resetHistory();
         saveState({ history: false });
         renderAll();
-        showToast(builderMode === 'guest' ? 'Paste JSON or start without it' : 'Loaded Ahmad resume');
+        showToast(builderMode === 'guest' ? 'Started a blank resume' : 'Loaded Ahmad resume');
     }
 
     function openIdentityGate() {
@@ -1282,6 +1423,7 @@
         renderConstantsPanel();
         renderTemplatePresets();
         renderEditor();
+        renderSavedResumes();
         renderPreview();
         updateSyntaxTextarea();
         updateJsonResumePrompt();
@@ -2081,6 +2223,7 @@
             return `
                 <div class="resume-wizard-field-grid">
                     ${renderWizardField('Email', state.personal.email, 'data-personal-field="email"')}
+                    ${renderWizardField('Phone', state.personal.phone, 'data-personal-field="phone"')}
                     ${renderWizardField('Location', state.personal.location, 'data-personal-field="location"')}
                     ${renderWizardField('LinkedIn', state.personal.linkedin, 'data-personal-field="linkedin"')}
                     ${renderWizardField('GitHub', state.personal.github, 'data-personal-field="github"')}
@@ -2090,6 +2233,7 @@
         }
 
         if (step.type === 'photo') {
+            const photoRequired = templateRequiresProfilePhoto();
             return `
                 <div class="resume-wizard-stack">
                     <div class="wizard-photo-field">
@@ -2102,7 +2246,7 @@
                         </div>
                         <div class="wizard-photo-controls">
                             <label class="wizard-photo-upload">
-                                <span class="field-label">Photo</span>
+                                <span class="field-label">Photo${photoRequired ? ' (required by this template)' : ''}</span>
                                 <input class="file-input" type="file" accept="image/*" data-profile-upload>
                             </label>
                             ${state.personal.profileImage ? `
@@ -2466,7 +2610,7 @@
 
     function isWizardStepFilled(step) {
         if (step.type === 'identity') return ['name', 'title'].some(field => normalizeInlineText(state.personal[field]));
-        if (step.type === 'contact') return ['email', 'location', 'linkedin', 'github', 'website'].some(field => normalizeInlineText(state.personal[field]));
+        if (step.type === 'contact') return ['email', 'phone', 'location', 'linkedin', 'github', 'website'].some(field => normalizeInlineText(state.personal[field]));
         if (step.type === 'photo') return Boolean(state.personal.profileImage);
         if (step.type === 'personal') return Boolean(normalizeInlineText(state.personal[step.field]));
         if (step.type === 'links') return ['linkedin', 'github', 'website'].some(field => normalizeInlineText(state.personal[field]));
@@ -2986,39 +3130,40 @@
             version: RESUME_SYNTAX_VERSION,
             resume: {
                 personal: {
-                    name: '[Candidate Name]',
-                    title: '[Target Job Title]',
-                    email: '[email@example.com]',
-                    location: '[City, Country]',
+                    name: '',
+                    title: '',
+                    email: '',
+                    phone: '',
+                    location: '',
                     profileImage: '',
-                    linkedin: '[LinkedIn URL]',
-                    github: '[GitHub URL]',
-                    website: '[Portfolio URL]'
+                    linkedin: '',
+                    github: '',
+                    website: ''
                 },
-                sectionOrder: ['summary', 'experience', 'projects', 'skills', 'education', 'certifications'],
+                sectionOrder: ['summary', 'experience', 'projects', 'skills', 'education', 'research', 'certifications'],
                 sections: {
                     summary: {
                         id: 'summary',
                         type: 'summary',
                         title: 'Summary',
                         enabled: true,
-                        body: '<p>[2-3 sentence summary tailored to the job post, using only truthful candidate facts. For an experienced professional, use 3-5 sentences only when the extra detail adds clear value.]</p>'
+                        body: ''
                     },
                     experience: {
                         id: 'experience',
                         type: 'experience',
-                        title: 'Experience',
+                        title: 'Work Experience',
                         enabled: true,
                         items: [
                             {
                                 id: 'experience-1',
-                                role: '[Role Title]',
-                                organization: '[Company / Organization]',
-                                date: '[Start - End]',
+                                role: '',
+                                organization: '',
+                                date: '',
                                 status: '',
                                 url: '',
                                 order: 1,
-                                body: '<ul><li>[Action verb + relevant task/project + result, metric, or concrete scope.]</li><li>[Action verb + job-relevant keyword + truthful impact.]</li></ul>'
+                                body: ''
                             }
                         ]
                     },
@@ -3030,13 +3175,13 @@
                         items: [
                             {
                                 id: 'project-1',
-                                name: '[Project Name]',
-                                organization: '[Role / Ownership]',
-                                date: '[Year or Date Range]',
+                                name: '',
+                                organization: '',
+                                date: '',
                                 status: '',
-                                url: '[Project URL]',
+                                url: '',
                                 order: 1,
-                                body: '<p>[Short project context tied to the target role.]</p><ul><li>[Built/led/improved + technology/skill + outcome.]</li></ul>'
+                                body: ''
                             }
                         ]
                     },
@@ -3047,14 +3192,9 @@
                         enabled: true,
                         groups: [
                             {
-                                id: 'skills-technical',
-                                name: 'Technical',
-                                skills: ['[Skill from job post]', '[Relevant candidate skill]']
-                            },
-                            {
-                                id: 'skills-tools',
-                                name: 'Tools',
-                                skills: ['[Tool]', '[Platform]']
+                                id: 'skills-1',
+                                name: '',
+                                skills: []
                             }
                         ]
                     },
@@ -3066,13 +3206,31 @@
                         items: [
                             {
                                 id: 'education-1',
-                                degree: '[Degree / Program]',
-                                organization: '[Institution]',
-                                date: '[Dates]',
+                                degree: '',
+                                organization: '',
+                                date: '',
                                 status: '',
                                 url: '',
                                 order: 1,
-                                body: '<p>[Relevant coursework, honors, or short education detail.]</p>'
+                                body: ''
+                            }
+                        ]
+                    },
+                    research: {
+                        id: 'research',
+                        type: 'research',
+                        title: 'Research',
+                        enabled: false,
+                        items: [
+                            {
+                                id: 'research-1',
+                                title: '',
+                                organization: '',
+                                date: '',
+                                status: '',
+                                url: '',
+                                order: 1,
+                                body: ''
                             }
                         ]
                     },
@@ -3084,12 +3242,12 @@
                         items: [
                             {
                                 id: 'certification-1',
-                                name: '[Certification]',
-                                issuer: '[Issuer]',
-                                date: '[Date]',
+                                name: '',
+                                issuer: '',
+                                date: '',
                                 status: '',
-                                url: '[Credential URL]',
-                                credentialId: '[Credential ID]',
+                                url: '',
+                                credentialId: '',
                                 order: 1,
                                 body: ''
                             }
@@ -3100,107 +3258,58 @@
         };
 
         return [
-            'You are creating a complete resume as content and structure JSON for a resume builder.',
-            'Return only valid JSON. Do not include Markdown, comments, or explanation.',
+            'You are an expert resume writer conducting an intake interview before creating a complete, tailored resume.',
             '',
-            'User-provided context to use:',
-            '- Job post / target role: [Paste the job post or role description here]',
-            '- Candidate background: [Paste the candidate work history, projects, education, skills, links, and any constraints here]',
-            '- Resume goal: [For example: internship, entry-level role, senior role, career change, project-heavy application, academic CV, or portfolio-forward resume]',
+            'MANDATORY CONVERSATION FLOW:',
+            '1. Do not draft the resume and do not output JSON in your first response.',
+            '2. Your first response must contain only a clear, numbered intake questionnaire for the candidate.',
+            '3. Treat this pasted prompt as instructions, not as candidate information. Empty strings and schema field names are not answers.',
+            '4. After the candidate replies, check every intake category below. If essential facts are missing or ambiguous, ask one concise follow-up batch before drafting. Do not output JSON while essential facts are missing.',
+            '5. Accept "not applicable" for optional sections and do not ask about those sections again.',
+            '6. Produce the final JSON only after the candidate has answered the interview sufficiently. During the interview, use normal prose questions. In the final response, output JSON only.',
             '',
-            'Goal:',
-            '- Write the whole resume for the job post or target role the user provides.',
-            '- Use only facts supplied by the user. Do not invent employers, degrees, dates, metrics, links, credentials, or technologies.',
-            '- If required information is missing, or if the user appears to have forgotten important details needed to write the resume well, ask the user for that information before producing the final JSON.',
-            '- Ask focused questions for missing essentials such as target job, role titles, employers, dates, education, project details, tools used, measurable results, links, certifications, or constraints.',
-            '- If only optional details are missing and the resume can still be drafted accurately, use clear bracketed placeholders for those optional details instead of fabricating them.',
-            '- Keep the question step short and do not turn it into a lengthy process.',
-            '- Keep the JSON format, version, and top-level shape intact.',
-            '- Prefer concise, high-impact bullets with action verbs and measurable scope.',
-            '- You may reorder sections, hide sections with enabled:false, add custom sections, and change rich text bodies.',
-            '- Do not use JSON to decide template design. Columns, column ratios, spacing, colors, heading separators, bullet styling, classes, and header styling are controlled by the active template.',
-            '- For each job, align personal.title, summary, skills, and bullets to the exact job title and repeated hard-skill keywords from the job description.',
-            '- Favor ATS-friendly content structure: conventional section titles, single-column-friendly ordering, plain readable text, and reverse chronological entries.',
+            'THE FIRST QUESTIONNAIRE MUST COVER:',
+            '1. Target: desired job title, seniority, industry, location preference, resume goal, and the full job post if one exists.',
+            '2. Contact: full name, email, location, LinkedIn, GitHub, portfolio, and other relevant links.',
+            '3. Professional profile: years of relevant experience, specialties, strongest qualifications, career direction, and two or three achievements the candidate is proud of.',
+            '4. Work experience: for every role, ask for title, employer, location or remote status, start/end dates, responsibilities, tools, scope, major projects, achievements, measurable results, and whether the role is current.',
+            '5. Projects: name, purpose, candidate ownership, dates, technologies or methods, challenges, outcomes, metrics, and links.',
+            '6. Skills: technical skills, tools/platforms, domain knowledge, methods, languages, and proficiency or evidence where useful.',
+            '7. Education: qualification, institution, location, dates, status, honors, relevant coursework, and notable activities.',
+            '8. Research: publications, papers, thesis work, presentations, patents, research roles, methods, results, dates, collaborators or institutions, and links—or confirm not applicable.',
+            '9. Certifications: name, issuer, date, expiry if relevant, credential ID, and verification URL—or confirm not applicable.',
+            '10. Constraints: preferred length, details to exclude, career gaps needing careful treatment, confidentiality limits, and other relevant sections such as awards, volunteering, or memberships.',
             '',
-            'Useful syntax:',
-            '- format: "ayk.resume.syntax"',
-            '- version: 1',
-            '- resume.personal: name, title, email, location, profileImage, linkedin, github, website',
-            '- resume.layout may be present for compatibility, but the active template decides document layout, columns, column ratios, spacing, colors, heading separators, and bullet styling.',
-            '- resume.sectionOrder is the render order. Add a section id here to render a custom section.',
-            '- resume.sections[id] needs id, type, title, enabled, and either body, items, or groups.',
-            '- Section structure fields such as columns, placement, and layout are tolerated for compatibility, but the active template design decides how many columns render.',
-            '- summary sections use body with simple HTML: <p>, <ul>, <li>, <strong>, <em>, <a href="">.',
-            '- skills sections use groups: [{ id, name, skills: [] }].',
-            '- entry sections use items: [{ id, name/role/degree/title, organization/issuer, date, status, url, credentialId, body, bullets, order, placement }].',
-            '- Certifications can use name, issuer, date, credentialId, and url.',
-            '- Entry structure fields: order controls order within a section; placement can move an entry to main/side/full in multi-column templates.',
+            'COMPLETION GATE BEFORE WRITING JSON:',
+            '- The candidate has supplied a target role or resume goal.',
+            '- Identity and usable contact details are confirmed.',
+            '- Work history, projects, skills, and education have each been answered or explicitly marked not applicable.',
+            '- Research and certifications have each been answered or explicitly marked not applicable.',
+            '- There is enough truthful evidence to write specific content rather than generic claims.',
+            '- Missing dates, organization names, role titles, and other factual essentials have been resolved. Never guess them.',
             '',
-            'ATS wording rules:',
-            '- Use standard section headings whenever possible: Work Experience, Education, Skills, Projects, Certifications, Professional Summary, and Research.',
-            '- Keep entries in reverse chronological order, newest first. Use consistent month-and-year dates such as May 2022 - July 2022 instead of vague seasons or mixed formats.',
-            '- Keep the summary concise. Do not let it go beyond 3 sentences for most resumes. For an experienced professional, 3-5 sentences is acceptable only if the extra sentences add role-relevant value.',
-            '- When writing the summary, focus on two things: first, who the candidate is and what they do, including professional identity and area of expertise aligned to the target job; second, the strongest relevant achievements, such as measurable results, awards, promotions, problems solved, or examples of going beyond baseline responsibilities.',
-            '- The summary should show a track record of producing results, not just list generic traits.',
+            'FINAL RESUME REQUIREMENTS:',
+            '- Use only candidate-supplied facts. Never invent employers, titles, dates, degrees, metrics, tools, links, credentials, publications, or achievements.',
+            '- Do not leave placeholders, generic filler, or sample content in the final JSON. If an optional detail remains unknown, omit it or leave its value empty.',
+            '- Tailor personal.title, summary, prioritized skills, experience bullets, and project bullets to the target role and job-post keywords only where truthful.',
+            '- Write a specific 2-4 sentence summary based on candidate evidence. Avoid generic traits and unsupported claims.',
+            '- Keep entries reverse chronological with consistent dates. Give recent and relevant roles the most detail.',
+            '- Use concise action-and-result bullets. Include metrics when supplied; otherwise use truthful concrete scope. Do not fabricate numbers.',
+            '- Aim for 2-5 strong bullets for each recent relevant role, 1-3 for older roles, and 1-3 outcome-focused bullets for each relevant project.',
+            '- Group skills into clear categories and include only skills the candidate actually has.',
+            '- Keep education concise once substantial experience exists. Include research and certifications when applicable.',
+            '- Always retain summary, experience, projects, skills, education, research, and certifications in resume.sectionOrder and resume.sections.',
+            '- For an inapplicable section, set enabled to false and use an empty body, items array, or groups array. For an applicable section, set enabled to true and populate it completely.',
+            '- Preserve format "ayk.resume.syntax", version 1, and the top-level JSON shape shown below.',
+            '- Use unique lowercase IDs for generated entries and skill groups. Use order values starting at 1 within each section.',
+            '- Rich-text body fields may use only simple HTML: <p>, <ul>, <li>, <strong>, <em>, and <a href="">.',
+            '- Do not add design instructions, colors, columns, tables, graphics, headers, footers, or template settings. The resume builder controls presentation.',
             '',
-            'Work Experience guidance:',
-            '- Work Experience is where the candidate proves they have the skills, experience, and background for the target job. For most candidates, it should be the longest section.',
-            '- Use bullet points because they improve skim value.',
-            '- Use present tense for current roles, such as manages, performs, leads, builds, supports, or owns. Use past tense for past roles, such as achieved, managed, performed, built, delivered, or improved.',
-            '- Give context for each role: what kind of company or organization it was, what products or services it offered, which customers or industry it served, organization size when known, and how the candidate supported company goals, products, customers, or business units.',
-            '- Focus on the candidate’s main functions instead of every small detail. Prioritize what occupied most of their time and what is relevant to the next target job.',
-            '- Most importantly, call out what the candidate achieved or contributed: landing new clients, reducing operational costs, automating manual processes, exceeding revenue targets, earning performance awards, successfully delivering large-scale projects, solving technical problems, improving reliability, or increasing efficiency.',
+            'FINAL RESPONSE FORMAT:',
+            '- Output one valid JSON object only—no Markdown fence, preface, comments, explanation, or text after it.',
+            '- Follow the schema exactly. Duplicate the example item/group objects as needed, replace every value with candidate-specific content, and remove unused example records.',
             '',
-            'Bullet point structure:',
-            '- Use cause-and-effect bullets. Describe what the candidate did and what happened as a result.',
-            '- PAR formula: Problem + Action + Result. Example: "Reduced average customer support response time from 48 hours to under 24 hours by implementing a Zendesk ticketing system and restructuring the triage workflow across a 12-person support team."',
-            '- PAR example: "Recovered $340K in aged receivables within 90 days by redesigning the collections process and introducing automated payment reminders through NetSuite."',
-            '- STAR formula: Situation + Task + Action + Result. Use it when context matters or the scenario is complex.',
-            '- STAR example: "Managed inventory levels across 3 warehouse locations to ensure product availability while minimizing stockouts during a period of supply chain disruption; reduced inventory carrying costs by 15% through demand forecasting adjustments."',
-            '- STAR example: "Diagnosed a critical server outage affecting 2,000+ users during peak business hours and implemented a temporary failover solution within 45 minutes, preventing an estimated $80K in downtime losses."',
-            '- Result-first formula: lead with a strong outcome when the result is impressive. Example: "Generated $1.2M in new annual recurring revenue by building and managing a partner channel program across the Northeast region."',
-            '- Action Verb + Skill + Result formula: use this for technical resumes where tools matter. Example: "Built an automated data pipeline using Python and Airflow that consolidated reporting from 4 separate systems, reducing monthly close time from 5 days to 2."',
-            '',
-            'Projects guidance:',
-            '- If the candidate does not have much work experience, the Projects section should prove they can do the work.',
-            '- Every project should answer three questions: what was built, how it was built, and what the result was.',
-            '- Avoid weak project descriptions like "Created a website for a local business." Prefer specific descriptions such as: "Developed a responsive e-commerce site for a local bakery using React and Node.js, integrating Stripe for payments and handling 200+ online orders in the first month."',
-            '- For group projects, clearly state the candidate’s specific role. Examples: "Led a 3-person team in developing an inventory management system, coordinating weekly sprints and handling all client communication" or "Owned front-end development within a 5-person team, building all UI components in React and delivering on a two-week sprint cycle."',
-            '- Include useful supporting links when available: GitHub repos with clean code, live sites, project write-ups, research posters, or case studies.',
-            '- Prioritize projects that align with the target role, demonstrate skills the employer wants, have measurable outcomes, or show independent or collaborative execution.',
-            '- For technical roles, include technologies used, project scale, technical challenges, and performance improvements.',
-            '- Three well-described, relevant projects are better than a long list of minor assignments. Every project should clearly connect to the target role.',
-            '',
-            'What not to do:',
-            '- Avoid generic statements that could apply to anyone in the field.',
-            '- Do not repeat the same phrases across multiple roles because it makes the resume look thin or copied.',
-            '- Avoid overly fancy, flowery, or inflated language. Clear and direct writing is better than trying to sound impressive.',
-            '',
-            'Resume length guidance:',
-            '- The resume should only be as long as it needs to be. The goal is to establish qualifications, create curiosity, and get the interview.',
-            '- For most candidates, one or two pages is enough.',
-            '- For IT, cybersecurity, software engineering, or government roles, two to three pages can be normal because technical detail matters.',
-            '- For senior executives with long career histories, three pages can be acceptable.',
-            '- For academia, a CV is standard and can run five to twelve pages depending on publications, research, and academic history.',
-            '',
-            'Existing bullet rules:',
-            '- Every bullet should follow this pattern when truthful: Action Verb + Task or Project + Metric or Result.',
-            '- Use strong action verbs like Built, Led, Deployed, Provisioned, Operated, Improved, Reduced, Increased, Automated, Launched, Integrated, Migrated, Optimized, or Maintained.',
-            '- Match job-description keywords with context. If a keyword matters, place it in a relevant summary sentence, skill group, experience bullet, or project bullet with evidence of use.',
-            '- Do not keyword-stuff. Repeat important terms only where they describe truthful work, tools, responsibilities, or outcomes.',
-            '- Prefer numbers and scope: users, revenue, cost, time saved, uptime, latency, number of systems, number of projects, team size, or frequency.',
-            '- If no exact metric exists, use concrete scope instead of vague claims: production users, paid users, hosted workloads, customer environments, cloud deployment, runtime operations, or security/access work.',
-            '- Keep most recent experience most detailed; avoid more than six bullets under one role unless splitting into multiple roles/projects makes the scan clearer.',
-            '- Projects should include project name, role or ownership, relevant keywords/technologies, hard numbers or concrete results, and only projects relevant to the target job.',
-            '- Education should be short after experience is established: degree, institution, dates, and only relevant coursework/achievements.',
-            '- Put target job title and repeated hard-skill keywords from the job description in the title, summary, skills, experience, and projects where accurate.',
-            '- Prioritize skills according to the job description. If Python is emphasized more than Excel, list Python and related tools before Excel.',
-            '- Keep contact details in resume.personal fields rather than buried in headers, footers, images, tables, icons, or decorative graphics.',
-            '- Write content so it works in a simple .docx or clean PDF export. Avoid suggesting graphic-heavy layouts, text inside images, tables, text boxes, or multi-column structures.',
-            '- Tailor the resume to this specific job post. Do not produce a generic universal resume when a target role or posting is available.',
-            '- If there is no profile image, leave personal.profileImage empty.',
-            '',
-            'Generic JSON shape to fill:',
+            'JSON SCHEMA TO FILL ONLY AFTER THE INTERVIEW:',
             JSON.stringify(genericResumeSyntax, null, 2)
         ].join('\n');
     }
@@ -3416,6 +3525,321 @@
         return JSON.parse(JSON.stringify(value || {}));
     }
 
+    function getActiveSavedResumeStorageKey(mode = builderMode) {
+        return `${ACTIVE_SAVED_RESUME_KEY}.${mode === 'guest' ? 'guest' : 'ahmad'}`;
+    }
+
+    function loadActiveSavedResumeId(mode = builderMode) {
+        try {
+            return localStorage.getItem(getActiveSavedResumeStorageKey(mode)) || '';
+        } catch (error) {
+            console.warn('Active saved resume load failed:', error);
+            return '';
+        }
+    }
+
+    function setActiveSavedResumeId(id) {
+        activeSavedResumeId = String(id || '');
+        try {
+            if (activeSavedResumeId) {
+                localStorage.setItem(getActiveSavedResumeStorageKey(), activeSavedResumeId);
+            } else {
+                localStorage.removeItem(getActiveSavedResumeStorageKey());
+            }
+        } catch (error) {
+            console.warn('Active saved resume update failed:', error);
+        }
+    }
+
+    function loadSavedResumes() {
+        try {
+            const parsed = JSON.parse(localStorage.getItem(SAVED_RESUMES_KEY) || '[]');
+            if (!Array.isArray(parsed)) return [];
+            return parsed.filter(record => record && typeof record === 'object' && record.id && record.state);
+        } catch (error) {
+            console.warn('Saved resume library load failed:', error);
+            return [];
+        }
+    }
+
+    function writeSavedResumes(records) {
+        try {
+            localStorage.setItem(SAVED_RESUMES_KEY, JSON.stringify(records));
+            return true;
+        } catch (error) {
+            console.warn('Saved resume library update failed:', error);
+            showToast('Browser storage is full. Remove a saved resume and try again.');
+            return false;
+        }
+    }
+
+    function getSavedResumesForCurrentMode() {
+        return loadSavedResumes()
+            .filter(record => (record.mode || 'ahmad') === builderMode)
+            .sort((first, second) => String(second.updatedAt || '').localeCompare(String(first.updatedAt || '')));
+    }
+
+    function getDefaultSavedResumeName(targetState = state, number = 1) {
+        const role = normalizeInlineText(targetState.personal?.title || '');
+        const person = normalizeInlineText(targetState.personal?.name || '');
+        if (role) return role;
+        if (person) return `${person}'s resume`;
+        return `Resume ${number}`;
+    }
+
+    function saveCurrentResume(options = {}) {
+        const records = loadSavedResumes();
+        const now = new Date().toISOString();
+        const existingIndex = options.asNew
+            ? -1
+            : records.findIndex(record => record.id === activeSavedResumeId && (record.mode || 'ahmad') === builderMode);
+
+        if (existingIndex >= 0) {
+            records[existingIndex] = {
+                ...records[existingIndex],
+                name: records[existingIndex].name || getDefaultSavedResumeName(state, records.length + 1),
+                updatedAt: now,
+                state: deepClone(state)
+            };
+            if (!writeSavedResumes(records)) return;
+            showToast('Saved resume updated');
+        } else {
+            const record = {
+                id: uniqueId('resume'),
+                mode: builderMode,
+                name: getDefaultSavedResumeName(state, records.length + 1),
+                createdAt: now,
+                updatedAt: now,
+                state: deepClone(state)
+            };
+            records.push(record);
+            if (!writeSavedResumes(records)) return;
+            setActiveSavedResumeId(record.id);
+            showToast(options.asNew ? 'Saved as a new resume' : 'Resume saved');
+        }
+
+        renderSavedResumes();
+        refreshLucideIcons();
+    }
+
+    function syncActiveSavedResume() {
+        if (!activeSavedResumeId) return;
+        const records = loadSavedResumes();
+        const index = records.findIndex(record => record.id === activeSavedResumeId && (record.mode || 'ahmad') === builderMode);
+        if (index < 0) {
+            setActiveSavedResumeId('');
+            return;
+        }
+
+        records[index] = {
+            ...records[index],
+            updatedAt: new Date().toISOString(),
+            state: deepClone(state)
+        };
+        writeSavedResumes(records);
+    }
+
+    function openSavedResume(id) {
+        const record = loadSavedResumes().find(item => item.id === id && (item.mode || 'ahmad') === builderMode);
+        if (!record) {
+            showToast('That saved resume is no longer available');
+            renderSavedResumes();
+            return;
+        }
+
+        state = normalizeState(deepClone(record.state), builderMode);
+        setActiveSavedResumeId(record.id);
+        localStorage.setItem(getStorageKey(builderMode), serializeState());
+        persistResumeJsonDraft();
+        workflowStep = 'entries';
+        localStorage.setItem(WORKFLOW_KEY, workflowStep);
+        pageAddMenuOpen = false;
+        activeAddAnchor = 'start';
+        resetHistory();
+        renderAll();
+        showToast(`Opened ${record.name || 'saved resume'}`);
+    }
+
+    function renameSavedResume(id, value) {
+        const records = loadSavedResumes();
+        const index = records.findIndex(record => record.id === id && (record.mode || 'ahmad') === builderMode);
+        if (index < 0) return;
+        const name = normalizeInlineText(value) || getDefaultSavedResumeName(records[index].state, index + 1);
+        records[index] = { ...records[index], name, updatedAt: new Date().toISOString() };
+        if (!writeSavedResumes(records)) return;
+        renderSavedResumes();
+        refreshLucideIcons();
+        showToast('Resume renamed');
+    }
+
+    function persistSavedResumeName(id, value) {
+        const records = loadSavedResumes();
+        const index = records.findIndex(record => record.id === id && (record.mode || 'ahmad') === builderMode);
+        if (index < 0) return;
+        records[index] = {
+            ...records[index],
+            name: String(value || ''),
+            updatedAt: new Date().toISOString()
+        };
+        writeSavedResumes(records);
+    }
+
+    function duplicateSavedResume(id) {
+        const records = loadSavedResumes();
+        const source = records.find(record => record.id === id && (record.mode || 'ahmad') === builderMode);
+        if (!source) return;
+        const now = new Date().toISOString();
+        records.push({
+            ...deepClone(source),
+            id: uniqueId('resume'),
+            name: `${source.name || getDefaultSavedResumeName(source.state)} copy`,
+            createdAt: now,
+            updatedAt: now
+        });
+        if (!writeSavedResumes(records)) return;
+        renderSavedResumes();
+        refreshLucideIcons();
+        showToast('Resume duplicated');
+    }
+
+    function deleteSavedResume(id) {
+        const records = loadSavedResumes();
+        const record = records.find(item => item.id === id && (item.mode || 'ahmad') === builderMode);
+        if (!record) return;
+        if (!writeSavedResumes(records.filter(item => item.id !== id))) return;
+        pendingSavedResumeDeleteId = '';
+        if (activeSavedResumeId === id) setActiveSavedResumeId('');
+        renderSavedResumes();
+        refreshLucideIcons();
+        showToast('Saved resume deleted');
+    }
+
+    function requestSavedResumeDelete(id) {
+        pendingSavedResumeDeleteId = id;
+        renderSavedResumes();
+        refreshLucideIcons();
+    }
+
+    function cancelSavedResumeDelete() {
+        pendingSavedResumeDeleteId = '';
+        renderSavedResumes();
+        refreshLucideIcons();
+    }
+
+    async function exportSavedResume(id, format) {
+        const record = loadSavedResumes().find(item => item.id === id && (item.mode || 'ahmad') === builderMode);
+        if (!record) return;
+        const previousState = state;
+        const previousSnapshot = lastStateSnapshot;
+        savedResumeExportInProgress = true;
+
+        try {
+            state = normalizeState(deepClone(record.state), builderMode);
+            renderPreview();
+            await nextFrame();
+            if (format === 'docx') {
+                await exportCleanDocx();
+            } else {
+                await exportCleanPdf();
+            }
+        } finally {
+            state = previousState;
+            lastStateSnapshot = previousSnapshot;
+            savedResumeExportInProgress = false;
+            renderAll();
+        }
+    }
+
+    function renderSavedResumes() {
+        const records = getSavedResumesForCurrentMode();
+        const activeExists = records.some(record => record.id === activeSavedResumeId);
+        if (activeSavedResumeId && !activeExists) setActiveSavedResumeId('');
+
+        if (elements.savedTabCount) {
+            elements.savedTabCount.textContent = String(records.length);
+            elements.savedTabCount.setAttribute('aria-label', `${records.length} saved resume${records.length === 1 ? '' : 's'}`);
+        }
+
+        if (elements.saveCurrentResume) {
+            const label = elements.saveCurrentResume.querySelector('[data-save-button-label]');
+            if (label) label.textContent = activeExists ? 'Update saved' : 'Save';
+            elements.saveCurrentResume.title = activeExists ? 'Update the open saved resume' : 'Save this resume';
+        }
+
+        if (!elements.savedResumeList) return;
+        if (!records.length) {
+            elements.savedResumeList.innerHTML = `
+                <div class="saved-resume-empty">
+                    <strong>No saved resumes yet</strong>
+                    <p>Save the current resume to keep a separate version for a role. It stays in this browser's local storage.</p>
+                </div>
+            `;
+            return;
+        }
+
+        elements.savedResumeList.innerHTML = records.map(record => {
+            const recordState = record.state || {};
+            const role = normalizeInlineText(recordState.personal?.title || '') || 'No target role';
+            const person = normalizeInlineText(recordState.personal?.name || '') || 'Unnamed candidate';
+            const updated = formatSavedResumeDate(record.updatedAt);
+            const isActive = record.id === activeSavedResumeId;
+            const isDeletePending = record.id === pendingSavedResumeDeleteId;
+            return `
+                <article class="saved-resume-card${isActive ? ' is-active' : ''}" data-saved-resume="${escapeAttr(record.id)}">
+                    <div class="saved-resume-card-top">
+                        <div>
+                            <input class="saved-resume-name" value="${escapeAttr(record.name || getDefaultSavedResumeName(recordState))}" data-saved-name="${escapeAttr(record.id)}" aria-label="Saved resume name">
+                            <div class="saved-resume-meta">
+                                <span>${escapeHtml(person)}</span>
+                                <span>${escapeHtml(role)}</span>
+                                <span>Updated ${escapeHtml(updated)}</span>
+                            </div>
+                        </div>
+                        ${isActive ? '<span class="saved-resume-badge">Open</span>' : ''}
+                    </div>
+                    <div class="saved-resume-actions" aria-label="Actions for ${escapeAttr(record.name || 'saved resume')}">
+                        <button type="button" class="tool-button tool-button-primary" data-saved-action="open" data-saved-id="${escapeAttr(record.id)}">
+                            <i data-lucide="pencil" aria-hidden="true"></i> Open &amp; edit
+                        </button>
+                        <button type="button" class="tool-button tool-button-secondary" data-saved-action="export-pdf" data-saved-id="${escapeAttr(record.id)}">
+                            <i data-lucide="file-text" aria-hidden="true"></i> PDF
+                        </button>
+                        <button type="button" class="tool-button tool-button-secondary" data-saved-action="export-docx" data-saved-id="${escapeAttr(record.id)}">
+                            <i data-lucide="file-type" aria-hidden="true"></i> DOCX
+                        </button>
+                        <button type="button" class="tool-button tool-button-secondary" data-saved-action="duplicate" data-saved-id="${escapeAttr(record.id)}">
+                            <i data-lucide="copy-plus" aria-hidden="true"></i> Duplicate
+                        </button>
+                        ${isDeletePending ? `
+                            <span class="saved-delete-confirmation" role="group" aria-label="Confirm deletion">
+                                <button type="button" class="tool-button saved-confirm-delete-button" data-saved-action="confirm-delete" data-saved-id="${escapeAttr(record.id)}">
+                                    <i data-lucide="trash-2" aria-hidden="true"></i> Confirm delete
+                                </button>
+                                <button type="button" class="tool-button tool-button-secondary" data-saved-action="cancel-delete" data-saved-id="${escapeAttr(record.id)}">Cancel</button>
+                            </span>
+                        ` : `
+                            <button type="button" class="tool-button tool-button-secondary saved-delete-button" data-saved-action="delete" data-saved-id="${escapeAttr(record.id)}">
+                                <i data-lucide="trash-2" aria-hidden="true"></i> Delete
+                            </button>
+                        `}
+                    </div>
+                </article>
+            `;
+        }).join('');
+    }
+
+    function formatSavedResumeDate(value) {
+        const date = new Date(value || '');
+        if (Number.isNaN(date.getTime())) return 'recently';
+        return new Intl.DateTimeFormat(undefined, {
+            month: 'short',
+            day: 'numeric',
+            year: date.getFullYear() === new Date().getFullYear() ? undefined : 'numeric',
+            hour: 'numeric',
+            minute: '2-digit'
+        }).format(date);
+    }
+
     async function exportCleanPdf() {
         if (pageAddMenuOpen) {
             pageAddMenuOpen = false;
@@ -3453,18 +3877,10 @@
             pdf.save(`${slugify(state.personal.name || 'resume')}-resume.pdf`);
             showToast('PDF exported');
         } catch (error) {
-            console.warn('Selectable PDF export failed, opening print dialog:', error);
-            try {
-                applyPrintPageStyle();
-                showToast('Choose Save as PDF in the print dialog');
-                await openPrintDialog();
-            } catch (printError) {
-                console.warn('Resume print export failed:', printError);
-                showToast('Could not open PDF export');
-            }
+            console.warn('PDF export failed:', error);
+            showToast('Could not export PDF');
         } finally {
             document.body.classList.remove('resume-export-mode');
-            removePrintPageStyle();
             elements.resumePreview.style.transform = previewStyle.transform;
             elements.resumePreview.style.width = previewStyle.width;
             elements.resumePreview.style.height = previewStyle.height;
@@ -3479,6 +3895,7 @@
             state.personal.name,
             state.personal.title,
             state.personal.email,
+            state.personal.phone,
             state.personal.location,
             state.personal.linkedin,
             state.personal.github,
@@ -3495,7 +3912,7 @@
         try {
             setExportButtonsBusy(true, 'Exporting...');
             await ensureDocxTool();
-            const doc = buildDocxDocument(enabledSections, collectDocxPreviewStyles());
+            const doc = await buildDocxDocument(enabledSections, collectDocxPreviewStyles());
             const blob = await window.docx.Packer.toBlob(doc);
             saveBlob(blob, `${slugify(state.personal.name || 'resume')}-resume.docx`);
             showToast('DOCX exported');
@@ -3530,7 +3947,7 @@
             .filter(section => section && section.enabled);
     }
 
-    function buildDocxDocument(enabledSections, docxStyle = createFallbackDocxStyle()) {
+    async function buildDocxDocument(enabledSections, docxStyle = createFallbackDocxStyle()) {
         const {
             Document,
             Paragraph,
@@ -3541,7 +3958,9 @@
         const children = [];
         const contact = buildDocxContactLine();
 
-        if (normalizeInlineText(state.personal.name)) {
+        if (templateRequiresProfilePhoto()) {
+            children.push(await buildProfileDocxHeader(docxStyle));
+        } else if (normalizeInlineText(state.personal.name)) {
             children.push(new Paragraph({
                 alignment: AlignmentType.CENTER,
                 spacing: { after: 45 },
@@ -3555,7 +3974,7 @@
             }));
         }
 
-        if (normalizeInlineText(state.personal.title)) {
+        if (!templateRequiresProfilePhoto() && normalizeInlineText(state.personal.title)) {
             children.push(new Paragraph({
                 alignment: AlignmentType.CENTER,
                 spacing: { after: contact ? 34 : 120 },
@@ -3568,7 +3987,7 @@
             }));
         }
 
-        if (contact) {
+        if (!templateRequiresProfilePhoto() && contact) {
             children.push(new Paragraph({
                 alignment: AlignmentType.CENTER,
                 spacing: { after: 130 },
@@ -3626,9 +4045,139 @@
         });
     }
 
+    async function buildProfileDocxHeader(docxStyle) {
+        const {
+            Table,
+            TableRow,
+            TableCell,
+            Paragraph,
+            TextRun,
+            ImageRun,
+            WidthType,
+            VerticalAlign,
+            AlignmentType,
+            BorderStyle
+        } = window.docx;
+        const noBorder = { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' };
+        const imageBytes = await loadProfileImageBytes(state.personal.profileImage);
+        const photoChildren = imageBytes
+            ? [new ImageRun({ data: imageBytes, transformation: { width: 74, height: 74 } })]
+            : [new TextRun({ text: 'PROFILE', bold: true, color: '7B8794', size: 16, font: docxStyle.body.font })];
+        const detailRows = [
+            ['Address', state.personal.location],
+            ['Phone', state.personal.phone],
+            ['Email', state.personal.email],
+            ['LinkedIn', formatVisibleUrl(state.personal.linkedin)],
+            ['GitHub', formatVisibleUrl(state.personal.github)],
+            ['Website', formatVisibleUrl(state.personal.website)]
+        ].filter(([, value]) => normalizeInlineText(value));
+        const identityParagraphs = [];
+
+        if (normalizeInlineText(state.personal.name)) {
+            identityParagraphs.push(new Paragraph({
+                spacing: { after: normalizeInlineText(state.personal.title) ? 30 : 55 },
+                children: [new TextRun({
+                    text: normalizeInlineText(state.personal.name).toUpperCase(),
+                    bold: true,
+                    font: docxStyle.name.font,
+                    color: docxStyle.name.color,
+                    size: docxStyle.name.size
+                })]
+            }));
+        }
+
+        if (normalizeInlineText(state.personal.title)) {
+            identityParagraphs.push(new Paragraph({
+                spacing: { after: detailRows.length ? 45 : 0 },
+                children: [new TextRun({
+                    text: normalizeInlineText(state.personal.title),
+                    font: docxStyle.title.font,
+                    color: docxStyle.title.color,
+                    size: docxStyle.title.size
+                })]
+            }));
+        }
+
+        detailRows.forEach(([label, value], index) => {
+            identityParagraphs.push(new Paragraph({
+                spacing: { after: index === detailRows.length - 1 ? 0 : 15 },
+                children: [
+                    new TextRun({ text: `${label}:  `, bold: true, font: docxStyle.contact.font, color: docxStyle.contact.color, size: docxStyle.contact.size }),
+                    new TextRun({ text: normalizeInlineText(value), font: docxStyle.contact.font, color: docxStyle.contact.color, size: docxStyle.contact.size })
+                ]
+            }));
+        });
+
+        if (!identityParagraphs.length) identityParagraphs.push(new Paragraph('Resume'));
+
+        return new Table({
+            width: { size: 100, type: WidthType.PERCENTAGE },
+            borders: { top: noBorder, bottom: noBorder, left: noBorder, right: noBorder, insideHorizontal: noBorder, insideVertical: noBorder },
+            rows: [new TableRow({
+                children: [
+                    new TableCell({
+                        width: { size: 1250, type: WidthType.DXA },
+                        verticalAlign: VerticalAlign.TOP,
+                        margins: { top: 0, right: 160, bottom: 0, left: 0 },
+                        borders: { top: noBorder, bottom: noBorder, left: noBorder, right: noBorder },
+                        children: [new Paragraph({ alignment: AlignmentType.CENTER, children: photoChildren })]
+                    }),
+                    new TableCell({
+                        verticalAlign: VerticalAlign.CENTER,
+                        margins: { top: 0, right: 0, bottom: 0, left: 80 },
+                        borders: { top: noBorder, bottom: noBorder, left: noBorder, right: noBorder },
+                        children: identityParagraphs
+                    })
+                ]
+            })]
+        });
+    }
+
+    async function loadProfileImageBytes(source) {
+        const value = String(source || '').trim();
+        if (!value) return null;
+
+        try {
+            if (isDefaultProfileImageSource(value)) {
+                const bundledSource = getBundledPdfImageDataUrl(value);
+                if (!bundledSource) throw new Error('Bundled profile image data is unavailable.');
+                return decodeDataUrlBytes(bundledSource);
+            }
+
+            if (/^data:image\//i.test(value)) {
+                return decodeDataUrlBytes(value);
+            }
+
+            const response = await fetch(value);
+            if (!response.ok) return null;
+            return new Uint8Array(await response.arrayBuffer());
+        } catch (error) {
+            console.warn('Profile photo could not be added to DOCX:', error);
+            return null;
+        }
+    }
+
+    function decodeDataUrlBytes(dataUrl) {
+        const value = String(dataUrl || '');
+        const separatorIndex = value.indexOf(',');
+        if (!value.startsWith('data:') || separatorIndex < 0) return null;
+
+        const metadata = value.slice(5, separatorIndex);
+        const payload = value.slice(separatorIndex + 1);
+        const decoded = /;base64(?:;|$)/i.test(metadata)
+            ? atob(payload)
+            : decodeURIComponent(payload);
+        const bytes = new Uint8Array(decoded.length);
+        for (let index = 0; index < decoded.length; index += 1) {
+            bytes[index] = decoded.charCodeAt(index);
+        }
+        return bytes;
+    }
+
     function buildDocxContactLine() {
         return [
             state.personal.email,
+            state.personal.phone,
             state.personal.location,
             formatVisibleUrl(state.personal.linkedin),
             formatVisibleUrl(state.personal.github),
@@ -4118,19 +4667,25 @@
     }
 
     async function drawPdfImages(context) {
-        context.paper.querySelectorAll('img').forEach(image => {
-            if (shouldSkipPdfElement(image) || !image.complete || !image.naturalWidth) return;
+        for (const image of context.paper.querySelectorAll('img')) {
+            if (shouldSkipPdfElement(image) || !image.complete || !image.naturalWidth) continue;
             const rect = image.getBoundingClientRect();
             const mapped = mapPdfRect(context, rect);
-            if (!mapped || mapped.width <= 0 || mapped.height <= 0) return;
+            if (!mapped || mapped.width <= 0 || mapped.height <= 0) continue;
 
             try {
+                const dataUrl = await imageElementToPdfDataUrl(image, rect);
+                if (!dataUrl) throw new Error('Image data is unavailable');
                 context.pdf.setPage(mapped.pageIndex + 1);
-                context.pdf.addImage(image, 'JPEG', mapped.x, mapped.y, mapped.width, mapped.height);
+                const format = /^data:image\/png/i.test(dataUrl) ? 'PNG' : 'JPEG';
+                context.pdf.addImage(dataUrl, format, mapped.x, mapped.y, mapped.width, mapped.height);
             } catch (error) {
+                if (image.classList.contains('resume-profile-photo')) {
+                    throw new Error('The profile photo could not be embedded in the PDF', { cause: error });
+                }
                 console.warn('Skipped PDF image export:', error);
             }
-        });
+        }
 
         for (const svg of context.paper.querySelectorAll('svg')) {
             if (shouldSkipPdfElement(svg)) continue;
@@ -4147,6 +4702,86 @@
                 console.warn('Skipped PDF SVG export:', error);
             }
         }
+    }
+
+    async function imageElementToPdfDataUrl(image, rect = image.getBoundingClientRect()) {
+        const source = image.currentSrc || image.src || '';
+        const bundledSource = getBundledPdfImageDataUrl(source);
+        if (isDefaultProfileImageSource(source)) {
+            if (!bundledSource) throw new Error('Bundled profile image data is unavailable');
+            return bundledSource;
+        }
+
+        const outputScale = 3;
+        const outputWidth = Math.max(1, Math.round(rect.width * outputScale));
+        const outputHeight = Math.max(1, Math.round(rect.height * outputScale));
+        const canvas = document.createElement('canvas');
+        canvas.width = outputWidth;
+        canvas.height = outputHeight;
+        const context = canvas.getContext('2d', { alpha: false });
+        if (!context) return '';
+
+        context.fillStyle = '#ffffff';
+        context.fillRect(0, 0, outputWidth, outputHeight);
+
+        const sourceWidth = Math.max(1, image.naturalWidth);
+        const sourceHeight = Math.max(1, image.naturalHeight);
+        const sourceRatio = sourceWidth / sourceHeight;
+        const outputRatio = outputWidth / outputHeight;
+        let cropX = 0;
+        let cropY = 0;
+        let cropWidth = sourceWidth;
+        let cropHeight = sourceHeight;
+
+        if (getComputedStyle(image).objectFit === 'cover') {
+            if (sourceRatio > outputRatio) {
+                cropWidth = sourceHeight * outputRatio;
+                cropX = (sourceWidth - cropWidth) / 2;
+            } else if (sourceRatio < outputRatio) {
+                cropHeight = sourceWidth / outputRatio;
+                cropY = (sourceHeight - cropHeight) / 2;
+            }
+        }
+
+        try {
+            context.drawImage(image, cropX, cropY, cropWidth, cropHeight, 0, 0, outputWidth, outputHeight);
+            return canvas.toDataURL('image/jpeg', 0.92);
+        } catch (canvasError) {
+            if (/^data:image\//i.test(source)) return source;
+            if (bundledSource) return bundledSource;
+
+            try {
+                const response = await fetch(source);
+                if (!response.ok) throw new Error(`Image request failed with ${response.status}`);
+                return await blobToDataUrl(await response.blob());
+            } catch (fetchError) {
+                throw new Error('The browser blocked access to the local image data', {
+                    cause: fetchError || canvasError
+                });
+            }
+        }
+    }
+
+    function getBundledPdfImageDataUrl(source) {
+        if (!isDefaultProfileImageSource(source)) return '';
+        return String(window.RESUME_DEFAULT_PROFILE_DATA_URL || '');
+    }
+
+    function isDefaultProfileImageSource(source) {
+        const normalized = String(source || '')
+            .split(/[?#]/)[0]
+            .replace(/\\/g, '/')
+            .toLowerCase();
+        return normalized.endsWith('/public/profile.png') || normalized === 'public/profile.png';
+    }
+
+    function blobToDataUrl(blob) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.addEventListener('load', () => resolve(String(reader.result || '')), { once: true });
+            reader.addEventListener('error', () => reject(reader.error || new Error('Could not read image data')), { once: true });
+            reader.readAsDataURL(blob);
+        });
     }
 
     async function svgElementToPngDataUrl(svg) {
@@ -4476,35 +5111,6 @@
         ].join(',')));
     }
 
-    function openPrintDialog() {
-        return new Promise(resolve => {
-            let resolved = false;
-            const finish = () => {
-                if (resolved) return;
-                resolved = true;
-                window.removeEventListener('afterprint', finish);
-                resolve();
-            };
-
-            window.addEventListener('afterprint', finish, { once: true });
-            window.setTimeout(finish, 1500);
-            window.print();
-        });
-    }
-
-    function applyPrintPageStyle() {
-        removePrintPageStyle();
-
-        const style = document.createElement('style');
-        style.id = 'resumePrintPageStyle';
-        style.textContent = '@media print { @page { size: A4; margin: 0; } }';
-        document.head.appendChild(style);
-    }
-
-    function removePrintPageStyle() {
-        document.getElementById('resumePrintPageStyle')?.remove();
-    }
-
     function renderConstantInput(label, field, value) {
         return `
             <label class="constant-field ${field === 'profileImage' || field === 'website' ? 'field-wide' : ''}">
@@ -4526,6 +5132,7 @@
                     ${renderInput('Name', 'personal', 'name', state.personal.name)}
                     ${renderInput('Title', 'personal', 'title', state.personal.title)}
                     ${renderInput('Email', 'personal', 'email', state.personal.email)}
+                    ${renderInput('Phone', 'personal', 'phone', state.personal.phone)}
                     ${renderInput('Location', 'personal', 'location', state.personal.location)}
                     ${renderInput('LinkedIn', 'personal', 'linkedin', state.personal.linkedin)}
                     ${renderInput('GitHub', 'personal', 'github', state.personal.github)}
@@ -4881,6 +5488,7 @@
         const firstPageContentHeight = Math.max(120, pageHeight - bottomPadding);
         const continuationPageHeight = Math.max(120, pageHeight - continuationTopPadding - bottomPadding);
         const totalHeight = Math.max(paper.scrollHeight, paper.offsetHeight);
+        if (totalHeight <= pageHeight + 1) return [];
         const minProgress = 120;
         const guard = 12;
         const textLineRanges = getTextLinePageBreakRanges(paper, 1, totalHeight, guard);
@@ -5052,15 +5660,17 @@
 
     function renderResumeHeader() {
         const contact = [
-            { key: 'email', icon: 'mail', value: state.personal.email },
             { key: 'location', icon: 'map-pin', value: state.personal.location },
+            { key: 'phone', icon: 'phone', value: state.personal.phone },
+            { key: 'email', icon: 'mail', value: state.personal.email },
             { key: 'linkedin', icon: 'linkedin', value: formatVisibleUrl(state.personal.linkedin) },
             { key: 'github', icon: 'github', value: formatVisibleUrl(state.personal.github) },
             { key: 'website', icon: 'globe', value: formatVisibleUrl(state.personal.website) }
         ].filter(item => item.value);
         const contactLabels = {
             email: 'Email',
-            location: 'Location',
+            phone: 'Phone',
+            location: 'Address',
             linkedin: 'LinkedIn',
             github: 'GitHub',
             website: 'Website'
@@ -5069,9 +5679,17 @@
         return `
             <div class="resume-header-block inline-format-target">
                 <header class="resume-header" data-align="${escapeAttr(state.settings.headerAlign)}" data-design="${escapeAttr(state.settings.headerDesign)}" data-pattern="${escapeAttr(state.settings.headerPattern)}" data-contact-layout="${escapeAttr(state.settings.contactLayout || 'stacked')}" data-profile-placement="${escapeAttr(state.settings.profilePhotoPlacement)}" data-profile-shape="${escapeAttr(state.settings.profilePhotoShape)}">
-                    ${state.settings.showProfilePhoto && state.personal.profileImage ? `
+                    ${state.personal.profileImage && (state.settings.showProfilePhoto || templateRequiresProfilePhoto()) ? `
                         <img class="resume-profile-photo" src="${escapeAttr(state.personal.profileImage)}" alt="${escapeAttr(state.personal.name)} profile photo">
-                    ` : ''}
+                    ` : (templateRequiresProfilePhoto() ? `
+                        <div class="resume-profile-photo resume-profile-placeholder" role="img" aria-label="Profile photo placeholder">
+                            <svg viewBox="0 0 64 64" aria-hidden="true">
+                                <circle cx="32" cy="23" r="12"></circle>
+                                <path d="M12 57c1-14 9-21 20-21s19 7 20 21"></path>
+                            </svg>
+                            <span>Photo</span>
+                        </div>
+                    ` : '')}
                     <div class="resume-identity">
                         <div class="inline-format-target">
                             <h1 class="resume-name text-style-target" contenteditable="true" data-placeholder="Name" data-edit-kind="personal" data-field="name" ${renderTextStyleAttributes('name', 'personal.name')}>${escapeHtml(state.personal.name)}</h1>
@@ -5164,7 +5782,7 @@
                         ${groups.map(group => `
                             <div class="skill-group">
                                 <div class="inline-format-target">
-                                    <strong class="skill-group-title text-style-target" contenteditable="true" data-placeholder="Skill group" data-edit-kind="skill" data-group="${escapeAttr(group.id)}" data-field="name" ${renderTextStyleAttributes('skillHeading', `skill.${group.id}.name`)}>${escapeHtml(group.name)}</strong>
+                                    <strong class="skill-group-title text-style-target" contenteditable="true" data-placeholder="Skill group" data-edit-kind="skill" data-group="${escapeAttr(group.id)}" data-field="name" ${renderTextStyleAttributes('skillHeading', `skill.${group.id}.name`)}>${escapeHtml(group.name)}${state.templatePreset === 'ats-friendly-profile' ? ':&nbsp;' : ''}</strong>
                                     ${renderTextStyleControl('skillHeading', `skill.${group.id}.name`, 'Skill group', 'badge')}
                                 </div>
                                 <div class="inline-format-target">
@@ -5472,6 +6090,7 @@
         const url = cleanUrl(item.url || '');
         const metaField = getItemMetaField(type, item);
         const metaValue = getItemMetaValue(type, item);
+        const useInlineMeta = state.templatePreset === 'ats-friendly-profile' && Boolean(metaValue);
         const credentialId = type === 'certifications' ? normalizeInlineText(item.credentialId || '') : '';
         return `
             <article class="resume-item ${item.status ? 'has-status' : ''}" data-resume-entry="${escapeAttr(item.id)}" data-entry-section="${escapeAttr(type)}" data-placement="${escapeAttr(normalizePlacement(item.placement || 'auto'))}" ${renderItemJsonStyle(item)}>
@@ -5480,7 +6099,7 @@
                 </button>
                 <div class="resume-item-heading">
                     <span class="inline-format-target">
-                        <strong class="resume-item-title text-style-target" contenteditable="true" data-placeholder="Entry header" data-edit-kind="item" data-section="${escapeAttr(type)}" data-item="${escapeAttr(item.id)}" data-field="${escapeAttr(titleField)}" ${renderTextStyleAttributes('itemHeading', `item.${type}.${item.id}.${titleField}`)}>${escapeHtml(title)}</strong>
+                        <strong class="resume-item-title text-style-target" contenteditable="true" data-placeholder="Entry header" data-edit-kind="item" data-section="${escapeAttr(type)}" data-item="${escapeAttr(item.id)}" data-field="${escapeAttr(titleField)}" ${renderTextStyleAttributes('itemHeading', `item.${type}.${item.id}.${titleField}`)}>${escapeHtml(title)}</strong>${useInlineMeta ? `<span class="resume-item-inline-meta">, <span class="text-style-target" contenteditable="true" data-placeholder="Details" data-edit-kind="item" data-section="${escapeAttr(type)}" data-item="${escapeAttr(item.id)}" data-field="${escapeAttr(metaField)}" ${renderTextStyleAttributes('meta', `item.${type}.${item.id}.${metaField}`)}>${escapeHtml(metaValue)}</span></span>` : ''}
                         ${renderTextStyleControl('itemHeading', `item.${type}.${item.id}.${titleField}`, 'Entry header', 'type')}
                     </span>
                     <span class="resume-item-date-group">
@@ -5494,7 +6113,7 @@
                         </span>
                     </span>
                 </div>
-                ${metaValue ? `
+                ${metaValue && !useInlineMeta ? `
                     <div class="resume-item-meta inline-format-target">
                         <span class="text-style-target" contenteditable="true" data-placeholder="Details" data-edit-kind="item" data-section="${escapeAttr(type)}" data-item="${escapeAttr(item.id)}" data-field="${escapeAttr(metaField)}" ${renderTextStyleAttributes('meta', `item.${type}.${item.id}.${metaField}`)}>${escapeHtml(metaValue)}</span>
                         ${renderTextStyleControl('meta', `item.${type}.${item.id}.${metaField}`, 'Details', 'text')}
@@ -5858,6 +6477,11 @@
         return TEMPLATE_PRESETS.find(preset => preset.id === presetId) || TEMPLATE_PRESETS[0] || null;
     }
 
+    function templateRequiresProfilePhoto(targetState = state) {
+        const preset = getActiveTemplatePreset(targetState);
+        return Boolean(preset && preset.profilePhotoRequired);
+    }
+
     function templateControlsSectionColumns(targetState = state) {
         const preset = getActiveTemplatePreset(targetState);
         return Boolean(preset && preset.design && preset.design.sectionColumns);
@@ -5974,7 +6598,9 @@
                 if (element.dataset.field === 'skills') {
                     group.skills = text.split(',').map(part => part.trim()).filter(Boolean);
                 } else {
-                    group[element.dataset.field] = text;
+                    group[element.dataset.field] = state.templatePreset === 'ats-friendly-profile'
+                        ? text.replace(/:\s*$/, '')
+                        : text;
                 }
             }
         }
@@ -6571,7 +7197,10 @@
             }
         }
         normalized.personal.profileImage = String(normalized.personal.profileImage || '').trim();
-        normalized.settings.showProfilePhoto = Boolean(normalized.settings.showProfilePhoto && normalized.personal.profileImage);
+        normalized.settings.showProfilePhoto = Boolean(
+            templateRequiresProfilePhoto(normalized)
+            || (normalized.settings.showProfilePhoto && normalized.personal.profileImage)
+        );
         normalizeResumeContentShape(normalized);
         return normalized;
     }
@@ -6779,6 +7408,7 @@
 
         localStorage.setItem(getStorageKey(builderMode), snapshot);
         persistResumeJsonDraft();
+        if (options.syncSaved !== false) syncActiveSavedResume();
         lastStateSnapshot = snapshot;
         syncUndoRedo();
         updateSyntaxTextarea();
