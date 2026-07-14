@@ -227,21 +227,42 @@
     // EXPORT DATA
     // ============================================
     function exportJourneyData() {
-        const data = {
+        return JSON.stringify({
             journey: JOURNEY_DATA,
             cv: typeof CV_DATA !== 'undefined' ? CV_DATA : null
-        };
-        const json = JSON.stringify(data, null, 2);
-        const blob = new Blob([json], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
+        }, null, 2);
+    }
 
-        link.href = url;
-        link.download = 'ahmad-yaseen-journey-data.json';
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        URL.revokeObjectURL(url);
+    function showDataExport() {
+        const exportSection = document.getElementById('data-export');
+        const output = document.getElementById('journeyJsonOutput');
+        const downloadLink = document.getElementById('downloadJourneyJson');
+
+        if (!exportSection || !output || !downloadLink) return;
+
+        const json = exportJourneyData();
+        output.value = json;
+        downloadLink.href = `data:application/json;charset=utf-8,${encodeURIComponent(json)}`;
+        exportSection.hidden = false;
+        exportSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    async function copyJourneyData() {
+        const output = document.getElementById('journeyJsonOutput');
+        const copyButton = document.getElementById('copyJourneyJson');
+
+        if (!output || !copyButton) return;
+
+        try {
+            await navigator.clipboard.writeText(output.value);
+            copyButton.textContent = 'Copied';
+            setTimeout(() => {
+                copyButton.textContent = 'Copy';
+            }, 1600);
+        } catch (error) {
+            output.select();
+            document.execCommand('copy');
+        }
     }
 
     function setupDataExport() {
@@ -251,8 +272,14 @@
         ].filter(Boolean);
 
         exportButtons.forEach(button => {
-            button.addEventListener('click', exportJourneyData);
+            button.addEventListener('click', showDataExport);
         });
+
+        const copyButton = document.getElementById('copyJourneyJson');
+
+        if (copyButton) {
+            copyButton.addEventListener('click', copyJourneyData);
+        }
     }
 
     // ============================================

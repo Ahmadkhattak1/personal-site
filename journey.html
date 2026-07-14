@@ -75,6 +75,18 @@
 
         <!-- Main Content -->
         <main class="journey-content">
+            <!-- Data Export Section -->
+            <section id="data-export" class="journey-section data-export-section" hidden>
+                <div class="data-export-header">
+                    <h2 class="journey-section-title">JSON Export</h2>
+                    <div class="data-export-actions">
+                        <a href="#" class="data-export-action cursor-generic-button" id="downloadJourneyJson" download="ahmad-yaseen-journey-data.json">Download</a>
+                        <button type="button" class="data-export-action cursor-generic-button" id="copyJourneyJson">Copy</button>
+                    </div>
+                </div>
+                <textarea class="data-export-output" id="journeyJsonOutput" readonly></textarea>
+            </section>
+
             <!-- About Section -->
             <section id="about" class="journey-section">
                 <h2 class="journey-section-title">About Me</h2>
