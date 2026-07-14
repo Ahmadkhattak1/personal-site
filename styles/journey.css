@@ -81,6 +81,27 @@
     color: var(--accent-hover);
 }
 
+.journey-export-button {
+    width: 100%;
+    min-height: 42px;
+    margin-bottom: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: background-color var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.journey-export-button:hover {
+    background: var(--bg-primary);
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
 .journey-sidebar-nav {
     display: flex;
     flex-direction: column;
@@ -491,6 +512,13 @@
     right: var(--space-md);
     bottom: var(--space-md);
     transition: all var(--transition-fast);
+}
+
+.mobile-tab-button {
+    border: 0;
+    background: transparent;
+    font: inherit;
+    white-space: nowrap;
 }
 
 .cert-item:hover .cert-item-arrow {

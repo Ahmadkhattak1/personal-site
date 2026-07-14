@@ -224,6 +224,38 @@
     }
 
     // ============================================
+    // EXPORT DATA
+    // ============================================
+    function exportJourneyData() {
+        const data = {
+            journey: JOURNEY_DATA,
+            cv: typeof CV_DATA !== 'undefined' ? CV_DATA : null
+        };
+        const json = JSON.stringify(data, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+
+        link.href = url;
+        link.download = 'ahmad-yaseen-journey-data.json';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+    }
+
+    function setupDataExport() {
+        const exportButtons = [
+            document.getElementById('exportJourneyData'),
+            document.getElementById('exportJourneyDataMobile')
+        ].filter(Boolean);
+
+        exportButtons.forEach(button => {
+            button.addEventListener('click', exportJourneyData);
+        });
+    }
+
+    // ============================================
     // SIDEBAR ACTIVE STATE ON SCROLL
     // ============================================
     function setupScrollSpy() {
@@ -287,13 +319,18 @@
 
         allNavLinks.forEach(link => {
             link.addEventListener('click', (e) => {
+                const targetId = link.getAttribute('href');
+
+                if (!targetId) {
+                    return;
+                }
+
                 // Skip if it's the home link
-                if (link.getAttribute('href') === '/') {
+                if (targetId === '/') {
                     return;
                 }
 
                 e.preventDefault();
-                const targetId = link.getAttribute('href');
                 const targetSection = document.querySelector(targetId);
 
                 if (targetSection) {
@@ -325,6 +362,7 @@
         renderGitHub();
 
         // Setup interactions
+        setupDataExport();
         setupScrollSpy();
         setupSmoothScroll();
     }

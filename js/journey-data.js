@@ -159,32 +159,11 @@ const JOURNEY_DATA = {
     // ============================================
     experience: [
         {
-            role: "Cloud Engineering Direction",
-            company: "ClawPilot",
-            companyUrl: "https://clawpilot.app",
-            date: "2026 - Present",
-            description: "Merged the Hermes Agent hosting work into ClawPilot and shifted the product toward cloud-native operations: provisioning user machines, managing agent runtimes, deploying services, and keeping production infrastructure available."
-        },
-        {
-            role: "Founder & Full-Stack SaaS Builder",
-            company: "Stumbnail",
-            companyUrl: "https://stumbnail.com",
-            date: "2024 - Present",
-            description: "Built an AI-powered YouTube thumbnail SaaS from scratch, covering the product, AI image workflow, canvas editor, dashboard, authentication, deployment, and the work required to serve paying users."
-        },
-        {
-            role: "Founder & Full-Stack SaaS Builder",
-            company: "ClawPilot",
-            companyUrl: "https://clawpilot.app",
-            date: "2025 - Present",
-            description: "Built ClawPilot as a SaaS product around managed AI assistant workflows, then expanded the work into cloud setup, hosting, infrastructure decisions, security concerns, uptime, and production operations."
-        },
-        {
-            role: "Developer",
-            company: "Pixelar",
-            companyUrl: "https://pixelar.dev",
-            date: "2025 - 2026",
-            description: "Leading R&D on generative models for 2D animation and sprite synthesis. Building tools that help game developers create assets faster."
+            role: "Freelance Video Editor",
+            company: "Fiverr",
+            companyUrl: "https://www.fiverr.com/",
+            date: "2021 - 2023",
+            description: "Worked with clients as a freelance video editor, editing and delivering video content through Fiverr."
         },
         {
             role: "Incubatee",
@@ -215,11 +194,7 @@ const JOURNEY_DATA = {
         frontend: ["React", "Next.js", "HTML/CSS", "Tailwind CSS", "JavaScript", "TypeScript"],
         backend: ["Node.js", "Express", "Python", "MongoDB", "PostgreSQL", "REST APIs"],
         cloud: ["AWS Cloud Fundamentals", "DigitalOcean Droplets", "Compute Provisioning", "Virtual Machine Operations", "Application Hosting", "Deployment Workflows"],
-        operations: ["Monitoring Fundamentals", "Availability & Uptime Operations", "Runtime Management", "Backup & Recovery Awareness"],
-        security: ["Cloud Security Fundamentals", "Network Access Basics", "Identity & Access Fundamentals", "Infrastructure Security Basics"],
-        ai: ["AI API Integration", "LLM APIs (OpenAI, Claude)", "Image Generation Pipelines", "Prompt Engineering"],
-        data: ["Numpy", "Pandas"],
-        platforms: ["Vercel", "Firebase", "Supabase", "Git", "GitHub"]
+        operations: ["Monitoring Fundamentals", "Availability & Uptime Operations", "Runtime Management", "Backup & Recovery Awareness"]
     },
 
     // ============================================
@@ -325,38 +300,13 @@ const CV_DATA = {
     ],
     experience: [
         {
-            role: "Founder & Cloud / Full-Stack Engineer",
-            company: "ClawPilot",
-            companyUrl: "https://clawpilot.app",
-            date: "2025 - Present",
+            role: "Freelance Video Editor",
+            company: "Fiverr",
+            companyUrl: "https://www.fiverr.com/",
+            date: "2021 - 2023",
             bullets: [
-                "Built and operate a cloud-native SaaS platform for managed OpenClaw and Hermes Agent workflows.",
-                "Provision user compute environments automatically and manage virtual machines that run customer agent workloads.",
-                "Operate agent runtimes, monitoring routines, and production service availability for users who need persistent hosted access.",
-                "Own application deployment, infrastructure decisions, backend services, network access, security considerations, and operational follow-through for the product.",
-                "Merged the earlier Hermes Agent hosting work into ClawPilot so the hosting capability is part of the main platform rather than a standalone app."
-            ]
-        },
-        {
-            role: "Founder & Full-Stack SaaS Engineer",
-            company: "Stumbnail",
-            companyUrl: "https://stumbnail.com",
-            date: "2024 - Present",
-            bullets: [
-                "Built an AI-powered YouTube thumbnail SaaS from product concept through launch and paid user operation.",
-                "Developed the AI image generation workflow, real-time canvas editor, user dashboard, authentication, storage, and supporting backend services.",
-                "Deployed and maintained the application stack while iterating on a product with recurring revenue and real customer usage.",
-                "Worked across frontend, backend, data storage, third-party AI APIs, and production delivery as the solo builder."
-            ]
-        },
-        {
-            role: "Developer",
-            company: "Pixelar",
-            companyUrl: "https://pixelar.dev",
-            date: "2025 - 2026",
-            bullets: [
-                "Led R&D work on generative models for 2D animation and sprite synthesis.",
-                "Built tooling intended to reduce asset creation friction for game developers."
+                "Worked with clients as a freelance video editor through Fiverr.",
+                "Edited and delivered video content based on client requirements, revisions, and timelines."
             ]
         },
         {
@@ -419,11 +369,8 @@ const CV_DATA = {
     skills: {
         cloud: ["AWS Cloud Fundamentals", "DigitalOcean Droplets", "Compute Provisioning", "Virtual Machine Operations", "Application Hosting", "Deployment Workflows"],
         operations: ["Monitoring Fundamentals", "Availability & Uptime Operations", "Runtime Management", "Backup & Recovery Awareness"],
-        security: ["Cloud Security Fundamentals", "Network Access Basics", "Identity & Access Fundamentals", "Infrastructure Security Basics"],
         frontend: ["React", "Next.js", "TypeScript", "JavaScript", "HTML/CSS", "Tailwind CSS"],
-        backend: ["Node.js", "Express", "Python", "REST APIs", "PostgreSQL", "MongoDB"],
-        ai: ["LLM API Integration", "Agent Runtimes", "AI API Integration", "Image Generation Pipelines", "Prompt Engineering"],
-        platforms: ["Supabase", "Firebase", "Vercel", "Git", "GitHub"]
+        backend: ["Node.js", "Express", "Python", "REST APIs", "PostgreSQL", "MongoDB"]
     },
     education: [
         {
