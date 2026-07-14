@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Geist:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&family=Syne:wght@600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="styles/main.css">
-    <link rel="stylesheet" href="styles/resume-builder.css?v=ats-profile-template-9">
+    <link rel="stylesheet" href="styles/resume-builder.css?v=ats-profile-template-11">
 </head>
 
 <body class="resume-builder-page" data-workflow-step="data">
@@ -157,13 +157,12 @@
                             <i data-lucide="clipboard-list" aria-hidden="true"></i>
                             Copy prompt
                         </button>
-                        <button type="button" class="tool-button tool-button-secondary compact-action" id="copyCurrentResumeJson">
-                            <i data-lucide="copy" aria-hidden="true"></i>
-                            Copy JSON
-                        </button>
                     </div>
-                    <label class="field-wide" for="resumeSyntaxText">
+                    <label class="field-wide syntax-field" for="resumeSyntaxText">
                         <span class="field-label">JSON</span>
+                        <button type="button" class="syntax-copy-json-button" id="copyCurrentResumeJson" aria-label="Copy JSON" title="Copy JSON">
+                            <i data-lucide="copy" aria-hidden="true"></i>
+                        </button>
                         <textarea class="field-textarea syntax-textarea" id="resumeSyntaxText" spellcheck="false" autocomplete="off"></textarea>
                     </label>
                     <textarea class="field-textarea llm-prompt-textarea" id="jsonResumePromptText" readonly hidden></textarea>
@@ -298,7 +297,7 @@
     <script src="js/journey-data.js"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
     <script src="js/resume-default-profile-data.js?v=2"></script>
-    <script src="js/resume-builder.js?v=ats-profile-template-13"></script>
+    <script src="js/resume-builder.js?v=ats-profile-template-15"></script>
 </body>
 
 </html>

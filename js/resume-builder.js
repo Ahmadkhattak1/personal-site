@@ -723,10 +723,28 @@
                 return;
             }
 
+            if (event.key === 'Escape') {
+                hideSectionContextMenu();
+            }
+
             if (event.key === 'Escape' && elements.colorModal && !elements.colorModal.hidden) {
                 closeColorModal();
             }
         });
+
+        document.addEventListener('click', event => {
+            const action = event.target.closest('[data-section-context-action]');
+            if (action) {
+                handleSectionContextAction(action);
+                return;
+            }
+
+            if (!event.target.closest('.section-context-menu')) {
+                hideSectionContextMenu();
+            }
+        });
+
+        window.addEventListener('scroll', hideSectionContextMenu, true);
 
         elements.editorSections.addEventListener('input', event => {
             handleEditorInput(event.target);
@@ -786,6 +804,14 @@
             const editable = event.target.closest('[data-edit-kind]');
             if (!editable) return;
             handlePreviewPaste(event, editable);
+        });
+
+        elements.resumePreview.addEventListener('contextmenu', event => {
+            const sectionEl = event.target.closest('[data-resume-section]');
+            if (!sectionEl) return;
+
+            event.preventDefault();
+            showSectionContextMenu(getJsonTargetFromPreviewEvent(event, sectionEl), event.clientX, event.clientY);
         });
 
         elements.resumePreview.addEventListener('focusin', event => {
@@ -1466,7 +1492,8 @@
             return true;
         } catch (error) {
             console.warn('Resume JSON tab sync failed:', error);
-            setSyntaxStatus('Fix JSON before opening the wizard.', true);
+            indicateJsonError(error);
+            setSyntaxStatus(error.message || 'Fix JSON before opening the wizard.', true);
             showToast('Fix JSON first');
             return false;
         }
@@ -2981,6 +3008,281 @@
         elements.resumeSyntaxText.dataset.dirty = 'false';
     }
 
+    function showResumeTargetInJson(target) {
+        const section = target && state.sections[target.sectionId];
+        if (!section || !elements.resumeSyntaxText) return;
+
+        workflowStep = 'data';
+        localStorage.setItem(WORKFLOW_KEY, workflowStep);
+        renderAll();
+
+        window.requestAnimationFrame(() => {
+            updateSyntaxTextarea({ force: true });
+            const range = findResumeJsonTargetRange(elements.resumeSyntaxText.value, target);
+
+            if (!range) {
+                elements.resumeSyntaxText.focus({ preventScroll: true });
+                showToast('JSON target not found');
+                return;
+            }
+
+            elements.resumeSyntaxText.focus({ preventScroll: true });
+            elements.resumeSyntaxText.setSelectionRange(range.start, range.end);
+            scrollTextareaSelectionIntoView(elements.resumeSyntaxText, range.start);
+            setSyntaxStatus(`Showing ${getJsonTargetLabel(target, section)} JSON`);
+            showToast(`Showing ${getJsonTargetLabel(target, section)} JSON`);
+        });
+    }
+
+    function getJsonTargetLabel(target, section) {
+        if (!target || target.type === 'section') return section.title;
+        if (target.type === 'item') return 'entry';
+        if (target.type === 'field') return target.field || 'field';
+        if (target.type === 'bullet') return 'bullet';
+        if (target.type === 'skill-group') return 'skill group';
+        if (target.type === 'skill-field') return target.field || 'skills';
+        return section.title;
+    }
+
+    function findResumeJsonTargetRange(json, target) {
+        if (!target || !target.sectionId) return null;
+
+        const sectionRange = findSectionJsonRange(json, target.sectionId);
+        if (!sectionRange || target.type === 'section') return sectionRange;
+
+        if (target.type === 'field') {
+            return findPropertyRange(json, target.field, sectionRange.start, sectionRange.end) || sectionRange;
+        }
+
+        if (target.type === 'item' || target.type === 'bullet') {
+            const itemRange = findObjectByIdRange(json, target.itemId, sectionRange.start, sectionRange.end);
+            if (!itemRange || target.type === 'item') return itemRange || sectionRange;
+
+            return findArrayItemRange(json, 'bullets', Number(target.index), itemRange.start, itemRange.end) || itemRange;
+        }
+
+        if (target.type === 'item-field') {
+            const itemRange = findObjectByIdRange(json, target.itemId, sectionRange.start, sectionRange.end);
+            if (!itemRange) return sectionRange;
+
+            return findPropertyRange(json, target.field, itemRange.start, itemRange.end) || itemRange;
+        }
+
+        if (target.type === 'skill-group' || target.type === 'skill-field') {
+            const groupRange = findObjectByIdRange(json, target.groupId, sectionRange.start, sectionRange.end);
+            if (!groupRange || target.type === 'skill-group') return groupRange || sectionRange;
+
+            return findPropertyRange(json, target.field, groupRange.start, groupRange.end) || groupRange;
+        }
+
+        return sectionRange;
+    }
+
+    function findSectionJsonRange(json, sectionId) {
+        const sectionsIndex = json.indexOf('"sections"');
+        if (sectionsIndex < 0) return null;
+
+        const sectionKeyIndex = json.indexOf(`${JSON.stringify(sectionId)}:`, sectionsIndex);
+        if (sectionKeyIndex < 0) return null;
+
+        const objectStart = json.indexOf('{', sectionKeyIndex);
+        if (objectStart < 0) return null;
+
+        const objectEnd = findJsonObjectEnd(json, objectStart);
+        if (objectEnd < 0) return null;
+
+        let end = objectEnd + 1;
+        if (json[end] === ',') end += 1;
+
+        return {
+            start: sectionKeyIndex,
+            end
+        };
+    }
+
+    function findObjectByIdRange(json, id, start, end) {
+        if (!id) return null;
+
+        const idNeedle = `"id": ${JSON.stringify(id)}`;
+        let idIndex = json.indexOf(idNeedle, start);
+
+        while (idIndex >= 0 && idIndex < end) {
+            const objectStart = json.lastIndexOf('{', idIndex);
+            if (objectStart < start) return null;
+
+            const objectEnd = findJsonObjectEnd(json, objectStart);
+            if (objectEnd > idIndex && objectEnd <= end) {
+                let rangeEnd = objectEnd + 1;
+                if (json[rangeEnd] === ',') rangeEnd += 1;
+
+                return {
+                    start: objectStart,
+                    end: rangeEnd
+                };
+            }
+
+            idIndex = json.indexOf(idNeedle, idIndex + idNeedle.length);
+        }
+
+        return null;
+    }
+
+    function findPropertyRange(json, property, start, end) {
+        if (!property) return null;
+
+        const propertyNeedle = `${JSON.stringify(property)}:`;
+        const propertyIndex = json.indexOf(propertyNeedle, start);
+        if (propertyIndex < 0 || propertyIndex >= end) return null;
+
+        const valueStart = propertyIndex + propertyNeedle.length;
+        const valueEnd = findJsonValueEnd(json, valueStart, end);
+        if (valueEnd < 0) return null;
+
+        let rangeEnd = valueEnd;
+        if (json[rangeEnd] === ',') rangeEnd += 1;
+
+        return {
+            start: propertyIndex,
+            end: rangeEnd
+        };
+    }
+
+    function findArrayItemRange(json, property, itemIndex, start, end) {
+        const propertyRange = findPropertyRange(json, property, start, end);
+        if (!propertyRange || !Number.isFinite(itemIndex)) return null;
+
+        const arrayStart = json.indexOf('[', propertyRange.start);
+        if (arrayStart < 0 || arrayStart >= propertyRange.end) return propertyRange;
+
+        let currentIndex = 0;
+        let cursor = arrayStart + 1;
+
+        while (cursor < propertyRange.end) {
+            while (cursor < propertyRange.end && /[\s,]/.test(json[cursor])) cursor += 1;
+            if (json[cursor] === ']') break;
+
+            const valueEnd = findJsonValueEnd(json, cursor, propertyRange.end);
+            if (valueEnd < 0) break;
+
+            let rangeEnd = valueEnd;
+            if (json[rangeEnd] === ',') rangeEnd += 1;
+
+            if (currentIndex === itemIndex) {
+                return {
+                    start: cursor,
+                    end: rangeEnd
+                };
+            }
+
+            currentIndex += 1;
+            cursor = rangeEnd;
+        }
+
+        return propertyRange;
+    }
+
+    function findJsonValueEnd(json, valueStart, limit = json.length) {
+        let index = valueStart;
+        while (index < limit && /\s/.test(json[index])) index += 1;
+
+        if (json[index] === '{') return findJsonObjectEnd(json, index) + 1;
+        if (json[index] === '[') return findJsonArrayEnd(json, index) + 1;
+        if (json[index] === '"') return findJsonStringEnd(json, index) + 1;
+
+        while (index < limit && !/[\n,}\]]/.test(json[index])) index += 1;
+        return index;
+    }
+
+    function findJsonObjectEnd(json, objectStart) {
+        let depth = 0;
+        let inString = false;
+        let escaped = false;
+
+        for (let index = objectStart; index < json.length; index += 1) {
+            const char = json[index];
+
+            if (inString) {
+                if (escaped) {
+                    escaped = false;
+                } else if (char === '\\') {
+                    escaped = true;
+                } else if (char === '"') {
+                    inString = false;
+                }
+                continue;
+            }
+
+            if (char === '"') {
+                inString = true;
+            } else if (char === '{') {
+                depth += 1;
+            } else if (char === '}') {
+                depth -= 1;
+                if (depth === 0) return index;
+            }
+        }
+
+        return -1;
+    }
+
+    function findJsonArrayEnd(json, arrayStart) {
+        let depth = 0;
+        let inString = false;
+        let escaped = false;
+
+        for (let index = arrayStart; index < json.length; index += 1) {
+            const char = json[index];
+
+            if (inString) {
+                if (escaped) {
+                    escaped = false;
+                } else if (char === '\\') {
+                    escaped = true;
+                } else if (char === '"') {
+                    inString = false;
+                }
+                continue;
+            }
+
+            if (char === '"') {
+                inString = true;
+            } else if (char === '[') {
+                depth += 1;
+            } else if (char === ']') {
+                depth -= 1;
+                if (depth === 0) return index;
+            }
+        }
+
+        return -1;
+    }
+
+    function findJsonStringEnd(json, stringStart) {
+        let escaped = false;
+
+        for (let index = stringStart + 1; index < json.length; index += 1) {
+            const char = json[index];
+
+            if (escaped) {
+                escaped = false;
+            } else if (char === '\\') {
+                escaped = true;
+            } else if (char === '"') {
+                return index;
+            }
+        }
+
+        return -1;
+    }
+
+    function scrollTextareaSelectionIntoView(textarea, start) {
+        const textBeforeSelection = textarea.value.slice(0, start);
+        const lineCount = textBeforeSelection.split('\n').length;
+        const lineHeight = parseFloat(window.getComputedStyle(textarea).lineHeight) || 20;
+
+        textarea.scrollTop = Math.max(0, (lineCount * lineHeight) - (textarea.clientHeight / 3));
+    }
+
     function scheduleAutoApplyResumeSyntax() {
         clearTimeout(syntaxAutoApplyTimer);
         setSyntaxStatus('Auto-applying when JSON is valid...');
@@ -3001,6 +3303,7 @@
             showToast('Resume rendered');
         } catch (error) {
             console.warn('Resume JSON render failed:', error);
+            indicateJsonError(error);
             setSyntaxStatus(error.message || 'Fix JSON before rendering.', true);
             showToast('Fix JSON before rendering');
         }
@@ -3039,7 +3342,8 @@
             return true;
         } catch (error) {
             console.warn('Resume JSON auto-apply failed:', error);
-            setSyntaxStatus('Waiting for valid JSON before applying.', true);
+            indicateJsonError(error, { focus: false });
+            setSyntaxStatus(error.message || 'Waiting for valid JSON before applying.', true);
             return false;
         }
     }
@@ -3263,10 +3567,9 @@
             'MANDATORY CONVERSATION FLOW:',
             '1. Do not draft the resume and do not output JSON in your first response.',
             '2. Your first response must contain only a clear, numbered intake questionnaire for the candidate.',
-            '3. Treat this pasted prompt as instructions, not as candidate information. Empty strings and schema field names are not answers.',
-            '4. After the candidate replies, check every intake category below. If essential facts are missing or ambiguous, ask one concise follow-up batch before drafting. Do not output JSON while essential facts are missing.',
-            '5. Accept "not applicable" for optional sections and do not ask about those sections again.',
-            '6. Produce the final JSON only after the candidate has answered the interview sufficiently. During the interview, use normal prose questions. In the final response, output JSON only.',
+            '3. After the candidate replies, check every intake category below. If essential facts are missing or ambiguous, ask one concise follow-up batch before drafting. Do not output JSON while essential facts are missing.',
+            '4. Accept "not applicable" for optional sections and do not ask about those sections again.',
+            '5. Produce the final JSON only after the candidate has answered the interview sufficiently. During the interview, use normal prose questions. In the final response, output JSON only.',
             '',
             'THE FIRST QUESTIONNAIRE MUST COVER:',
             '1. Target: desired job title, seniority, industry, location preference, resume goal, and the full job post if one exists.',
@@ -3279,14 +3582,6 @@
             '8. Research: publications, papers, thesis work, presentations, patents, research roles, methods, results, dates, collaborators or institutions, and links—or confirm not applicable.',
             '9. Certifications: name, issuer, date, expiry if relevant, credential ID, and verification URL—or confirm not applicable.',
             '10. Constraints: preferred length, details to exclude, career gaps needing careful treatment, confidentiality limits, and other relevant sections such as awards, volunteering, or memberships.',
-            '',
-            'COMPLETION GATE BEFORE WRITING JSON:',
-            '- The candidate has supplied a target role or resume goal.',
-            '- Identity and usable contact details are confirmed.',
-            '- Work history, projects, skills, and education have each been answered or explicitly marked not applicable.',
-            '- Research and certifications have each been answered or explicitly marked not applicable.',
-            '- There is enough truthful evidence to write specific content rather than generic claims.',
-            '- Missing dates, organization names, role titles, and other factual essentials have been resolved. Never guess them.',
             '',
             'FINAL RESUME REQUIREMENTS:',
             '- Use only candidate-supplied facts. Never invent employers, titles, dates, degrees, metrics, tools, links, credentials, publications, or achievements.',
@@ -3329,6 +3624,7 @@
 
         let parsed;
         let parseError;
+        let parseCandidate = jsonText;
         const attempts = [jsonText, repairJsonText(jsonText)].filter((candidate, index, list) => candidate && list.indexOf(candidate) === index);
         for (const candidate of attempts) {
             try {
@@ -3337,9 +3633,10 @@
                 break;
             } catch (error) {
                 parseError = error;
+                parseCandidate = candidate;
             }
         }
-        if (!parsed) throw new Error(`JSON syntax error: ${parseError ? parseError.message : 'Invalid JSON'}`);
+        if (!parsed) throw createJsonSyntaxError(parseCandidate, parseError);
 
         if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
             throw new Error('Resume content JSON must be a JSON object.');
@@ -3472,6 +3769,85 @@
         return text;
     }
 
+    function createJsonSyntaxError(jsonText, parseError) {
+        const originalMessage = parseError && parseError.message ? parseError.message : 'Invalid JSON';
+        const position = getJsonErrorPosition(originalMessage);
+        const location = Number.isFinite(position) ? getJsonLocation(jsonText, position) : null;
+        const snippet = Number.isFinite(position) ? getJsonErrorSnippet(jsonText, position) : '';
+        const hint = getJsonErrorHint(originalMessage, snippet);
+        const parts = ['JSON syntax error'];
+
+        if (location) {
+            parts.push(`line ${location.line}, column ${location.column}`);
+        }
+
+        parts.push(cleanJsonParseMessage(originalMessage));
+        if (hint) parts.push(hint);
+        if (snippet) parts.push(`Near: ${snippet}`);
+
+        const error = new Error(parts.map(trimSentencePunctuation).filter(Boolean).join('. '));
+        if (Number.isFinite(position)) {
+            error.jsonPosition = position;
+            error.jsonLine = location.line;
+            error.jsonColumn = location.column;
+        }
+        return error;
+    }
+
+    function cleanJsonParseMessage(message) {
+        return String(message || 'Invalid JSON')
+            .replace(/\s+in JSON at position \d+.*/i, '')
+            .replace(/\s+at line \d+ column \d+.*/i, '')
+            .trim();
+    }
+
+    function trimSentencePunctuation(value) {
+        return String(value || '').trim().replace(/[.。]+$/g, '');
+    }
+
+    function getJsonErrorPosition(message) {
+        const positionMatch = String(message || '').match(/position\s+(\d+)/i);
+        if (positionMatch) return Number(positionMatch[1]);
+        return NaN;
+    }
+
+    function getJsonLocation(text, position) {
+        const before = String(text || '').slice(0, Math.max(0, position));
+        const lines = before.split('\n');
+        return {
+            line: lines.length,
+            column: lines[lines.length - 1].length + 1
+        };
+    }
+
+    function getJsonErrorSnippet(text, position) {
+        const source = String(text || '');
+        const start = Math.max(0, position - 45);
+        const end = Math.min(source.length, position + 45);
+        const prefix = start > 0 ? '...' : '';
+        const suffix = end < source.length ? '...' : '';
+
+        return `${prefix}${source.slice(start, end).replace(/\s+/g, ' ').trim()}${suffix}`;
+    }
+
+    function getJsonErrorHint(message, snippet) {
+        const lowerMessage = String(message || '').toLowerCase();
+        const nearby = String(snippet || '');
+
+        if (lowerMessage.includes('unexpected token') || lowerMessage.includes('expected')) {
+            if (nearby.includes('“') || nearby.includes('”')) return 'Use straight double quotes, not curly quotes.';
+            if (nearby.includes("'")) return 'JSON strings and keys must use double quotes, not single quotes.';
+            if (/,\s*[}\]]/.test(nearby)) return 'Remove the trailing comma before a closing bracket or brace.';
+            return 'Check for a missing comma, missing quote, or extra character near that spot.';
+        }
+
+        if (lowerMessage.includes('unterminated string')) return 'A string is missing its closing double quote.';
+        if (lowerMessage.includes('unexpected end')) return 'The JSON likely has a missing closing brace, bracket, or quote.';
+        if (lowerMessage.includes('bad control character')) return 'A pasted line break or tab is inside a string; escape it or remove it.';
+
+        return 'Check punctuation near that line, especially commas, quotes, braces, and brackets.';
+    }
+
     function repairJsonText(value) {
         return String(value || '')
             .replace(/[“”]/g, '"')
@@ -3519,6 +3895,20 @@
         if (!elements.resumeSyntaxStatus) return;
         elements.resumeSyntaxStatus.textContent = message;
         elements.resumeSyntaxStatus.classList.toggle('has-error', Boolean(isError));
+    }
+
+    function indicateJsonError(error, options = {}) {
+        if (!elements.resumeSyntaxText || !Number.isFinite(error && error.jsonPosition)) return;
+
+        const position = Math.max(0, Math.min(elements.resumeSyntaxText.value.length, error.jsonPosition));
+        const end = Math.min(elements.resumeSyntaxText.value.length, position + 1);
+
+        if (options.focus !== false) {
+            elements.resumeSyntaxText.focus({ preventScroll: true });
+        }
+
+        elements.resumeSyntaxText.setSelectionRange(position, end);
+        scrollTextareaSelectionIntoView(elements.resumeSyntaxText, position);
     }
 
     function deepClone(value) {
@@ -6346,6 +6736,153 @@
 
         saveState();
         renderAll();
+    }
+
+    function getSectionContextMenu() {
+        let menu = document.getElementById('sectionContextMenu');
+
+        if (!menu) {
+            menu = document.createElement('div');
+            menu.id = 'sectionContextMenu';
+            menu.className = 'section-context-menu';
+            menu.hidden = true;
+            menu.innerHTML = `
+                <button type="button" data-section-context-action="show-json">
+                    Show in JSON
+                </button>
+            `;
+            document.body.appendChild(menu);
+        }
+
+        return menu;
+    }
+
+    function showSectionContextMenu(target, x, y) {
+        const section = target && state.sections[target.sectionId];
+        if (!section) return;
+
+        const menu = getSectionContextMenu();
+        menu.dataset.target = JSON.stringify(target);
+        menu.hidden = false;
+        menu.style.left = '0px';
+        menu.style.top = '0px';
+
+        const rect = menu.getBoundingClientRect();
+        const left = Math.min(x, window.innerWidth - rect.width - 8);
+        const top = Math.min(y, window.innerHeight - rect.height - 8);
+
+        menu.style.left = `${Math.max(8, left)}px`;
+        menu.style.top = `${Math.max(8, top)}px`;
+    }
+
+    function hideSectionContextMenu() {
+        const menu = document.getElementById('sectionContextMenu');
+        if (menu) menu.hidden = true;
+    }
+
+    function handleSectionContextAction(button) {
+        const menu = button.closest('.section-context-menu');
+        const target = menu && parseSectionContextTarget(menu.dataset.target);
+
+        hideSectionContextMenu();
+
+        if (button.dataset.sectionContextAction === 'show-json' && target) {
+            showResumeTargetInJson(target);
+        }
+    }
+
+    function parseSectionContextTarget(value) {
+        try {
+            return JSON.parse(value || '');
+        } catch (error) {
+            return null;
+        }
+    }
+
+    function getJsonTargetFromPreviewEvent(event, sectionEl) {
+        const sectionId = sectionEl.dataset.resumeSection;
+        const editable = event.target.closest('[data-edit-kind]');
+        const sectionTitle = event.target.closest('[data-edit-kind="section-title"], .resume-section-title-row');
+
+        if (sectionTitle) {
+            return {
+                type: 'section',
+                sectionId
+            };
+        }
+
+        if (editable) {
+            return getJsonTargetFromEditable(editable, sectionId);
+        }
+
+        const itemEl = event.target.closest('[data-resume-entry]');
+        if (itemEl) {
+            return {
+                type: 'item',
+                sectionId: itemEl.dataset.entrySection || sectionId,
+                itemId: itemEl.dataset.resumeEntry
+            };
+        }
+
+        const skillGroupEl = event.target.closest('.skill-group');
+        const skillEditable = skillGroupEl && skillGroupEl.querySelector('[data-edit-kind="skill"][data-group]');
+        if (skillEditable) {
+            return {
+                type: 'skill-group',
+                sectionId,
+                groupId: skillEditable.dataset.group
+            };
+        }
+
+        return {
+            type: 'section',
+            sectionId
+        };
+    }
+
+    function getJsonTargetFromEditable(editable, fallbackSectionId) {
+        const kind = editable.dataset.editKind;
+        const sectionId = editable.dataset.section || fallbackSectionId;
+
+        if (kind === 'section-body') {
+            return {
+                type: 'field',
+                sectionId,
+                field: 'body'
+            };
+        }
+
+        if (kind === 'item' || kind === 'rich') {
+            return {
+                type: 'item-field',
+                sectionId,
+                itemId: editable.dataset.item,
+                field: editable.dataset.field || 'body'
+            };
+        }
+
+        if (kind === 'bullet') {
+            return {
+                type: 'bullet',
+                sectionId,
+                itemId: editable.dataset.item,
+                index: Number(editable.dataset.index)
+            };
+        }
+
+        if (kind === 'skill') {
+            return {
+                type: 'skill-field',
+                sectionId: 'skills',
+                groupId: editable.dataset.group,
+                field: editable.dataset.field || 'skills'
+            };
+        }
+
+        return {
+            type: 'section',
+            sectionId
+        };
     }
 
     function handlePreviewAction(button) {
