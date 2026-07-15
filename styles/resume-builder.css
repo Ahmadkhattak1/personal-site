@@ -4266,7 +4266,7 @@
 
 .template-ats[data-resume-preset="ats-friendly-profile"] .skill-group {
     display: grid;
-    grid-template-columns: 96px minmax(0, 1fr);
+    grid-template-columns: max-content minmax(0, 1fr);
     column-gap: 8px;
     align-items: baseline;
     margin-top: 4px;
