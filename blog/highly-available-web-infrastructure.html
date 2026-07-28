@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Building a Highly Available Web Infrastructure on AWS | Ahmad Yaseen</title>
+    <meta name="description" content="A practical AWS project using a custom VPC, private subnets, an Application Load Balancer, NAT Gateways, and Auto Scaling.">
+    <link rel="canonical" href="https://ahmadyaseen.com/blog/highly-available-web-infrastructure.html">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Syne:wght@600;700;800&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../styles/main.css">
+    <link rel="stylesheet" href="highly-available-web-infrastructure.css">
+</head>
+
+<body class="article-page">
+    <header class="article-header">
+        <div class="article-nav">
+            <a class="article-brand" href="../index.html" aria-label="Back to Ahmad Yaseen home">AY</a>
+            <a class="article-back" href="../index.html#projects"><span aria-hidden="true">←</span> Back to work</a>
+        </div>
+    </header>
+
+    <main class="article-shell">
+        <article class="article">
+            <header class="article-hero">
+                <p class="article-kicker">AWS infrastructure · Project journal</p>
+                <h1>Building a Highly Available Web Infrastructure on AWS Using an Application Load Balancer and Auto Scaling</h1>
+                <p class="article-dek">A hands-on build of a production-shaped web deployment across three Availability Zones, with private application servers and automatic recovery.</p>
+                <div class="article-meta"><span>Ahmad Yaseen</span><span aria-hidden="true">/</span><span>July 2026</span><span aria-hidden="true">/</span><span>12 min read</span></div>
+            </header>
+
+            <figure class="article-figure article-figure--hero">
+                <img src="../public/blog/images/Highly-available-web-app/diagram.png" alt="Architecture diagram showing an AWS web application distributed across three Availability Zones" loading="eager">
+                <figcaption>The final architecture: public load balancing in front of private application servers.</figcaption>
+            </figure>
+
+            <div class="article-layout">
+                <aside class="article-aside" aria-label="Article details">
+                    <span class="aside-label">Built with</span>
+                    <ul class="stack-list">
+                        <li>Amazon VPC</li>
+                        <li>Application Load Balancer</li>
+                        <li>EC2 Auto Scaling</li>
+                        <li>NAT Gateways</li>
+                        <li>Systems Manager</li>
+                    </ul>
+                </aside>
+
+                <div class="article-body">
+                    <section>
+                        <h2>Introduction</h2>
+                        <p>Over the past few weeks, I've been learning AWS by building projects instead of just watching courses.</p>
+                        <p>For this project, I wanted to build something that actually looks like a real deployment. Not just launching an EC2 instance and serving a webpage, but putting together multiple AWS services into one architecture.</p>
+                        <p>The goal was simple.</p>
+                        <p>I wanted to build a web application that could handle traffic across multiple Availability Zones, keep the application servers private, automatically replace failed instances, and follow AWS best practices as much as possible.</p>
+                        <p>By the end of the project, I had built a complete highly available web infrastructure using a custom VPC, public and private subnets, NAT Gateways, an Application Load Balancer, a Target Group, a Launch Template, and an Auto Scaling Group.</p>
+                    </section>
+
+                    <section>
+                        <h2>Starting with the Network</h2>
+                        <p>Before launching any servers, I needed a network to put everything in.</p>
+                        <p>Instead of using the default VPC that AWS creates for every account, I created my own VPC. That gave me complete control over the networking and made the whole setup feel much closer to how things are usually built in production.</p>
+                        <p>I also assigned my own CIDR block so I could create the subnets exactly the way I wanted.</p>
+                        <div class="figure-grid">
+                            <figure class="article-figure"><img src="../public/blog/images/Highly-available-web-app/VPC.png" alt="AWS VPC configuration" loading="lazy"><figcaption>Creating a dedicated VPC.</figcaption></figure>
+                            <figure class="article-figure"><img src="../public/blog/images/Highly-available-web-app/VPC-CIDR-Block.png" alt="VPC CIDR block configuration" loading="lazy"><figcaption>Assigning the VPC CIDR block.</figcaption></figure>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h2>Splitting the VPC Across Three Availability Zones</h2>
+                        <p>High availability was the whole point of this project, so everything needed to be spread across multiple Availability Zones.</p>
+                        <p>Inside the VPC, I created three Availability Zones.</p>
+                        <p>Each Availability Zone has one public subnet and one private subnet.</p>
+                        <p>The public subnets are where internet-facing resources live.</p>
+                        <p>The private subnets are where the EC2 instances run.</p>
+                        <p>That way, even if one Availability Zone goes down, the application can continue serving traffic from the other two.</p>
+                        <figure class="article-figure"><img src="../public/blog/images/Highly-available-web-app/Subnets.png" alt="Three pairs of public and private subnets across Availability Zones" loading="lazy"><figcaption>Public and private subnets distributed across three Availability Zones.</figcaption></figure>
+                    </section>
+
+                    <section>
+                        <h2>Giving the VPC Internet Access</h2>
+                        <p>The Application Load Balancer needs to receive requests from users on the internet.</p>
+                        <p>To make that possible, I attached an Internet Gateway to the VPC.</p>
+                        <p>That gives the public subnets a path to the internet.</p>
+                        <figure class="article-figure"><img src="../public/blog/images/Highly-available-web-app/Internet-Gateway.png" alt="Internet Gateway attached to the VPC" loading="lazy"><figcaption>The Internet Gateway provides the public edge of the VPC.</figcaption></figure>
+                    </section>
+
+                    <section>
+                        <h2>Configuring the Route Tables</h2>
+                        <p>After that, I configured the routing.</p>
+                        <p>The public route table sends internet traffic through the Internet Gateway.</p>
+                        <p>The private subnets don't have direct internet access. Instead, each private subnet uses its own route table that points to the NAT Gateway in the same Availability Zone.</p>
+                        <p>This setup follows AWS best practices because every Availability Zone remains independent.</p>
+                        <div class="figure-grid figure-grid--wide">
+                            <figure class="article-figure"><img src="../public/blog/images/Highly-available-web-app/public-rt.png" alt="Public route table routes" loading="lazy"><figcaption>Public route table.</figcaption></figure>
+                            <figure class="article-figure"><img src="../public/blog/images/Highly-available-web-app/Public-RT-Associations.png" alt="Public route table associations" loading="lazy"><figcaption>Public subnet associations.</figcaption></figure>
+                            <figure class="article-figure"><img src="../public/blog/images/Highly-available-web-app/private-rt-a.png" alt="Private route table routes" loading="lazy"><figcaption>Private route table.</figcaption></figure>
+                            <figure class="article-figure"><img src="../public/blog/images/Highly-available-web-app/private-rt-a-Association.png" alt="Private route table association" loading="lazy"><figcaption>Private subnet association.</figcaption></figure>
+                        </div>
+                        <figure class="article-figure"><img src="../public/blog/images/Highly-available-web-app/All-Route-Tables.png" alt="All configured AWS route tables" loading="lazy"><figcaption>All route tables in the VPC.</figcaption></figure>
+                    </section>
+
+                    <section>
+                        <h2>NAT Gateways</h2>
+                        <p>Since the EC2 instances are running in private subnets, they don't have public IP addresses.</p>
+                        <p>That means they can't reach the internet directly.</p>
+                        <p>They still need internet access for things like downloading packages, installing updates, and communicating with AWS services.</p>
+                        <p>To solve that, I created one NAT Gateway inside each public subnet.</p>
+                        <p>Now every private subnet can access the internet without exposing the EC2 instances to incoming traffic.</p>
+                        <figure class="article-figure"><img src="../public/blog/images/Highly-available-web-app/all-3-nat-gateways.png" alt="Three NAT Gateways, one in each public subnet" loading="lazy"><figcaption>One NAT Gateway per Availability Zone keeps outbound access resilient.</figcaption></figure>
+                    </section>
+
+                    <section>
+                        <h2>Locking Down Access with Security Groups</h2>
+                        <p>One thing I wanted to avoid was exposing the EC2 instances directly to the internet.</p>
+                        <p>The Application Load Balancer accepts HTTP traffic from anywhere.</p>
+                        <p>The EC2 instances only allow HTTP traffic coming from the ALB security group.</p>
+                        <p>So even if someone knows the private IP of an EC2 instance, they still can't connect to it directly.</p>
+                        <p>I also configured an IAM role so I could connect to the instances using AWS Systems Manager Session Manager instead of SSH.</p>
+                        <p>That means there are no key pairs to manage and no need to leave port 22 open.</p>
+                        <div class="figure-grid figure-grid--wide">
+                            <figure class="article-figure"><img src="../public/blog/images/Highly-available-web-app/Security-groups.png" alt="AWS security groups overview" loading="lazy"><figcaption>Security groups for the deployment.</figcaption></figure>
+                            <figure class="article-figure"><img src="../public/blog/images/Highly-available-web-app/ha-web-alb-sg.png" alt="Application Load Balancer security group" loading="lazy"><figcaption>ALB security group.</figcaption></figure>
+                            <figure class="article-figure"><img src="../public/blog/images/Highly-available-web-app/ha-web-ec2-sg.png" alt="EC2 security group allowing traffic from the ALB" loading="lazy"><figcaption>EC2 security group.</figcaption></figure>
+                            <figure class="article-figure"><img src="../public/blog/images/Highly-available-web-app/ha-web-ec2-role.png" alt="IAM role for the EC2 instances" loading="lazy"><figcaption>EC2 IAM role for Session Manager.</figcaption></figure>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h2>Creating the Launch Template</h2>
+                        <p>I knew the Auto Scaling Group would eventually be responsible for launching EC2 instances, so I created a Launch Template first.</p>
+                        <p>The template includes everything a new instance needs.</p>
+                        <p>That includes the AMI, instance type, security group, IAM role, and a User Data script.</p>
+                        <p>The User Data installs Apache automatically and creates a simple webpage that displays information about the running instance. That made it really easy to see which instance was serving each request later on.</p>
+                        <figure class="article-figure"><img src="../public/blog/images/Highly-available-web-app/Launch-Template.png" alt="EC2 Launch Template configuration" loading="lazy"><figcaption>The Launch Template standardizes every instance the group creates.</figcaption></figure>
+                    </section>
+
+                    <section>
+                        <h2>Creating the Target Group</h2>
+                        <p>Before the load balancer can send traffic anywhere, it needs a Target Group.</p>
+                        <p>The Target Group keeps track of the EC2 instances and continuously performs health checks.</p>
+                        <p>Only healthy instances receive traffic.</p>
+                        <p>This was also the point where I finally understood that the Application Load Balancer doesn't send traffic directly to EC2 instances. It sends traffic to the Target Group, and the Target Group decides which healthy instance should receive the request.</p>
+                        <figure class="article-figure"><img src="../public/blog/images/Highly-available-web-app/target-groups.png" alt="Target Group configuration and health check settings" loading="lazy"><figcaption>The Target Group is the health-aware handoff between the ALB and EC2.</figcaption></figure>
+                    </section>
+
+                    <section>
+                        <h2>Creating the Application Load Balancer</h2>
+                        <p>Next, I created an internet-facing Application Load Balancer.</p>
+                        <p>I placed it across all three public subnets and connected it to the Target Group.</p>
+                        <p>From this point on, users only interact with the load balancer. They never connect directly to the EC2 instances.</p>
+                        <div class="figure-grid">
+                            <figure class="article-figure"><img src="../public/blog/images/Highly-available-web-app/ALB.png" alt="Application Load Balancer configuration" loading="lazy"><figcaption>Internet-facing ALB.</figcaption></figure>
+                            <figure class="article-figure"><img src="../public/blog/images/Highly-available-web-app/ALB-Listener.png" alt="Application Load Balancer listener configuration" loading="lazy"><figcaption>HTTP listener forwarding to the Target Group.</figcaption></figure>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h2>Launching the Auto Scaling Group</h2>
+                        <p>Finally, I created the Auto Scaling Group.</p>
+                        <p>I configured it with a desired capacity of three instances, one minimum of three, and a maximum of six.</p>
+                        <p>As soon as the Auto Scaling Group was created, AWS launched three EC2 instances using the Launch Template.</p>
+                        <p>Each instance automatically registered with the Target Group, passed the health checks, and started receiving traffic from the Application Load Balancer.</p>
+                        <p>Watching everything come together at this point was probably the most satisfying part of the project.</p>
+                        <div class="figure-grid">
+                            <figure class="article-figure"><img src="../public/blog/images/Highly-available-web-app/asg-ha-web-asg.png" alt="Auto Scaling Group configuration" loading="lazy"><figcaption>Auto Scaling Group settings.</figcaption></figure>
+                            <figure class="article-figure"><img src="../public/blog/images/Highly-available-web-app/Instances-created-by-asg.png" alt="Three EC2 instances created by the Auto Scaling Group" loading="lazy"><figcaption>Instances created from the template.</figcaption></figure>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h2>Testing Everything</h2>
+                        <p>Once everything was running, it was time to see if it actually worked.</p>
+                        <p>I opened the DNS name of the Application Load Balancer in my browser and refreshed the page a few times.</p>
+                        <p>Since my webpage displays the instance ID and Availability Zone, I could immediately see the requests moving between different EC2 instances.</p>
+                        <p>That confirmed the load balancer was distributing traffic correctly across all three Availability Zones.</p>
+                        <div class="figure-grid figure-grid--wide">
+                            <figure class="article-figure"><img src="../public/blog/images/Highly-available-web-app/elb-visit-1.png" alt="First response from the load balanced web application" loading="lazy"><figcaption>Request one.</figcaption></figure>
+                            <figure class="article-figure"><img src="../public/blog/images/Highly-available-web-app/ELB-visit-2.png" alt="Second response from a different EC2 instance" loading="lazy"><figcaption>Request two.</figcaption></figure>
+                            <figure class="article-figure"><img src="../public/blog/images/Highly-available-web-app/ELB-Visit-3.png" alt="Third response from another Availability Zone" loading="lazy"><figcaption>Request three, served elsewhere.</figcaption></figure>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h2>What I Learned</h2>
+                        <p>This project connected a lot of AWS concepts that I had learned separately.</p>
+                        <p>Before this, I understood what a VPC was. I understood EC2, security groups, route tables, and load balancers individually.</p>
+                        <p>Building everything together helped me understand how all those services actually depend on each other.</p>
+                        <p>The biggest takeaway for me was understanding the relationship between the Application Load Balancer, the Target Group, and the Auto Scaling Group. At first, I assumed the load balancer was responsible for scaling instances, but that's not how it works. The Auto Scaling Group launches and replaces instances, the Target Group performs health checks, and the load balancer simply sends requests to healthy targets.</p>
+                        <p>That one concept made the entire architecture make a lot more sense.</p>
+                    </section>
+
+                    <section>
+                        <h2>Final Thoughts</h2>
+                        <p>This is probably the first AWS project I've built that feels like a complete system instead of a collection of individual services.</p>
+                        <p>There's still a lot I can improve. I could add HTTPS with ACM, Route 53, CloudWatch scaling policies, an RDS database, or even a CI/CD pipeline.</p>
+                        <p>But as a foundation, I'm really happy with how this turned out. More importantly, I now understand not just what each AWS service does, but how they all work together to build a highly available application.</p>
+                    </section>
+
+                    <footer class="article-end">
+                        <span class="article-end-mark" aria-hidden="true">✦</span>
+                        <p>More project journals coming soon.</p>
+                        <a href="../index.html#projects">View more work <span aria-hidden="true">↗</span></a>
+                    </footer>
+                </div>
+            </div>
+        </article>
+    </main>
+
+    <div class="image-lightbox" id="imageLightbox" role="dialog" aria-modal="true" aria-label="Expanded article image" aria-hidden="true">
+        <button type="button" id="lightboxClose" aria-label="Close expanded image">×</button>
+        <img id="lightboxImage" src="" alt="">
+        <p class="image-lightbox-caption" id="lightboxCaption"></p>
+    </div>
+    <script>
+        (() => {
+            const lightbox = document.getElementById('imageLightbox');
+            const lightboxImage = document.getElementById('lightboxImage');
+            const caption = document.getElementById('lightboxCaption');
+            const closeButton = document.getElementById('lightboxClose');
+            const images = document.querySelectorAll('.article-figure img');
+            let lastFocusedImage;
+
+            const closeLightbox = () => {
+                lightbox.classList.remove('is-open');
+                lightbox.setAttribute('aria-hidden', 'true');
+                document.body.classList.remove('lightbox-open');
+                if (lastFocusedImage) lastFocusedImage.focus();
+            };
+
+            images.forEach((image) => {
+                image.tabIndex = 0;
+                image.addEventListener('click', () => {
+                    lastFocusedImage = image;
+                    lightboxImage.src = image.currentSrc || image.src;
+                    lightboxImage.alt = image.alt;
+                    caption.textContent = image.closest('figure').querySelector('figcaption')?.textContent || image.alt;
+                    lightbox.classList.add('is-open');
+                    lightbox.setAttribute('aria-hidden', 'false');
+                    document.body.classList.add('lightbox-open');
+                    closeButton.focus();
+                });
+                image.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        image.click();
+                    }
+                });
+            });
+
+            closeButton.addEventListener('click', closeLightbox);
+            lightbox.addEventListener('click', (event) => {
+                if (event.target === lightbox) closeLightbox();
+            });
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && lightbox.classList.contains('is-open')) closeLightbox();
+            });
+        })();
+    </script>
+</body>
+
+</html>

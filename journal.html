@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Journal | Ahmad Yaseen</title>
+    <meta name="description" content="Project journals and practical notes from Ahmad Yaseen's work across cloud infrastructure and software. ">
+    <link rel="canonical" href="https://ahmadyaseen.com/journal.html">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Syne:wght@600;700;800&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/journal.css">
+</head>
+
+<body class="journal-page">
+    <header class="journal-nav-wrap">
+        <nav class="journal-nav" aria-label="Main navigation">
+            <a class="journal-brand" href="index.html" aria-label="Back to Ahmad Yaseen home">AY</a>
+            <a class="journal-back" href="index.html"><span aria-hidden="true">←</span> Back home</a>
+        </nav>
+    </header>
+    <main class="journal-main">
+        <header class="journal-intro">
+            <p class="journal-kicker">Project journal</p>
+            <h1>Notes from<br><span>building things.</span></h1>
+            <p>Practical write-ups from the work behind the screen: infrastructure decisions, deployment lessons, and the details that only become clear when you build the whole system.</p>
+        </header>
+        <section aria-labelledby="journal-entries-title">
+            <div class="journal-section-heading">
+                <h2 id="journal-entries-title">Entries</h2>
+                <span>01 published</span>
+            </div>
+            <a href="blog/highly-available-web-infrastructure.html" class="journal-entry cursor-open">
+                <div class="journal-entry-image"><img src="public/blog/images/Highly-available-web-app/diagram.png" alt="AWS highly available web infrastructure architecture diagram" loading="lazy"><span aria-hidden="true">↗</span></div>
+                <div class="journal-entry-content">
+                    <div class="journal-entry-meta"><span>01</span><span>AWS infrastructure</span><span>July 2026</span></div>
+                    <h2>Building a Highly Available Web Infrastructure on AWS Using an Application Load Balancer and Auto Scaling</h2>
+                    <p>Building a production-shaped web deployment across three Availability Zones, with private application servers, health checks, NAT Gateways, and automatic recovery.</p>
+                    <span class="journal-entry-read">Read entry <span aria-hidden="true">→</span></span>
+                </div>
+            </a>
+        </section>
+        <div class="journal-coming-soon"><span aria-hidden="true">+</span><p>More build notes are on the way.</p></div>
+    </main>
+</body>
+
+</html>
