@@ -505,11 +505,14 @@
         elements.redoResume = document.getElementById('redoResume');
         elements.exportPdfButtons = Array.from(document.querySelectorAll('[data-export-pdf]'));
         elements.exportDocxButtons = Array.from(document.querySelectorAll('[data-export-docx]'));
+        elements.exportJsonButtons = Array.from(document.querySelectorAll('[data-export-json]'));
         elements.exportMenu = document.getElementById('exportMenu');
         elements.exportMenuToggle = document.getElementById('exportMenuToggle');
         elements.exportMenuPanel = document.getElementById('exportMenuPanel');
         elements.resetResume = document.getElementById('resetResume');
         elements.resumeSyntaxText = document.getElementById('resumeSyntaxText');
+        elements.uploadResumeJsonButton = document.getElementById('uploadResumeJsonButton');
+        elements.resumeJsonUpload = document.getElementById('resumeJsonUpload');
         elements.jsonResumePromptText = document.getElementById('jsonResumePromptText');
         elements.copyJsonResumePrompt = document.getElementById('copyJsonResumePrompt');
         elements.copyCurrentResumeJson = document.getElementById('copyCurrentResumeJson');
@@ -1048,6 +1051,14 @@
             });
         });
 
+        elements.exportJsonButtons.forEach(button => {
+            button.addEventListener('click', event => {
+                event.stopPropagation();
+                closeExportMenu();
+                exportCleanJson();
+            });
+        });
+
         if (elements.exportMenuToggle && elements.exportMenuPanel) {
             elements.exportMenuToggle.addEventListener('click', event => {
                 event.stopPropagation();
@@ -1110,6 +1121,7 @@
                 if (savedAction === 'cancel-delete') cancelSavedResumeDelete();
                 if (savedAction === 'export-pdf') await exportSavedResume(savedId, 'pdf');
                 if (savedAction === 'export-docx') await exportSavedResume(savedId, 'docx');
+                if (savedAction === 'export-json') await exportSavedResume(savedId, 'json');
             });
 
             elements.savedResumeList.addEventListener('input', event => {
@@ -1127,6 +1139,11 @@
 
         if (elements.copyJsonResumePrompt) {
             elements.copyJsonResumePrompt.addEventListener('click', openPromptModal);
+        }
+
+        if (elements.uploadResumeJsonButton && elements.resumeJsonUpload) {
+            elements.uploadResumeJsonButton.addEventListener('click', () => elements.resumeJsonUpload.click());
+            elements.resumeJsonUpload.addEventListener('change', () => handleResumeJsonUpload(elements.resumeJsonUpload));
         }
 
         if (elements.copyCurrentResumeJson) {
@@ -3386,7 +3403,7 @@
 
     async function copyCurrentResumeJson() {
         if (!elements.resumeSyntaxText) return;
-        const currentJson = elements.resumeSyntaxText.value || formatResumeSyntax();
+        const currentJson = prettyPrintJson(elements.resumeSyntaxText.value || formatResumeSyntax());
 
         try {
             await copyTextToClipboard(currentJson);
@@ -3396,6 +3413,17 @@
             console.warn('Current JSON copy failed:', error);
             setSyntaxStatus('Copy failed. Select the JSON manually.', true);
             showToast('Could not copy JSON');
+        }
+    }
+
+    function prettyPrintJson(value) {
+        const text = String(value || '').trim();
+        if (!text) return '';
+
+        try {
+            return JSON.stringify(JSON.parse(extractJsonText(text)), null, 2);
+        } catch (error) {
+            return text;
         }
     }
 
@@ -3562,36 +3590,47 @@
         };
 
         return [
-            'You are an expert resume writer conducting an intake interview before creating a complete, tailored resume.',
+            'You are an expert resume writer creating a complete, tailored resume.',
             '',
-            'MANDATORY CONVERSATION FLOW:',
-            '1. Do not draft the resume and do not output JSON in your first response.',
-            '2. Your first response must contain only a clear, numbered intake questionnaire for the candidate.',
-            '3. After the candidate replies, check every intake category below. If essential facts are missing or ambiguous, ask one concise follow-up batch before drafting. Do not output JSON while essential facts are missing.',
-            '4. Accept "not applicable" for optional sections and do not ask about those sections again.',
-            '5. Produce the final JSON only after the candidate has answered the interview sufficiently. During the interview, use normal prose questions. In the final response, output JSON only.',
+            'CONVERSATION FLOW:',
+            '1. Before generating JSON for the first time, always begin with a concise review of what you know about the candidate from supplied information, conversation history, prior interactions, or your knowledge of the candidate. Your first response must be normal prose that shows this review and asks the candidate to confirm it or say what they would like changed. Do not generate JSON in this first response, even if you think you already know enough.',
+            '2. Treat the interview as a flexible verification conversation, not a fixed questionnaire. Do not ask for information you already have. If material information is missing or unclear, ask only concise questions that would materially improve the resume. Do not repeatedly ask for optional sections the candidate has skipped or marked not applicable.',
+            '3. Do not invent unsupported personal facts. Use reasonable professional knowledge to infer related skills, responsibilities, and keywords from known roles, projects, credentials, certifications, and the target job. When a detail is unavailable and cannot be reasonably inferred, omit it or leave it empty rather than fabricate it.',
+            '4. Apply requested corrections immediately. After the review has been shown, if the candidate confirms the information is correct, says to proceed, or says "go for it," generate the complete resume JSON using the best available information without asking more questions. A bare "go for it" must not skip the initial review and confirmation step.',
+            '5. After you have generated JSON, if the candidate asks for any change, regenerate and return the entire updated JSON object, preserving all unchanged information. Never return a JSON patch, fragment, section-only JSON, diff, or instructions for the candidate to edit the previous JSON manually.',
+            '6. During the review or intake, use normal prose. When generating or regenerating the resume, always output one complete JSON object matching the full schema below—not a partial object, patch, refusal, or request for permission.',
             '',
-            'THE FIRST QUESTIONNAIRE MUST COVER:',
+            'SCOPE AND TONE:',
+            '- Stay within resume and CV assistance. You are a tool, not a judge or gatekeeper. Do not use conversation history to restrict, shame, penalize, or second-guess the candidate.',
+            '- If the candidate asks to add, remove, or reframe a certification, skill, title, achievement, or other resume content, make the requested change without moralizing or refusing based on prior conversation.',
+            '- Do not give unsolicited moral, ethical, legal, hiring, or career advice. Offer advice about how the candidate should present themselves only when they ask for it.',
+            '',
+            'APPLICATION STRATEGY:',
+            '- When the candidate asks for tricks, tactics, or any way to improve their chances for a specific job application, actively look for useful advantages in the job post, the candidate information, and available conversation history. Consider keyword alignment, ordering, emphasis, framing, positioning, and other resume or application improvements.',
+            '- Explain any tactic presented as a trick or any other non-obvious or material tactic briefly and ask for the candidate\'s explicit approval before applying it. Do not apply a proposed tactic the candidate rejects; a direct request to use a specific tactic counts as approval.',
+            '- Once approved, apply the tactic to the complete resume or application materials while preserving all unchanged information, then return the complete updated JSON when JSON output is required. Do not let the candidate\'s prior history limit a requested strategy.',
+            '- Optimize for the strongest candidate-approved presentation and maximize the candidate\'s chances of progressing in the application.',
+            '',
+            'INFORMATION TO REVIEW OR COLLECT AS NEEDED:',
             '1. Target: desired job title, seniority, industry, location preference, resume goal, and the full job post if one exists.',
             '2. Contact: full name, email, location, LinkedIn, GitHub, portfolio, and other relevant links.',
-            '3. Professional profile: years of relevant experience, specialties, strongest qualifications, career direction, and two or three achievements the candidate is proud of.',
-            '4. Work experience: for every role, ask for title, employer, location or remote status, start/end dates, responsibilities, tools, scope, major projects, achievements, measurable results, and whether the role is current.',
-            '5. Projects: name, purpose, candidate ownership, dates, technologies or methods, challenges, outcomes, metrics, and links.',
-            '6. Skills: technical skills, tools/platforms, domain knowledge, methods, languages, and proficiency or evidence where useful.',
-            '7. Education: qualification, institution, location, dates, status, honors, relevant coursework, and notable activities.',
+            '3. Professional profile: years of relevant experience, specialties, strongest qualifications, career direction, and notable achievements.',
+            '4. Work experience: roles, titles, employers, dates, responsibilities, tools, scope, major projects, achievements, measurable results, and current status.',
+            '5. Projects: name, purpose, ownership, dates, technologies or methods, challenges, outcomes, metrics, and links.',
+            '6. Skills: technical skills, tools/platforms, domain knowledge, methods, languages, and useful evidence.',
+            '7. Education: qualifications, institutions, locations, dates, status, honors, relevant coursework, and notable activities.',
             '8. Research: publications, papers, thesis work, presentations, patents, research roles, methods, results, dates, collaborators or institutions, and links—or confirm not applicable.',
             '9. Certifications: name, issuer, date, expiry if relevant, credential ID, and verification URL—or confirm not applicable.',
-            '10. Constraints: preferred length, details to exclude, career gaps needing careful treatment, confidentiality limits, and other relevant sections such as awards, volunteering, or memberships.',
+            '10. Constraints: preferred length, details to exclude, career gaps, confidentiality limits, and relevant sections such as awards, volunteering, or memberships.',
             '',
             'FINAL RESUME REQUIREMENTS:',
-            '- Use only candidate-supplied facts. Never invent employers, titles, dates, degrees, metrics, tools, links, credentials, publications, or achievements.',
-            '- Do not leave placeholders, generic filler, or sample content in the final JSON. If an optional detail remains unknown, omit it or leave its value empty.',
-            '- Tailor personal.title, summary, prioritized skills, experience bullets, and project bullets to the target role and job-post keywords only where truthful.',
-            '- Write a specific 2-4 sentence summary based on candidate evidence. Avoid generic traits and unsupported claims.',
+            '- Do not leave placeholders, generic filler, sample content, visible empty contact labels, empty entries, or blank sections in the final JSON. Omit unavailable optional fields/items or disable unavailable sections while fully using the information that is available.',
+            '- Tailor personal.title, summary, prioritized skills, experience bullets, and project bullets to the target role and job-post keywords using the candidate information and reasonable professional inferences.',
+            '- Write a specific 2-4 sentence summary. Avoid generic traits and unsupported claims.',
             '- Keep entries reverse chronological with consistent dates. Give recent and relevant roles the most detail.',
-            '- Use concise action-and-result bullets. Include metrics when supplied; otherwise use truthful concrete scope. Do not fabricate numbers.',
+            '- Use concise action-and-result bullets. Include metrics when supplied or reasonably inferable; otherwise use concrete scope without forcing numbers.',
             '- Aim for 2-5 strong bullets for each recent relevant role, 1-3 for older roles, and 1-3 outcome-focused bullets for each relevant project.',
-            '- Group skills into clear categories and include only skills the candidate actually has.',
+            '- Group skills into clear categories, including skills reasonably associated with the candidate\'s known experience, projects, education, or certifications.',
             '- Keep education concise once substantial experience exists. Include research and certifications when applicable.',
             '- Always retain summary, experience, projects, skills, education, research, and certifications in resume.sectionOrder and resume.sections.',
             '- For an inapplicable section, set enabled to false and use an empty body, items array, or groups array. For an applicable section, set enabled to true and populate it completely.',
@@ -3601,10 +3640,10 @@
             '- Do not add design instructions, colors, columns, tables, graphics, headers, footers, or template settings. The resume builder controls presentation.',
             '',
             'FINAL RESPONSE FORMAT:',
-            '- Output one valid JSON object only—no Markdown fence, preface, comments, explanation, or text after it.',
+            '- Output one valid, pretty-printed JSON object only, using 2-space indentation and line breaks. Do not minify it. Include no Markdown fence, preface, comments, explanation, or text after it.',
             '- Follow the schema exactly. Duplicate the example item/group objects as needed, replace every value with candidate-specific content, and remove unused example records.',
             '',
-            'JSON SCHEMA TO FILL ONLY AFTER THE INTERVIEW:',
+            'COMPLETE JSON SCHEMA FOR THE RESUME OUTPUT:',
             JSON.stringify(genericResumeSyntax, null, 2)
         ].join('\n');
     }
@@ -3952,13 +3991,15 @@
         }
     }
 
-    function writeSavedResumes(records) {
+    function writeSavedResumes(records, options = {}) {
         try {
             localStorage.setItem(SAVED_RESUMES_KEY, JSON.stringify(records));
             return true;
         } catch (error) {
             console.warn('Saved resume library update failed:', error);
-            showToast('Browser storage is full. Remove a saved resume and try again.');
+            if (options.showError !== false) {
+                showToast('Browser storage is full. Remove a saved resume and try again.');
+            }
             return false;
         }
     }
@@ -3991,7 +4032,11 @@
                 updatedAt: now,
                 state: deepClone(state)
             };
-            if (!writeSavedResumes(records)) return;
+            if (!writeSavedResumes(records, { showError: false })) {
+                downloadCurrentResumeJson();
+                showToast('Browser storage is full. Downloaded your resume JSON instead.');
+                return;
+            }
             showToast('Saved resume updated');
         } else {
             const record = {
@@ -4003,13 +4048,80 @@
                 state: deepClone(state)
             };
             records.push(record);
-            if (!writeSavedResumes(records)) return;
+            if (!writeSavedResumes(records, { showError: false })) {
+                downloadCurrentResumeJson();
+                showToast('Browser storage is full. Downloaded your resume JSON instead.');
+                return;
+            }
             setActiveSavedResumeId(record.id);
             showToast(options.asNew ? 'Saved as a new resume' : 'Resume saved');
         }
 
         renderSavedResumes();
         refreshLucideIcons();
+    }
+
+    function downloadCurrentResumeJson() {
+        const blob = new Blob([formatResumeSyntax()], { type: 'application/json;charset=utf-8' });
+        saveBlob(blob, getResumeExportFilename('json'));
+    }
+
+    function getResumeExportFilename(extension, targetState = state) {
+        const role = normalizeInlineText(targetState.personal?.title || '');
+        const name = normalizeInlineText(targetState.personal?.name || '');
+        const base = slugify([role, name].filter(Boolean).join(' ') || 'resume');
+        return `${base}-resume.${extension}`;
+    }
+
+    function exportCleanJson() {
+        try {
+            downloadCurrentResumeJson();
+            showToast('JSON exported');
+        } catch (error) {
+            console.warn('JSON export failed:', error);
+            showToast('Could not export JSON');
+        }
+    }
+
+    function handleResumeJsonUpload(input) {
+        const file = input && input.files && input.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.addEventListener('load', () => {
+            try {
+                const parsed = parseResumeSyntax(String(reader.result || ''));
+                state = normalizeState(parsed, builderMode);
+                setActiveSavedResumeId('');
+                pageAddMenuOpen = false;
+                activeAddAnchor = 'start';
+
+                try {
+                    saveState({ syncSaved: false });
+                } catch (error) {
+                    console.warn('Uploaded resume could not be stored in browser storage:', error);
+                    lastStateSnapshot = serializeState();
+                    syncUndoRedo();
+                }
+
+                renderAll();
+                setSyntaxStatus('Uploaded JSON rendered');
+                showToast('Uploaded resume loaded');
+            } catch (error) {
+                console.warn('Resume JSON upload failed:', error);
+                indicateJsonError(error, { focus: false });
+                setSyntaxStatus(error.message || 'Could not load that JSON file.', true);
+                showToast('Could not load JSON file');
+            } finally {
+                input.value = '';
+            }
+        });
+        reader.addEventListener('error', () => {
+            input.value = '';
+            setSyntaxStatus('Could not read that JSON file.', true);
+            showToast('Could not read JSON file');
+        }, { once: true });
+        reader.readAsText(file);
     }
 
     function syncActiveSavedResume() {
@@ -4129,6 +4241,8 @@
             await nextFrame();
             if (format === 'docx') {
                 await exportCleanDocx();
+            } else if (format === 'json') {
+                exportCleanJson();
             } else {
                 await exportCleanPdf();
             }
@@ -4197,6 +4311,9 @@
                         <button type="button" class="tool-button tool-button-secondary" data-saved-action="export-docx" data-saved-id="${escapeAttr(record.id)}">
                             <i data-lucide="file-type" aria-hidden="true"></i> DOCX
                         </button>
+                        <button type="button" class="tool-button tool-button-secondary" data-saved-action="export-json" data-saved-id="${escapeAttr(record.id)}">
+                            <i data-lucide="braces" aria-hidden="true"></i> JSON
+                        </button>
                         <button type="button" class="tool-button tool-button-secondary" data-saved-action="duplicate" data-saved-id="${escapeAttr(record.id)}">
                             <i data-lucide="copy-plus" aria-hidden="true"></i> Duplicate
                         </button>
@@ -4264,7 +4381,7 @@
             await nextFrame();
 
             const pdf = await renderSelectablePdf(paper);
-            pdf.save(`${slugify(state.personal.name || 'resume')}-resume.pdf`);
+            pdf.save(getResumeExportFilename('pdf'));
             showToast('PDF exported');
         } catch (error) {
             console.warn('PDF export failed:', error);
@@ -4304,7 +4421,7 @@
             await ensureDocxTool();
             const doc = await buildDocxDocument(enabledSections, collectDocxPreviewStyles());
             const blob = await window.docx.Packer.toBlob(doc);
-            saveBlob(blob, `${slugify(state.personal.name || 'resume')}-resume.docx`);
+            saveBlob(blob, getResumeExportFilename('docx'));
             showToast('DOCX exported');
         } catch (error) {
             console.warn('DOCX export failed:', error);
@@ -4337,6 +4454,16 @@
             .filter(section => section && section.enabled);
     }
 
+    function getDocxLineSpacing() {
+        const value = Number(state.settings && state.settings.lineHeight);
+        const lineHeight = Number.isFinite(value) ? value : 1.35;
+        return Math.max(240, Math.min(432, Math.round(lineHeight * 240)));
+    }
+
+    function docxSpacing(values = {}) {
+        return { ...values, line: getDocxLineSpacing() };
+    }
+
     async function buildDocxDocument(enabledSections, docxStyle = createFallbackDocxStyle()) {
         const {
             Document,
@@ -4353,7 +4480,7 @@
         } else if (normalizeInlineText(state.personal.name)) {
             children.push(new Paragraph({
                 alignment: AlignmentType.CENTER,
-                spacing: { after: 45 },
+                spacing: docxSpacing({ after: 45 }),
                 children: [new TextRun({
                     text: normalizeInlineText(state.personal.name),
                     bold: true,
@@ -4367,7 +4494,7 @@
         if (!templateRequiresProfilePhoto() && normalizeInlineText(state.personal.title)) {
             children.push(new Paragraph({
                 alignment: AlignmentType.CENTER,
-                spacing: { after: contact ? 34 : 120 },
+                spacing: docxSpacing({ after: contact ? 34 : 120 }),
                 children: [new TextRun({
                     text: normalizeInlineText(state.personal.title),
                     font: docxStyle.title.font,
@@ -4380,7 +4507,7 @@
         if (!templateRequiresProfilePhoto() && contact) {
             children.push(new Paragraph({
                 alignment: AlignmentType.CENTER,
-                spacing: { after: 130 },
+                spacing: docxSpacing({ after: 130 }),
                 children: [new TextRun({
                     text: contact,
                     font: docxStyle.contact.font,
@@ -4395,7 +4522,7 @@
             if (!sectionParagraphs.length) return;
 
             children.push(new Paragraph({
-                spacing: { before: 100, after: 45 },
+                spacing: docxSpacing({ before: 100, after: 45 }),
                 border: {
                     bottom: {
                         color: docxStyle.section.borderColor,
@@ -4465,7 +4592,7 @@
 
         if (normalizeInlineText(state.personal.name)) {
             identityParagraphs.push(new Paragraph({
-                spacing: { after: normalizeInlineText(state.personal.title) ? 30 : 55 },
+                spacing: docxSpacing({ after: normalizeInlineText(state.personal.title) ? 30 : 55 }),
                 children: [new TextRun({
                     text: normalizeInlineText(state.personal.name).toUpperCase(),
                     bold: true,
@@ -4478,7 +4605,7 @@
 
         if (normalizeInlineText(state.personal.title)) {
             identityParagraphs.push(new Paragraph({
-                spacing: { after: detailRows.length ? 45 : 0 },
+                spacing: docxSpacing({ after: detailRows.length ? 45 : 0 }),
                 children: [new TextRun({
                     text: normalizeInlineText(state.personal.title),
                     font: docxStyle.title.font,
@@ -4490,7 +4617,7 @@
 
         detailRows.forEach(([label, value], index) => {
             identityParagraphs.push(new Paragraph({
-                spacing: { after: index === detailRows.length - 1 ? 0 : 15 },
+                spacing: docxSpacing({ after: index === detailRows.length - 1 ? 0 : 15 }),
                 children: [
                     new TextRun({ text: `${label}:  `, bold: true, font: docxStyle.contact.font, color: docxStyle.contact.color, size: docxStyle.contact.size }),
                     new TextRun({ text: normalizeInlineText(value), font: docxStyle.contact.font, color: docxStyle.contact.color, size: docxStyle.contact.size })
@@ -4579,7 +4706,8 @@
         if (section.type === 'summary') {
             return richHtmlToDocxParagraphs(getSummaryBody(section), {
                 spacingAfter: 55,
-                runStyle: docxStyle.body
+                runStyle: docxStyle.body,
+                bulletStyle: state.settings.bulletStyle
             });
         }
 
@@ -4591,7 +4719,7 @@
                 }))
                 .filter(group => group.name || group.skills.length)
                 .map(group => new window.docx.Paragraph({
-                    spacing: { after: 40 },
+                    spacing: docxSpacing({ after: 40 }),
                     children: [
                         ...(group.name ? [new window.docx.TextRun({
                             text: `${group.name}: `,
@@ -4627,7 +4755,7 @@
 
         if (heading) {
             paragraphs.push(new Paragraph({
-                spacing: { before: 45, after: 18 },
+                spacing: docxSpacing({ before: 45, after: 18 }),
                 children: [new TextRun({
                     text: heading,
                     bold: true,
@@ -4640,7 +4768,7 @@
 
         if (meta) {
             paragraphs.push(new Paragraph({
-                spacing: { after: 8 },
+                spacing: docxSpacing({ after: 8 }),
                 children: [new TextRun({
                     text: meta,
                     italics: true,
@@ -4653,7 +4781,7 @@
 
         if (credentialId) {
             paragraphs.push(new Paragraph({
-                spacing: { after: 8 },
+                spacing: docxSpacing({ after: 8 }),
                 children: [new TextRun({
                     text: `Credential ID: ${credentialId}`,
                     font: docxStyle.meta.font,
@@ -4665,7 +4793,7 @@
 
         if (url) {
             paragraphs.push(new Paragraph({
-                spacing: { after: 8 },
+                spacing: docxSpacing({ after: 8 }),
                 children: [new TextRun({
                     text: formatVisibleUrl(url, { section: sectionType }),
                     font: docxStyle.meta.font,
@@ -4678,7 +4806,8 @@
         paragraphs.push(...richHtmlToDocxParagraphs(getItemBodyHtmlForPreview(sectionType, item), {
             spacingAfter: 35,
             runStyle: docxStyle.body,
-            bulletIndent: docxStyle.bulletIndent
+            bulletIndent: docxStyle.bulletIndent,
+            bulletStyle: state.settings.bulletStyle
         }));
         return paragraphs;
     }
@@ -4694,18 +4823,27 @@
         Array.from(template.content.childNodes).forEach(node => {
             if (node.nodeType === Node.TEXT_NODE) {
                 const text = normalizeInlineText(node.textContent);
-                if (text) paragraphs.push(new Paragraph({ spacing: { after: spacingAfter }, children: richNodeToTextRuns(node, runStyle) }));
+                if (text) paragraphs.push(new Paragraph({ spacing: docxSpacing({ after: spacingAfter }), children: richNodeToTextRuns(node, runStyle) }));
                 return;
             }
 
             if (node.nodeType !== Node.ELEMENT_NODE) return;
             if (node.matches('ul, ol')) {
-                Array.from(node.querySelectorAll(':scope > li')).forEach(item => {
+                const ordered = node.matches('ol');
+                const markerStyle = options.bulletStyle === 'none'
+                    ? ''
+                    : options.bulletStyle === 'hyphen'
+                        ? '-'
+                        : (options.bulletStyle === 'square' ? '▪' : '•');
+                Array.from(node.querySelectorAll(':scope > li')).forEach((item, index) => {
+                    const marker = ordered ? `${index + 1}.` : markerStyle;
                     paragraphs.push(new Paragraph({
-                        bullet: { level: 0 },
                         indent: options.bulletIndent,
-                        spacing: { after: spacingAfter },
-                        children: richNodeToTextRuns(item, runStyle)
+                        spacing: docxSpacing({ after: spacingAfter }),
+                        children: [
+                            ...(marker ? [new window.docx.TextRun({ text: `${marker} `, ...runStyle })] : []),
+                            ...richNodeToTextRuns(item, runStyle)
+                        ]
                     }));
                 });
                 return;
@@ -4714,7 +4852,7 @@
             if (node.matches('p, div')) {
                 const runs = richNodeToTextRuns(node, runStyle);
                 if (runs.length) {
-                    paragraphs.push(new Paragraph({ spacing: { after: spacingAfter }, children: runs }));
+                    paragraphs.push(new Paragraph({ spacing: docxSpacing({ after: spacingAfter }), children: runs }));
                 }
             }
         });
@@ -4900,7 +5038,8 @@
     function getExportButtons() {
         return [
             ...(elements.exportPdfButtons || []),
-            ...(elements.exportDocxButtons || [])
+            ...(elements.exportDocxButtons || []),
+            ...(elements.exportJsonButtons || [])
         ];
     }
 
@@ -5030,22 +5169,28 @@
     }
 
     function drawPdfListMarkersForAllLists(context) {
-        context.paper.querySelectorAll('.resume-bullets li, .resume-rich-text li').forEach(item => {
+        context.paper.querySelectorAll('.resume-rich-text li').forEach(item => {
             if (shouldSkipPdfElement(item)) return;
-            const explicitList = item.closest('.resume-bullets');
             const nativeList = item.closest('ul, ol');
             const nativeStyle = nativeList ? getComputedStyle(nativeList).listStyleType : '';
-            const style = explicitList?.dataset.bulletStyle || state.settings.bulletStyle || nativeStyle;
-            if (style === 'none') return;
 
             const orderedIndex = nativeList && nativeList.tagName === 'OL'
                 ? Array.from(nativeList.children).filter(child => child.tagName === 'LI').indexOf(item) + 1
                 : 0;
-            const marker = orderedIndex > 0 ? `${orderedIndex}.` : '-';
+            const marker = orderedIndex > 0
+                ? `${orderedIndex}.`
+                : nativeStyle === 'square'
+                    ? '▪'
+                    : nativeStyle === 'circle'
+                        ? '◦'
+                        : nativeStyle === 'none'
+                            ? ''
+                            : '•';
+            if (!marker) return;
             const itemRect = item.getBoundingClientRect();
             const styles = getComputedStyle(item);
             const fontSizePx = Number.parseFloat(styles.fontSize) || Number(state.settings.fontSize) * 1.333;
-            const sourceX = Math.max(0, itemRect.left - context.paperRect.left - 9);
+            const sourceX = Math.max(0, itemRect.left - context.paperRect.left - (orderedIndex > 0 ? 9 : 8));
             const sourceY = itemRect.top - context.paperRect.top + (fontSizePx * 0.78);
             const point = mapPdfPoint(context, sourceX, sourceY);
             if (!point) return;
@@ -6090,16 +6235,18 @@
                             ${renderTextStyleControl('title', 'personal.title', 'Title', 'text-cursor-input')}
                         </div>
                     </div>
-                    <div class="resume-contact">
-                        ${contact.map(item => `
-                            <span class="resume-contact-item inline-format-target" data-contact-key="${escapeAttr(item.key)}">
-                                ${state.settings.showHeaderIcons ? renderHeaderIcon(item.icon) : ''}
-                                <span class="resume-contact-label">${escapeHtml(contactLabels[item.key] || titleCase(item.key))}: </span>
-                                <span class="text-style-target" contenteditable="true" data-placeholder="Contact" data-edit-kind="contact" data-contact-key="${escapeAttr(item.key)}" ${renderTextStyleAttributes('contact', `contact.${item.key}`)}>${escapeHtml(item.value)}</span>
-                                ${renderTextStyleControl('contact', `contact.${item.key}`, 'Contact', 'at-sign')}
-                            </span>
-                        `).join('')}
-                    </div>
+                    ${contact.length ? `
+                        <div class="resume-contact">
+                            ${contact.map(item => `
+                                <span class="resume-contact-item inline-format-target" data-contact-key="${escapeAttr(item.key)}">
+                                    ${state.settings.showHeaderIcons ? renderHeaderIcon(item.icon) : ''}
+                                    <span class="resume-contact-label">${escapeHtml(contactLabels[item.key] || titleCase(item.key))}: </span>
+                                    <span class="text-style-target" contenteditable="true" data-placeholder="Contact" data-edit-kind="contact" data-contact-key="${escapeAttr(item.key)}" ${renderTextStyleAttributes('contact', `contact.${item.key}`)}>${escapeHtml(item.value)}</span>
+                                    ${renderTextStyleControl('contact', `contact.${item.key}`, 'Contact', 'at-sign')}
+                                </span>
+                            `).join('')}
+                        </div>
+                    ` : ''}
                 </header>
                 ${renderHeaderStyleDock()}
             </div>
@@ -6356,7 +6503,7 @@
             const children = Array.from(paragraph.children);
             const text = paragraph.textContent.trim();
             const onlyLink = children.length === 1 && children[0].tagName === 'A';
-            if (onlyLink && text === compact) paragraph.remove();
+            if (onlyLink && [safeUrl, compact].includes(text)) paragraph.remove();
         });
         return template.innerHTML;
     }
@@ -6379,7 +6526,7 @@
 
         if (url) {
             const safeUrl = cleanUrl(url);
-            lines.push(`<p><a href="${escapeAttr(safeUrl)}">${escapeHtml(compactUrl(safeUrl))}</a></p>`);
+            lines.push(`<p><a href="${escapeAttr(safeUrl)}">${escapeHtml(safeUrl)}</a></p>`);
         }
 
         return sanitizeRichHtml(lines.join('') || '<p></p>');
@@ -7692,7 +7839,7 @@
         settings.profilePhotoShape = ['circle', 'rounded-square', 'square'].includes(settings.profilePhotoShape) ? settings.profilePhotoShape : fresh.settings.profilePhotoShape;
         settings.profilePhotoPlacement = ['left', 'right', 'top'].includes(settings.profilePhotoPlacement) ? settings.profilePhotoPlacement : fresh.settings.profilePhotoPlacement;
         settings.fontSize = clampNumber(settings.fontSize, 9.5, 12.5, fresh.settings.fontSize);
-        settings.lineHeight = clampNumber(settings.lineHeight, 1.28, 1.6, fresh.settings.lineHeight);
+        settings.lineHeight = clampNumber(settings.lineHeight, 1, 1.8, fresh.settings.lineHeight);
         settings.metaSize = clampNumber(settings.metaSize, 8.8, 11, fresh.settings.metaSize);
         settings.skillBodySize = clampNumber(settings.skillBodySize, 8.8, 11, fresh.settings.skillBodySize);
         settings.sectionHeadingLineHeight = clampNumber(settings.sectionHeadingLineHeight, 1.05, 1.5, fresh.settings.sectionHeadingLineHeight);
@@ -8087,12 +8234,7 @@
     function formatVisibleUrl(url, options = {}) {
         const value = cleanUrl(url);
         if (!value) return '';
-        if (/^mailto:/i.test(value)) return value.replace(/^mailto:/i, '');
-
-        const normalizedUrl = /^(https?:)/i.test(value)
-            ? value
-            : `https://${value.replace(/^\/+/, '')}`;
-        return compactDisplayUrl(normalizedUrl, options);
+        return value;
     }
 
     function getResumeData() {

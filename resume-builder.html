@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Geist:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&family=Syne:wght@600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="styles/main.css">
-    <link rel="stylesheet" href="styles/resume-builder.css?v=ats-profile-template-11">
+    <link rel="stylesheet" href="styles/resume-builder.css?v=ats-profile-template-14">
 </head>
 
 <body class="resume-builder-page" data-workflow-step="data">
@@ -83,6 +83,7 @@
                             </div>
                             <div class="doc-control-group" aria-label="Line spacing">
                                 <span><i data-lucide="align-justify" aria-hidden="true"></i> Lines</span>
+                                <button type="button" data-setting-preset="lineHeight" data-value="1.05">Extra tight</button>
                                 <button type="button" data-setting-preset="lineHeight" data-value="1.15">Tight</button>
                                 <button type="button" data-setting-preset="lineHeight" data-value="1.35">Normal</button>
                                 <button type="button" data-setting-preset="lineHeight" data-value="1.55">Open</button>
@@ -135,6 +136,10 @@
                         <i data-lucide="file-type" aria-hidden="true"></i>
                         DOCX
                     </button>
+                    <button type="button" class="export-menu-item" role="menuitem" data-export-json>
+                        <i data-lucide="braces" aria-hidden="true"></i>
+                        JSON
+                    </button>
                 </div>
             </div>
         </div>
@@ -150,9 +155,14 @@
                 <div class="syntax-panel">
                     <div class="syntax-intro">
                         <strong>Paste JSON here.</strong>
-                        <span>Valid JSON renders automatically. Copy the prompt if you want an LLM to write it first.</span>
+                        <span>Enter your data in JSON, or click Copy prompt to get started.</span>
                     </div>
                     <div class="syntax-actions" aria-label="JSON resume actions">
+                        <button type="button" class="tool-button tool-button-secondary compact-action" id="uploadResumeJsonButton">
+                            <i data-lucide="upload" aria-hidden="true"></i>
+                            Upload JSON
+                        </button>
+                        <input class="file-input" type="file" id="resumeJsonUpload" accept=".json,application/json" hidden>
                         <button type="button" class="tool-button tool-button-secondary compact-action" id="copyJsonResumePrompt">
                             <i data-lucide="clipboard-list" aria-hidden="true"></i>
                             Copy prompt
@@ -266,8 +276,8 @@
                 </button>
             </header>
             <div class="prompt-modal-body">
-                <p>Paste this prompt into your AI chat. It will first interview you about your target role, background, and every applicable resume section.</p>
-                <p>After you answer the questions, it will return a complete resume as clean JSON for this builder.</p>
+                <p>Paste this prompt into your AI chat. It will first review what it already knows about you, let you confirm or correct it, and ask only for useful missing details before creating the complete resume.</p>
+                <p>After you confirm the information or say to proceed, it will return a complete resume as clean, pretty-printed JSON. If you request changes later, it will return the complete updated JSON again.</p>
                 <div class="ats-tip-card" aria-labelledby="atsTipsTitle">
                     <h3 id="atsTipsTitle">ATS-friendly resume tips</h3>
                     <ul class="ats-tip-list">
@@ -297,7 +307,7 @@
     <script src="js/journey-data.js"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
     <script src="js/resume-default-profile-data.js?v=2"></script>
-    <script src="js/resume-builder.js?v=ats-profile-template-15"></script>
+    <script src="js/resume-builder.js?v=ats-profile-template-18"></script>
 </body>
 
 </html>
